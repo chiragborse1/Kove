@@ -26,6 +26,7 @@ export const zh_CN: TranslationMap = {
     resize: "调整侧边栏大小",
   },
   tabs: {
+    employees: "员工",
     agents: "代理",
     overview: "概览",
     channels: "频道",
@@ -47,6 +48,7 @@ export const zh_CN: TranslationMap = {
     logs: "日志",
   },
   subtitles: {
+    employees: "AI 团队与最近活动。",
     agents: "工作区、工具、身份。",
     overview: "状态、入口点、健康。",
     channels: "频道和设置。",

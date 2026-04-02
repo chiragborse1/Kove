@@ -24,6 +24,7 @@ export const es: TranslationMap = {
     collapse: "Contraer barra lateral",
   },
   tabs: {
+    employees: "Equipo",
     agents: "Agentes",
     overview: "Resumen",
     channels: "Canales",
@@ -40,6 +41,7 @@ export const es: TranslationMap = {
     logs: "Registros",
   },
   subtitles: {
+    employees: "Equipo de IA y actividad reciente.",
     agents: "Gestionar espacios de trabajo, herramientas e identidades de agentes.",
     overview: "Estado de la puerta de enlace, puntos de entrada y lectura rápida de salud.",
     channels: "Gestionar canales y ajustes.",

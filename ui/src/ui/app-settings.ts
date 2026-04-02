@@ -19,6 +19,7 @@ import { loadCronJobs, loadCronRuns, loadCronStatus } from "./controllers/cron.t
 import { loadDebug } from "./controllers/debug.ts";
 import { loadDevices } from "./controllers/devices.ts";
 import { loadExecApprovals } from "./controllers/exec-approvals.ts";
+import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
@@ -233,6 +234,9 @@ export async function refreshActiveTab(host: SettingsHost) {
   }
   if (host.tab === "cron") {
     await loadCron(host);
+  }
+  if (host.tab === "employees") {
+    await loadEmployeesDashboard(host as unknown as OpenClawApp);
   }
   if (host.tab === "skills") {
     await loadSkills(host as unknown as OpenClawApp);

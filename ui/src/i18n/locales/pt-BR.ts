@@ -26,6 +26,7 @@ export const pt_BR: TranslationMap = {
     resize: "Redimensionar barra lateral",
   },
   tabs: {
+    employees: "Equipe",
     agents: "Agentes",
     overview: "Visão Geral",
     channels: "Canais",
@@ -47,6 +48,7 @@ export const pt_BR: TranslationMap = {
     logs: "Logs",
   },
   subtitles: {
+    employees: "Equipe de IA e atividade recente.",
     agents: "Espaços, ferramentas, identidades.",
     overview: "Status, entrada, saúde.",
     channels: "Canais e configurações.",

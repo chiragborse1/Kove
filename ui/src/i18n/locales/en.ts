@@ -27,6 +27,7 @@ export const en: TranslationMap = {
     resize: "Resize sidebar",
   },
   tabs: {
+    employees: "Employees",
     agents: "Agents",
     overview: "Overview",
     channels: "Channels",
@@ -48,6 +49,7 @@ export const en: TranslationMap = {
     logs: "Logs",
   },
   subtitles: {
+    employees: "AI team and recent activity.",
     agents: "Workspaces, tools, identities.",
     overview: "Status, entry points, health.",
     channels: "Channels and settings.",

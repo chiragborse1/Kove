@@ -87,6 +87,7 @@ import {
   revokeDeviceToken,
   rotateDeviceToken,
 } from "./controllers/devices.ts";
+import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import {
   loadExecApprovals,
   removeExecApprovalsFormValue,
@@ -153,6 +154,7 @@ const lazyAgents = createLazy(() => import("./views/agents.ts"));
 const lazyChannels = createLazy(() => import("./views/channels.ts"));
 const lazyCron = createLazy(() => import("./views/cron.ts"));
 const lazyDebug = createLazy(() => import("./views/debug.ts"));
+const lazyEmployees = createLazy(() => import("./views/employees.ts"));
 const lazyInstances = createLazy(() => import("./views/instances.ts"));
 const lazyLogs = createLazy(() => import("./views/logs.ts"));
 const lazyNodes = createLazy(() => import("./views/nodes.ts"));
@@ -932,6 +934,26 @@ export function renderApp(state: AppViewState) {
                 onNavigateToChat: (sessionKey) => {
                   switchChatSession(state, sessionKey);
                   state.setTab("chat" as import("./navigation.ts").Tab);
+                },
+              }),
+            )
+          : nothing}
+        ${state.tab === "employees"
+          ? lazyRender(lazyEmployees, (m) =>
+              m.renderEmployees({
+                loading: state.employeesLoading,
+                error: state.employeesError,
+                dashboard: state.employeesDashboard,
+                onRefresh: () => loadEmployeesDashboard(state),
+                onOpenChat: (agentId) => {
+                  switchChatSession(state, buildAgentMainSessionKey({ agentId }));
+                  state.setTab("chat" as import("./navigation.ts").Tab);
+                },
+                onViewSessions: (agentId) => {
+                  state.sessionsSearchQuery = agentId;
+                  state.sessionsPage = 0;
+                  state.sessionsSelectedKeys = new Set();
+                  state.setTab("sessions" as import("./navigation.ts").Tab);
                 },
               }),
             )

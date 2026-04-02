@@ -24,6 +24,7 @@ export const de: TranslationMap = {
     collapse: "Seitenleiste einklappen",
   },
   tabs: {
+    employees: "Team",
     agents: "Agenten",
     overview: "Übersicht",
     channels: "Kanäle",
@@ -40,6 +41,7 @@ export const de: TranslationMap = {
     logs: "Protokolle",
   },
   subtitles: {
+    employees: "AI-Team und letzte Aktivitaet.",
     agents: "Agent-Arbeitsbereiche, Tools und Identitäten verwalten.",
     overview: "Gateway-Status, Einstiegspunkte und eine schnelle Zustandsprüfung.",
     channels: "Kanäle und Einstellungen verwalten.",
