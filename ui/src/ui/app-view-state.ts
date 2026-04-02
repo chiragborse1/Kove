@@ -1,5 +1,6 @@
 import type { EventLogEntry } from "./app-events.ts";
 import type { CompactionStatus, FallbackStatus } from "./app-tool-stream.ts";
+import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
 import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
@@ -149,6 +150,13 @@ export type AppViewState = {
   whatsappLoginQrDataUrl: string | null;
   whatsappLoginConnected: boolean | null;
   whatsappBusy: boolean;
+  telegramSetupToken: string;
+  telegramSetupBusy: boolean;
+  telegramSetupMessage: TelegramSetupMessage | null;
+  telegramApprovalsLoading: boolean;
+  telegramApprovalsBusyCode: string | null;
+  telegramApprovalsMessage: TelegramSetupMessage | null;
+  telegramPendingApprovals: TelegramPendingApproval[];
   nostrProfileFormState: NostrProfileFormState | null;
   nostrProfileAccountId: string | null;
   configFormDirty: boolean;
@@ -208,7 +216,7 @@ export type AppViewState = {
   usageSelectedHours: number[];
   usageChartMode: "tokens" | "cost";
   usageDailyChartMode: "total" | "by-type";
-  usageTimeSeriesMode: "cumulative" | "per-turn";
+  usageTimeSeriesMode: "cumulative" | "per-tun";
   usageTimeSeriesBreakdownMode: "total" | "by-type";
   usageTimeSeries: SessionUsageTimeSeries | null;
   usageTimeSeriesLoading: boolean;

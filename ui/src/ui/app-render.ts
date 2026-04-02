@@ -29,7 +29,15 @@ import {
   refreshVisibleToolsEffectiveForCurrentSession,
   saveAgentsConfig,
 } from "./controllers/agents.ts";
-import { loadChannels } from "./controllers/channels.ts";
+import {
+  approveTelegramPairing,
+  connectTelegram,
+  disconnectTelegram,
+  loadChannels,
+  loadTelegramPendingApprovals,
+  rejectTelegramPairing,
+  updateTelegramSetupToken,
+} from "./controllers/channels.ts";
 import { loadChatHistory } from "./controllers/chat.ts";
 import {
   applyConfig,
@@ -107,7 +115,7 @@ import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.t
 import { renderLoginGate } from "./views/login-gate.ts";
 import { renderOverview } from "./views/overview.ts";
 
-// Lazy-loaded view modules Ã¢â‚¬â€œ deferred so the initial bundle stays small.
+// Lazy-loaded view modules - deferred so the initial bundle stays small.
 // Each loader resolves once; subsequent calls return the cached module.
 type LazyState<T> = { mod: T | null; promise: Promise<T> | null };
 
@@ -452,11 +460,11 @@ export function renderApp(state: AppViewState) {
               @click=${() => {
                 state.paletteOpen = !state.paletteOpen;
               }}
-              title="Search or jump toÃ¢â‚¬Â¦ (Ã¢Å’ËœK)"
+              title="Search or jump to... (Ctrl/Cmd+K)"
               aria-label="Open command palette"
             >
               <span class="topbar-search__label">${t("common.search")}</span>
-              <kbd class="topbar-search__kbd">Ã¢Å’ËœK</kbd>
+              <kbd class="topbar-search__kbd">Ctrl/Cmd+K</kbd>
             </button>
             <div class="topbar-status">
               ${isChat ? renderChatMobileToggle(state) : nothing}
@@ -591,7 +599,7 @@ export function renderApp(state: AppViewState) {
                 ?disabled=${state.updateRunning || !state.connected}
                 @click=${() => runUpdate(state)}
               >
-                ${state.updateRunning ? "UpdatingÃ¢â‚¬Â¦" : "Update now"}
+                ${state.updateRunning ? "Updating..." : "Update now"}
               </button>
               <button
                 class="update-banner__close"
@@ -683,6 +691,13 @@ export function renderApp(state: AppViewState) {
                 whatsappQrDataUrl: state.whatsappLoginQrDataUrl,
                 whatsappConnected: state.whatsappLoginConnected,
                 whatsappBusy: state.whatsappBusy,
+                telegramSetupToken: state.telegramSetupToken,
+                telegramSetupBusy: state.telegramSetupBusy,
+                telegramSetupMessage: state.telegramSetupMessage,
+                telegramApprovalsLoading: state.telegramApprovalsLoading,
+                telegramApprovalsBusyCode: state.telegramApprovalsBusyCode,
+                telegramApprovalsMessage: state.telegramApprovalsMessage,
+                telegramPendingApprovals: state.telegramPendingApprovals,
                 configSchema: state.configSchema,
                 configSchemaLoading: state.configSchemaLoading,
                 configForm: state.configForm,
@@ -695,7 +710,12 @@ export function renderApp(state: AppViewState) {
                 onWhatsAppStart: (force) => state.handleWhatsAppStart(force),
                 onWhatsAppWait: () => state.handleWhatsAppWait(),
                 onWhatsAppLogout: () => state.handleWhatsAppLogout(),
-                onConfigPatch: (path, value) => updateConfigFormValue(state, path, value),
+                onTelegramTokenInput: (next) => updateTelegramSetupToken(state, next),
+                onTelegramConnect: () => connectTelegram(state),
+                onTelegramDisconnect: () => disconnectTelegram(state),
+                onTelegramApprovalsRefresh: () => loadTelegramPendingApprovals(state),
+                onTelegramApprove: (code) => approveTelegramPairing(state, code),
+                onTelegramReject: (code) => rejectTelegramPairing(state, code),                onConfigPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onConfigSave: () => state.handleChannelConfigSave(),
                 onConfigReload: () => state.handleChannelConfigReload(),
                 onNostrProfileEdit: (accountId, profile) =>

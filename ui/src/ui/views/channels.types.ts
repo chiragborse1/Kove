@@ -1,4 +1,8 @@
 import type {
+  TelegramPendingApproval,
+  TelegramSetupMessage,
+} from "../controllers/channels.types.ts";
+import type {
   ChannelAccountSnapshot,
   ChannelsStatusSnapshot,
   ConfigUiHints,
@@ -26,6 +30,13 @@ export type ChannelsProps = {
   whatsappQrDataUrl: string | null;
   whatsappConnected: boolean | null;
   whatsappBusy: boolean;
+  telegramSetupToken: string;
+  telegramSetupBusy: boolean;
+  telegramSetupMessage: TelegramSetupMessage | null;
+  telegramApprovalsLoading: boolean;
+  telegramApprovalsBusyCode: string | null;
+  telegramApprovalsMessage: TelegramSetupMessage | null;
+  telegramPendingApprovals: TelegramPendingApproval[];
   configSchema: unknown;
   configSchemaLoading: boolean;
   configForm: Record<string, unknown> | null;
@@ -38,6 +49,12 @@ export type ChannelsProps = {
   onWhatsAppStart: (force: boolean) => void;
   onWhatsAppWait: () => void;
   onWhatsAppLogout: () => void;
+  onTelegramTokenInput: (next: string) => void;
+  onTelegramConnect: () => void;
+  onTelegramDisconnect: () => void;
+  onTelegramApprovalsRefresh: () => void;
+  onTelegramApprove: (code: string) => void;
+  onTelegramReject: (code: string) => void;
   onConfigPatch: (path: Array<string | number>, value: unknown) => void;
   onConfigSave: () => void;
   onConfigReload: () => void;

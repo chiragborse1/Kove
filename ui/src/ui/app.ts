@@ -60,6 +60,7 @@ import {
   refreshVisibleToolsEffectiveForCurrentSession as refreshVisibleToolsEffectiveForCurrentSessionInternal,
 } from "./controllers/agents.ts";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
+import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
@@ -250,6 +251,13 @@ export class OpenClawApp extends LitElement {
   @state() whatsappLoginQrDataUrl: string | null = null;
   @state() whatsappLoginConnected: boolean | null = null;
   @state() whatsappBusy = false;
+  @state() telegramSetupToken = "";
+  @state() telegramSetupBusy = false;
+  @state() telegramSetupMessage: TelegramSetupMessage | null = null;
+  @state() telegramApprovalsLoading = false;
+  @state() telegramApprovalsBusyCode: string | null = null;
+  @state() telegramApprovalsMessage: TelegramSetupMessage | null = null;
+  @state() telegramPendingApprovals: TelegramPendingApproval[] = [];
   @state() nostrProfileFormState: NostrProfileFormState | null = null;
   @state() nostrProfileAccountId: string | null = null;
 
@@ -318,7 +326,7 @@ export class OpenClawApp extends LitElement {
   @state() usageSelectedHours: number[] = [];
   @state() usageChartMode: "tokens" | "cost" = "tokens";
   @state() usageDailyChartMode: "total" | "by-type" = "by-type";
-  @state() usageTimeSeriesMode: "cumulative" | "per-turn" = "per-turn";
+  @state() usageTimeSeriesMode: "cumulative" | "per-tun" = "per-tun";
   @state() usageTimeSeriesBreakdownMode: "total" | "by-type" = "by-type";
   @state() usageTimeSeries: import("./types.js").SessionUsageTimeSeries | null = null;
   @state() usageTimeSeriesLoading = false;
@@ -353,7 +361,7 @@ export class OpenClawApp extends LitElement {
   @state() usageLogFilterHasTools = false;
   @state() usageLogFilterQuery = "";
 
-  // Non-reactive (donÃ¢â‚¬â„¢t trigger renders just for timer bookkeeping).
+  // Non-reactive (do not trigger renders just for timer bookkeeping).
   usageQueryDebounceTimer: number | null = null;
 
   @state() cronLoading = false;

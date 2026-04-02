@@ -12,7 +12,7 @@ import { loadAgentFiles } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
 import { loadAgents } from "./controllers/agents.ts";
-import { loadChannels } from "./controllers/channels.ts";
+import { loadChannels, loadTelegramPendingApprovals } from "./controllers/channels.ts";
 import { loadConfig, loadConfigSchema } from "./controllers/config.ts";
 import { loadCronJobs, loadCronRuns, loadCronStatus } from "./controllers/cron.ts";
 import { loadDebug } from "./controllers/debug.ts";
@@ -642,6 +642,7 @@ function buildAttentionItems(host: OpenClawApp) {
 export async function loadChannelsTab(host: SettingsHost) {
   await Promise.all([
     loadChannels(host as unknown as OpenClawApp, true),
+    loadTelegramPendingApprovals(host as unknown as OpenClawApp),
     loadConfigSchema(host as unknown as OpenClawApp),
     loadConfig(host as unknown as OpenClawApp),
   ]);

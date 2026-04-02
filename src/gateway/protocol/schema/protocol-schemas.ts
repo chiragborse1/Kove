@@ -89,6 +89,11 @@ import {
   DeviceTokenRotateParamsSchema,
 } from "./devices.js";
 import {
+  PairingApproveParamsSchema,
+  PairingListParamsSchema,
+  PairingRejectParamsSchema,
+} from "./pairing.js";
+import {
   ExecApprovalsGetParamsSchema,
   ExecApprovalsNodeGetParamsSchema,
   ExecApprovalsNodeSetParamsSchema,
@@ -314,6 +319,9 @@ export const ProtocolSchemas = {
   DevicePairRemoveParams: DevicePairRemoveParamsSchema,
   DeviceTokenRotateParams: DeviceTokenRotateParamsSchema,
   DeviceTokenRevokeParams: DeviceTokenRevokeParamsSchema,
+  PairingListParams: PairingListParamsSchema,
+  PairingApproveParams: PairingApproveParamsSchema,
+  PairingRejectParams: PairingRejectParamsSchema,
   DevicePairRequestedEvent: DevicePairRequestedEventSchema,
   DevicePairResolvedEvent: DevicePairResolvedEventSchema,
   ChatHistoryParams: ChatHistoryParamsSchema,
