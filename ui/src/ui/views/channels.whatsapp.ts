@@ -31,7 +31,7 @@ export function renderWhatsAppCard(params: {
           </div>
         </div>
         <span class="pill pill--sm ${connected ? "pill--ok" : ""}">
-          ${connected ? "Connected" : "Setup"}
+          ${connected ? "Connected" : "Not connected"}
         </span>
       </div>
 
