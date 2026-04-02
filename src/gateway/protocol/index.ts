@@ -3,6 +3,32 @@ import type { SessionsPatchResult } from "../session-utils.types.js";
 import {
   type AgentEvent,
   AgentEventSchema,
+  type ApiKeyProviderId,
+  ApiKeyProviderIdSchema,
+  type ApiKeyProviderStatus,
+  ApiKeyProviderStatusSchema,
+  type ApiKeysActiveModelSetParams,
+  ApiKeysActiveModelSetParamsSchema,
+  type ApiKeysOpenRouterGetParams,
+  ApiKeysOpenRouterGetParamsSchema,
+  type ApiKeysOpenRouterStatus,
+  ApiKeysOpenRouterStatusSchema,
+  type ApiKeysOpenRouterSetParams,
+  ApiKeysOpenRouterSetParamsSchema,
+  type ApiKeysOpenRouterTestParams,
+  ApiKeysOpenRouterTestParamsSchema,
+  type ApiKeysOpenRouterTestResult,
+  ApiKeysOpenRouterTestResultSchema,
+  type ApiKeysProviderSetParams,
+  ApiKeysProviderSetParamsSchema,
+  type ApiKeysProviderTestParams,
+  ApiKeysProviderTestParamsSchema,
+  type ApiKeysProviderTestResult,
+  ApiKeysProviderTestResultSchema,
+  type ApiKeysProvidersGetParams,
+  ApiKeysProvidersGetParamsSchema,
+  type ApiKeysSnapshot,
+  ApiKeysSnapshotSchema,
   type AgentIdentityParams,
   AgentIdentityParamsSchema,
   type AgentIdentityResult,
@@ -288,6 +314,20 @@ export const validateRequestFrame = ajv.compile<RequestFrame>(RequestFrameSchema
 export const validateResponseFrame = ajv.compile<ResponseFrame>(ResponseFrameSchema);
 export const validateEventFrame = ajv.compile<EventFrame>(EventFrameSchema);
 export const validateSendParams = ajv.compile(SendParamsSchema);
+export const validateApiKeysProvidersGetParams =
+  ajv.compile<ApiKeysProvidersGetParams>(ApiKeysProvidersGetParamsSchema);
+export const validateApiKeysProviderSetParams =
+  ajv.compile<ApiKeysProviderSetParams>(ApiKeysProviderSetParamsSchema);
+export const validateApiKeysProviderTestParams =
+  ajv.compile<ApiKeysProviderTestParams>(ApiKeysProviderTestParamsSchema);
+export const validateApiKeysActiveModelSetParams =
+  ajv.compile<ApiKeysActiveModelSetParams>(ApiKeysActiveModelSetParamsSchema);
+export const validateApiKeysOpenRouterGetParams =
+  ajv.compile<ApiKeysOpenRouterGetParams>(ApiKeysOpenRouterGetParamsSchema);
+export const validateApiKeysOpenRouterSetParams =
+  ajv.compile<ApiKeysOpenRouterSetParams>(ApiKeysOpenRouterSetParamsSchema);
+export const validateApiKeysOpenRouterTestParams =
+  ajv.compile<ApiKeysOpenRouterTestParams>(ApiKeysOpenRouterTestParamsSchema);
 export const validatePollParams = ajv.compile<PollParams>(PollParamsSchema);
 export const validateAgentParams = ajv.compile(AgentParamsSchema);
 export const validateAgentIdentityParams =
@@ -525,6 +565,11 @@ export {
   ErrorShapeSchema,
   StateVersionSchema,
   AgentEventSchema,
+  ApiKeysOpenRouterGetParamsSchema,
+  ApiKeysOpenRouterStatusSchema,
+  ApiKeysOpenRouterSetParamsSchema,
+  ApiKeysOpenRouterTestParamsSchema,
+  ApiKeysOpenRouterTestResultSchema,
   ChatEventSchema,
   SendParamsSchema,
   PollParamsSchema,
@@ -638,6 +683,11 @@ export type {
   ErrorShape,
   StateVersion,
   AgentEvent,
+  ApiKeysOpenRouterGetParams,
+  ApiKeysOpenRouterStatus,
+  ApiKeysOpenRouterSetParams,
+  ApiKeysOpenRouterTestParams,
+  ApiKeysOpenRouterTestResult,
   AgentIdentityParams,
   AgentIdentityResult,
   AgentWaitParams,

@@ -3,6 +3,13 @@ import { GATEWAY_EVENT_UPDATE_AVAILABLE } from "./events.js";
 
 const BASE_METHODS = [
   "health",
+  "apiKeys.providers.get",
+  "apiKeys.provider.set",
+  "apiKeys.provider.test",
+  "apiKeys.activeModel.set",
+  "apiKeys.openrouter.get",
+  "apiKeys.openrouter.set",
+  "apiKeys.openrouter.test",
   "doctor.memory.status",
   "logs.tail",
   "channels.status",

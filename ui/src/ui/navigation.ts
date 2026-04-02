@@ -12,6 +12,7 @@ export const TAB_GROUPS = [
     label: "settings",
     tabs: [
       "config",
+      "apiKeys",
       "communications",
       "appearance",
       "automation",
@@ -35,6 +36,7 @@ export type Tab =
   | "nodes"
   | "chat"
   | "config"
+  | "apiKeys"
   | "communications"
   | "appearance"
   | "automation"
@@ -55,6 +57,7 @@ const TAB_PATHS: Record<Tab, string> = {
   nodes: "/nodes",
   chat: "/chat",
   config: "/config",
+  apiKeys: "/api-keys",
   communications: "/communications",
   appearance: "/appearance",
   automation: "/automation",
@@ -168,6 +171,8 @@ export function iconForTab(tab: Tab): IconName {
     case "nodes":
       return "monitor";
     case "config":
+      return "settings";
+    case "apiKeys":
       return "settings";
     case "communications":
       return "send";

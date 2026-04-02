@@ -60,6 +60,14 @@ import {
   refreshVisibleToolsEffectiveForCurrentSession as refreshVisibleToolsEffectiveForCurrentSessionInternal,
 } from "./controllers/agents.ts";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
+import {
+  createApiKeyInputRecord,
+  createApiKeyMessageRecord,
+  createApiKeyStatusRecord,
+  type ApiKeyMessage,
+  type ApiKeyProviderId,
+  type ApiKeyProviderStatus,
+} from "./controllers/api-keys.ts";
 import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
@@ -242,6 +250,20 @@ export class OpenClawApp extends LitElement {
   @state() aiAgentsSearchQuery = "";
   @state() aiAgentsActiveSection: string | null = null;
   @state() aiAgentsActiveSubsection: string | null = null;
+  @state() apiKeysLoading = false;
+  @state() apiKeysSavingProviderId: ApiKeyProviderId | null = null;
+  @state() apiKeysTestingProviderId: ApiKeyProviderId | null = null;
+  @state() apiKeysModelSaving = false;
+  @state() apiKeysCurrentModel = "openrouter/auto";
+  @state() apiKeysModelOption = "openrouter/auto";
+  @state() apiKeysCustomModelInput = "";
+  @state() apiKeysConfigHash: string | null = null;
+  @state() apiKeysPageMessage: ApiKeyMessage | null = null;
+  @state() apiKeyProviderInputs: Record<ApiKeyProviderId, string> = createApiKeyInputRecord();
+  @state() apiKeyProviderStatuses: Record<ApiKeyProviderId, ApiKeyProviderStatus | null> =
+    createApiKeyStatusRecord();
+  @state() apiKeyProviderMessages: Record<ApiKeyProviderId, ApiKeyMessage | null> =
+    createApiKeyMessageRecord();
 
   @state() channelsLoading = false;
   @state() channelsSnapshot: ChannelsStatusSnapshot | null = null;

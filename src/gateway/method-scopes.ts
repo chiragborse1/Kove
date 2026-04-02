@@ -58,6 +58,8 @@ const METHOD_SCOPE_GROUPS: Record<OperatorScope, readonly string[]> = {
   ],
   [READ_SCOPE]: [
     "health",
+    "apiKeys.providers.get",
+    "apiKeys.openrouter.get",
     "doctor.memory.status",
     "logs.tail",
     "channels.status",
@@ -101,6 +103,8 @@ const METHOD_SCOPE_GROUPS: Record<OperatorScope, readonly string[]> = {
   ],
   [WRITE_SCOPE]: [
     "send",
+    "apiKeys.provider.test",
+    "apiKeys.openrouter.test",
     "poll",
     "agent",
     "agent.wait",
@@ -124,6 +128,9 @@ const METHOD_SCOPE_GROUPS: Record<OperatorScope, readonly string[]> = {
     "node.pending.enqueue",
   ],
   [ADMIN_SCOPE]: [
+    "apiKeys.provider.set",
+    "apiKeys.activeModel.set",
+    "apiKeys.openrouter.set",
     "channels.logout",
     "agents.create",
     "agents.update",

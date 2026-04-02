@@ -1,5 +1,10 @@
 import type { EventLogEntry } from "./app-events.ts";
 import type { CompactionStatus, FallbackStatus } from "./app-tool-stream.ts";
+import type {
+  ApiKeyMessage,
+  ApiKeyProviderId,
+  ApiKeyProviderStatus,
+} from "./controllers/api-keys.ts";
 import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
 import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
@@ -142,6 +147,18 @@ export type AppViewState = {
   aiAgentsSearchQuery: string;
   aiAgentsActiveSection: string | null;
   aiAgentsActiveSubsection: string | null;
+  apiKeysLoading: boolean;
+  apiKeysSavingProviderId: ApiKeyProviderId | null;
+  apiKeysTestingProviderId: ApiKeyProviderId | null;
+  apiKeysModelSaving: boolean;
+  apiKeysCurrentModel: string;
+  apiKeysModelOption: string;
+  apiKeysCustomModelInput: string;
+  apiKeysConfigHash: string | null;
+  apiKeysPageMessage: ApiKeyMessage | null;
+  apiKeyProviderInputs: Record<ApiKeyProviderId, string>;
+  apiKeyProviderStatuses: Record<ApiKeyProviderId, ApiKeyProviderStatus | null>;
+  apiKeyProviderMessages: Record<ApiKeyProviderId, ApiKeyMessage | null>;
   channelsLoading: boolean;
   channelsSnapshot: ChannelsStatusSnapshot | null;
   channelsError: string | null;

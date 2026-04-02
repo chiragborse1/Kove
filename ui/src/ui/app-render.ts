@@ -30,6 +30,16 @@ import {
   saveAgentsConfig,
 } from "./controllers/agents.ts";
 import {
+  loadApiKeys,
+  saveActiveModel,
+  saveProviderApiKey,
+  setActiveApiKeyProvider,
+  testProviderApiKey,
+  updateApiKeysCustomModelInput,
+  updateApiKeysModelOption,
+  updateProviderApiKeyInput,
+} from "./controllers/api-keys.ts";
+import {
   approveTelegramPairing,
   connectTelegram,
   disconnectTelegram,
@@ -107,6 +117,7 @@ import {
   resolveModelPrimary,
   sortLocaleStrings,
 } from "./views/agents-utils.ts";
+import { renderApiKeys } from "./views/api-keys.ts";
 import { renderChat } from "./views/chat.ts";
 import { renderCommandPalette } from "./views/command-palette.ts";
 import { renderConfig } from "./views/config.ts";
@@ -1646,6 +1657,29 @@ export function renderApp(state: AppViewState) {
                 "wizard",
               ],
               includeVirtualSections: false,
+            })
+          : nothing}        ${state.tab === "apiKeys"
+          ? renderApiKeys({
+              loading: state.apiKeysLoading,
+              connected: state.connected,
+              savingProviderId: state.apiKeysSavingProviderId,
+              testingProviderId: state.apiKeysTestingProviderId,
+              modelSaving: state.apiKeysModelSaving,
+              currentModel: state.apiKeysCurrentModel,
+              modelOption: state.apiKeysModelOption,
+              customModelInput: state.apiKeysCustomModelInput,
+              pageMessage: state.apiKeysPageMessage,
+              providerStatuses: state.apiKeyProviderStatuses,
+              providerInputs: state.apiKeyProviderInputs,
+              providerMessages: state.apiKeyProviderMessages,
+              onProviderInput: (provider, value) => updateProviderApiKeyInput(state, provider, value),
+              onModelOptionChange: (value) => updateApiKeysModelOption(state, value),
+              onCustomModelInput: (value) => updateApiKeysCustomModelInput(state, value),
+              onRefresh: () => loadApiKeys(state),
+              onSaveProvider: (provider) => saveProviderApiKey(state, provider),
+              onSaveModel: () => saveActiveModel(state),
+              onTestProvider: (provider) => testProviderApiKey(state, provider),
+              onSetActive: (provider) => setActiveApiKeyProvider(state, provider),
             })
           : nothing}
         ${state.tab === "communications"
