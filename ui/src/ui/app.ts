@@ -63,7 +63,7 @@ import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./contro
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { SkillMessage } from "./controllers/skills.ts";
+import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
@@ -353,7 +353,7 @@ export class OpenClawApp extends LitElement {
   @state() usageLogFilterHasTools = false;
   @state() usageLogFilterQuery = "";
 
-  // Non-reactive (don’t trigger renders just for timer bookkeeping).
+  // Non-reactive (donÃ¢â‚¬â„¢t trigger renders just for timer bookkeeping).
   usageQueryDebounceTimer: number | null = null;
 
   @state() cronLoading = false;
@@ -408,11 +408,19 @@ export class OpenClawApp extends LitElement {
   @state() skillsReport: SkillStatusReport | null = null;
   @state() skillsError: string | null = null;
   @state() skillsFilter = "";
-  @state() skillsStatusFilter: "all" | "ready" | "needs-setup" | "disabled" = "all";
+  @state() skillsStatusFilter: "all" | "ready" | "needs-setup" | "disabled" | "marketplace" = "all";
   @state() skillEdits: Record<string, string> = {};
   @state() skillsBusyKey: string | null = null;
   @state() skillMessages: Record<string, SkillMessage> = {};
   @state() skillsDetailKey: string | null = null;
+  @state() kova_marketplaceLoading = false;
+  @state() kova_marketplaceSkills: KovaMarketplaceSkill[] = [];
+  @state() kova_marketplaceError: string | null = null;
+  @state() kova_marketplaceCategory: KovaMarketplaceCategory = "all";
+  @state() kova_installedLoading = false;
+  @state() kova_installedError: string | null = null;
+  @state() kova_installedSkillIds: string[] = [];
+  @state() kova_marketplaceBusyId: string | null = null;
 
   @state() healthLoading = false;
   @state() healthResult: HealthSummary | null = null;

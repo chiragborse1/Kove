@@ -1,6 +1,10 @@
 import { html, nothing } from "lit";
 import { ref } from "lit/directives/ref.js";
-import type { SkillMessageMap } from "../controllers/skills.ts";
+import type {
+  KovaMarketplaceCategory,
+  KovaMarketplaceSkill,
+  SkillMessageMap,
+} from "../controllers/skills.ts";
 import { clampText } from "../format.ts";
 import { resolveSafeExternalUrl } from "../open-external-url.ts";
 import type { SkillStatusEntry, SkillStatusReport } from "../types.ts";
@@ -18,7 +22,7 @@ function safeExternalHref(raw?: string): string | null {
   return resolveSafeExternalUrl(raw, window.location.href);
 }
 
-export type SkillsStatusFilter = "all" | "ready" | "needs-setup" | "disabled";
+export type SkillsStatusFilter = "all" | "ready" | "needs-setup" | "disabled" | "marketplace";
 
 export type SkillsProps = {
   connected: boolean;
@@ -31,6 +35,12 @@ export type SkillsProps = {
   busyKey: string | null;
   messages: SkillMessageMap;
   detailKey: string | null;
+  kova_marketplaceLoading: boolean;
+  kova_marketplaceSkills: KovaMarketplaceSkill[];
+  kova_marketplaceError: string | null;
+  kova_marketplaceCategory: KovaMarketplaceCategory;
+  kova_marketplaceInstalledIds: string[];
+  kova_marketplaceBusyId: string | null;
   onFilterChange: (next: string) => void;
   onStatusFilterChange: (next: SkillsStatusFilter) => void;
   onRefresh: () => void;
@@ -40,18 +50,31 @@ export type SkillsProps = {
   onInstall: (skillKey: string, name: string, installId: string) => void;
   onDetailOpen: (skillKey: string) => void;
   onDetailClose: () => void;
+  onKovaMarketplaceCategoryChange: (next: KovaMarketplaceCategory) => void;
+  onKovaMarketplaceInstall: (skill: KovaMarketplaceSkill) => void;
 };
 
 type StatusTabDef = { id: SkillsStatusFilter; label: string };
+type KovaCategoryTabDef = { id: KovaMarketplaceCategory; label: string };
 
 const STATUS_TABS: StatusTabDef[] = [
   { id: "all", label: "All" },
   { id: "ready", label: "Ready" },
   { id: "needs-setup", label: "Needs Setup" },
   { id: "disabled", label: "Disabled" },
+  { id: "marketplace", label: "Marketplace" },
 ];
 
-function skillMatchesStatus(skill: SkillStatusEntry, status: SkillsStatusFilter): boolean {
+const KOVA_CATEGORY_TABS: KovaCategoryTabDef[] = [
+  { id: "all", label: "All" },
+  { id: "Productivity", label: "Productivity" },
+  { id: "News", label: "News" },
+  { id: "Finance", label: "Finance" },
+  { id: "Developer", label: "Developer" },
+  { id: "Social", label: "Social" },
+];
+
+function skillMatchesStatus(skill: SkillStatusEntry, status: Exclude<SkillsStatusFilter, "marketplace">): boolean {
   switch (status) {
     case "all":
       return true;
@@ -71,6 +94,118 @@ function skillStatusClass(skill: SkillStatusEntry): string {
   return skill.eligible ? "ok" : "warn";
 }
 
+function kova_marketplaceMatchesFilter(skill: KovaMarketplaceSkill, filter: string): boolean {
+  if (!filter) {
+    return true;
+  }
+  const haystack = [skill.name, skill.description].join(" ").toLowerCase();
+  return haystack.includes(filter);
+}
+
+function kova_marketplaceMatchesCategory(
+  skill: KovaMarketplaceSkill,
+  category: KovaMarketplaceCategory,
+): boolean {
+  return category === "all" || skill.category === category;
+}
+
+function kova_renderMarketplace(props: SkillsProps) {
+  const filter = props.filter.trim().toLowerCase();
+  const filtered = props.kova_marketplaceSkills.filter(
+    (skill) =>
+      kova_marketplaceMatchesCategory(skill, props.kova_marketplaceCategory) &&
+      kova_marketplaceMatchesFilter(skill, filter),
+  );
+
+  return html`
+    <div
+      class="filters"
+      style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px;"
+    >
+      <label class="field" style="flex: 1; min-width: 180px;">
+        <input
+          .value=${props.filter}
+          @input=${(e: Event) => props.onFilterChange((e.target as HTMLInputElement).value)}
+          placeholder="Search marketplace"
+          autocomplete="off"
+          name="skills-filter"
+        />
+      </label>
+      <div class="muted">${filtered.length} shown</div>
+    </div>
+
+    <div class="agent-tabs" style="margin-top: 12px; flex-wrap: wrap;">
+      ${KOVA_CATEGORY_TABS.map(
+        (tab) => html`
+          <button
+            class="agent-tab ${props.kova_marketplaceCategory === tab.id ? "active" : ""}"
+            @click=${() => props.onKovaMarketplaceCategoryChange(tab.id)}
+          >
+            ${tab.label}
+          </button>
+        `,
+      )}
+    </div>
+
+    ${props.kova_marketplaceError
+      ? html`<div class="callout danger" style="margin-top: 12px;">${props.kova_marketplaceError}</div>`
+      : nothing}
+
+    ${filtered.length === 0
+      ? html`
+          <div class="muted" style="margin-top: 16px;">
+            ${props.kova_marketplaceLoading ? "Loading marketplace..." : "No marketplace skills found."}
+          </div>
+        `
+      : html`
+          <div
+            class="kova-marketplace-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 16px;"
+          >
+            ${filtered.map((skill) => kova_renderMarketplaceCard(skill, props))}
+          </div>
+        `}
+  `;
+}
+
+function kova_renderMarketplaceCard(skill: KovaMarketplaceSkill, props: SkillsProps) {
+  const installed = props.kova_marketplaceInstalledIds.includes(skill.id);
+  const busy = props.kova_marketplaceBusyId === skill.id;
+  const buttonLabel = installed ? "Installed" : busy ? "Installing..." : "Install";
+
+  return html`
+    <div
+      class="list-item"
+      style="display: grid; grid-template-columns: minmax(0, 3fr) minmax(96px, 1fr); gap: 14px; align-items: start; border: 1px solid var(--border);"
+    >
+      <div class="list-main" style="min-width: 0;">
+        <div class="list-title" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span>${skill.name}</span>
+          <span class="chip">${skill.category}</span>
+          ${skill.free ? html`<span class="chip chip-ok">Free</span>` : nothing}
+          ${installed ? html`<span class="chip">Installed</span>` : nothing}
+        </div>
+        <div
+          class="list-sub"
+          style="margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+        >
+          ${skill.description || "No description provided."}
+        </div>
+        <div class="muted" style="margin-top: 8px; font-size: 12px;">By ${skill.author}</div>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button
+          class="btn ${installed ? "" : "primary"}"
+          ?disabled=${installed || busy || !props.connected}
+          @click=${() => props.onKovaMarketplaceInstall(skill)}
+        >
+          ${buttonLabel}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 export function renderSkills(props: SkillsProps) {
   const skills = props.report?.skills ?? [];
 
@@ -79,6 +214,7 @@ export function renderSkills(props: SkillsProps) {
     ready: 0,
     "needs-setup": 0,
     disabled: 0,
+    marketplace: props.kova_marketplaceSkills.length,
   };
   for (const s of skills) {
     if (s.disabled) {
@@ -91,9 +227,11 @@ export function renderSkills(props: SkillsProps) {
   }
 
   const afterStatus =
-    props.statusFilter === "all"
+    props.statusFilter === "marketplace"
       ? skills
-      : skills.filter((s) => skillMatchesStatus(s, props.statusFilter));
+      : props.statusFilter === "all"
+        ? skills
+        : skills.filter((s) => skillMatchesStatus(s, props.statusFilter));
 
   const filter = props.filter.trim().toLowerCase();
   const filtered = filter
@@ -103,23 +241,24 @@ export function renderSkills(props: SkillsProps) {
     : afterStatus;
   const groups = groupSkills(filtered);
 
-  const detailSkill = props.detailKey
-    ? (skills.find((s) => s.skillKey === props.detailKey) ?? null)
-    : null;
+  const detailSkill =
+    props.statusFilter !== "marketplace" && props.detailKey
+      ? (skills.find((s) => s.skillKey === props.detailKey) ?? null)
+      : null;
 
   return html`
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
           <div class="card-title">Skills</div>
-          <div class="card-sub">Installed skills and their status.</div>
+          <div class="card-sub">
+            ${props.statusFilter === "marketplace"
+              ? "Discover and install marketplace skills."
+              : "Installed skills and their status."}
+          </div>
         </div>
-        <button
-          class="btn"
-          ?disabled=${props.loading || !props.connected}
-          @click=${props.onRefresh}
-        >
-          ${props.loading ? "Loading\u2026" : "Refresh"}
+        <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
+          ${props.loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
@@ -136,57 +275,53 @@ export function renderSkills(props: SkillsProps) {
         )}
       </div>
 
-      <div
-        class="filters"
-        style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px;"
-      >
-        <a
-          class="btn btn--sm"
-          href="https://clawhub.com"
-          target="_blank"
-          rel="noreferrer"
-          title="Browse skills on ClawHub"
-          >Browse Skills Store</a
-        >
-        <label class="field" style="flex: 1; min-width: 180px;">
-          <input
-            .value=${props.filter}
-            @input=${(e: Event) => props.onFilterChange((e.target as HTMLInputElement).value)}
-            placeholder="Search skills"
-            autocomplete="off"
-            name="skills-filter"
-          />
-        </label>
-        <div class="muted">${filtered.length} shown</div>
-      </div>
-
-      ${props.error
-        ? html`<div class="callout danger" style="margin-top: 12px;">${props.error}</div>`
-        : nothing}
-      ${filtered.length === 0
-        ? html`
-            <div class="muted" style="margin-top: 16px">
-              ${!props.connected && !props.report
-                ? "Not connected to gateway."
-                : "No skills found."}
-            </div>
-          `
+      ${props.statusFilter === "marketplace"
+        ? kova_renderMarketplace(props)
         : html`
-            <div class="agent-skills-groups" style="margin-top: 16px;">
-              ${groups.map((group) => {
-                return html`
-                  <details class="agent-skills-group" open>
-                    <summary class="agent-skills-header">
-                      <span>${group.label}</span>
-                      <span class="muted">${group.skills.length}</span>
-                    </summary>
-                    <div class="list skills-grid">
-                      ${group.skills.map((skill) => renderSkill(skill, props))}
-                    </div>
-                  </details>
-                `;
-              })}
+            <div
+              class="filters"
+              style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 12px;"
+            >
+              <label class="field" style="flex: 1; min-width: 180px;">
+                <input
+                  .value=${props.filter}
+                  @input=${(e: Event) => props.onFilterChange((e.target as HTMLInputElement).value)}
+                  placeholder="Search skills"
+                  autocomplete="off"
+                  name="skills-filter"
+                />
+              </label>
+              <div class="muted">${filtered.length} shown</div>
             </div>
+
+            ${props.error
+              ? html`<div class="callout danger" style="margin-top: 12px;">${props.error}</div>`
+              : nothing}
+            ${filtered.length === 0
+              ? html`
+                  <div class="muted" style="margin-top: 16px">
+                    ${!props.connected && !props.report
+                      ? "Not connected to gateway."
+                      : "No skills found."}
+                  </div>
+                `
+              : html`
+                  <div class="agent-skills-groups" style="margin-top: 16px;">
+                    ${groups.map(
+                      (group) => html`
+                        <details class="agent-skills-group" open>
+                          <summary class="agent-skills-header">
+                            <span>${group.label}</span>
+                            <span class="muted">${group.skills.length}</span>
+                          </summary>
+                          <div class="list skills-grid">
+                            ${group.skills.map((skill) => renderSkill(skill, props))}
+                          </div>
+                        </details>
+                      `,
+                    )}
+                  </div>
+                `}
           `}
     </section>
 
@@ -319,7 +454,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                   ?disabled=${busy}
                   @click=${() => props.onInstall(skill.skillKey, skill.name, skill.install[0].id)}
                 >
-                  ${busy ? "Installing\u2026" : skill.install[0].label}
+                  ${busy ? "Installing..." : skill.install[0].label}
                 </button>`
               : nothing}
           </div>

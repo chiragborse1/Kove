@@ -301,14 +301,58 @@ async function statFileSafely(filePath: string): Promise<FileMeta | null> {
   }
 }
 
+type AgentFilesListEntry = {
+  name: string;
+  path: string;
+  missing: boolean;
+  size?: number;
+  updatedAtMs?: number;
+};
+
+async function kova_listMarketplaceSkillFiles(workspaceDir: string): Promise<AgentFilesListEntry[]> {
+  const skillFiles: AgentFilesListEntry[] = [];
+  const workspaceReal = await resolveWorkspaceRealPath(workspaceDir);
+  const skillsDir = path.join(workspaceReal, "skills");
+
+  let entries: fs.Dirent[];
+  try {
+    entries = await fs.readdir(skillsDir, { withFileTypes: true });
+  } catch {
+    return skillFiles;
+  }
+
+  const sortedEntries = [...entries].sort((left, right) => left.name.localeCompare(right.name));
+  for (const entry of sortedEntries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const name = `skills/${entry.name}/SKILL.md`;
+    const resolved = await resolveAgentWorkspaceFilePath({
+      workspaceDir,
+      name,
+      allowMissing: true,
+    });
+    if (resolved.kind !== "ready") {
+      continue;
+    }
+    const meta = await statFileSafely(resolved.ioPath);
+    if (!meta) {
+      continue;
+    }
+    skillFiles.push({
+      name,
+      path: resolved.requestPath,
+      missing: false,
+      size: meta.size,
+      updatedAtMs: meta.updatedAtMs,
+    });
+  }
+
+  return skillFiles;
+}
+
 async function listAgentFiles(workspaceDir: string, options?: { hideBootstrap?: boolean }) {
-  const files: Array<{
-    name: string;
-    path: string;
-    missing: boolean;
-    size?: number;
-    updatedAtMs?: number;
-  }> = [];
+  const files: AgentFilesListEntry[] = [];
 
   const bootstrapFileNames = options?.hideBootstrap
     ? BOOTSTRAP_FILE_NAMES_POST_ONBOARDING
@@ -379,6 +423,7 @@ async function listAgentFiles(workspaceDir: string, options?: { hideBootstrap?: 
     }
   }
 
+  files.push(...(await kova_listMarketplaceSkillFiles(workspaceDir)));
   return files;
 }
 

@@ -81,6 +81,7 @@ import { loadPresence } from "./controllers/presence.ts";
 import { deleteSessionsAndRefresh, loadSessions, patchSession } from "./controllers/sessions.ts";
 import {
   installSkill,
+  kova_installMarketplaceSkill,
   loadSkills,
   saveSkillApiKey,
   updateSkillEdit,
@@ -106,7 +107,7 @@ import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.t
 import { renderLoginGate } from "./views/login-gate.ts";
 import { renderOverview } from "./views/overview.ts";
 
-// Lazy-loaded view modules – deferred so the initial bundle stays small.
+// Lazy-loaded view modules Ã¢â‚¬â€œ deferred so the initial bundle stays small.
 // Each loader resolves once; subsequent calls return the cached module.
 type LazyState<T> = { mod: T | null; promise: Promise<T> | null };
 
@@ -451,11 +452,11 @@ export function renderApp(state: AppViewState) {
               @click=${() => {
                 state.paletteOpen = !state.paletteOpen;
               }}
-              title="Search or jump to… (⌘K)"
+              title="Search or jump toÃ¢â‚¬Â¦ (Ã¢Å’ËœK)"
               aria-label="Open command palette"
             >
               <span class="topbar-search__label">${t("common.search")}</span>
-              <kbd class="topbar-search__kbd">⌘K</kbd>
+              <kbd class="topbar-search__kbd">Ã¢Å’ËœK</kbd>
             </button>
             <div class="topbar-status">
               ${isChat ? renderChatMobileToggle(state) : nothing}
@@ -590,7 +591,7 @@ export function renderApp(state: AppViewState) {
                 ?disabled=${state.updateRunning || !state.connected}
                 @click=${() => runUpdate(state)}
               >
-                ${state.updateRunning ? "Updating…" : "Update now"}
+                ${state.updateRunning ? "UpdatingÃ¢â‚¬Â¦" : "Update now"}
               </button>
               <button
                 class="update-banner__close"
@@ -1304,7 +1305,10 @@ export function renderApp(state: AppViewState) {
           ? lazyRender(lazySkills, (m) =>
               m.renderSkills({
                 connected: state.connected,
-                loading: state.skillsLoading,
+                loading:
+                  state.skillsLoading ||
+                  state.kova_marketplaceLoading ||
+                  state.kova_installedLoading,
                 report: state.skillsReport,
                 error: state.skillsError,
                 filter: state.skillsFilter,
@@ -1313,6 +1317,13 @@ export function renderApp(state: AppViewState) {
                 messages: state.skillMessages,
                 busyKey: state.skillsBusyKey,
                 detailKey: state.skillsDetailKey,
+                kova_marketplaceLoading: state.kova_marketplaceLoading,
+                kova_marketplaceSkills: state.kova_marketplaceSkills,
+                kova_marketplaceError:
+                  state.kova_marketplaceError ?? state.kova_installedError,
+                kova_marketplaceCategory: state.kova_marketplaceCategory,
+                kova_marketplaceInstalledIds: state.kova_installedSkillIds,
+                kova_marketplaceBusyId: state.kova_marketplaceBusyId,
                 onFilterChange: (next) => (state.skillsFilter = next),
                 onStatusFilterChange: (next) => (state.skillsStatusFilter = next),
                 onRefresh: () => loadSkills(state, { clearMessages: true }),
@@ -1323,6 +1334,9 @@ export function renderApp(state: AppViewState) {
                   installSkill(state, skillKey, name, installId),
                 onDetailOpen: (key) => (state.skillsDetailKey = key),
                 onDetailClose: () => (state.skillsDetailKey = null),
+                onKovaMarketplaceCategoryChange: (next) =>
+                  (state.kova_marketplaceCategory = next),
+                onKovaMarketplaceInstall: (skill) => kova_installMarketplaceSkill(state, skill),
               }),
             )
           : nothing}
