@@ -2640,6 +2640,30 @@ module.exports = {
       expectedChannels: 1,
     },
     {
+      name: "uses package setupEntry for selected startup-scoped unconfigured channel loads",
+      fixture: {
+        id: "setup-runtime-startup-scope-test",
+        label: "Setup Runtime Startup Scope Test",
+        packageName: "@openclaw/setup-runtime-startup-scope-test",
+        fullBlurb: "full entry should stay deferred for startup-scoped setup runtime",
+        setupBlurb: "setup runtime startup scope",
+        configured: false,
+      },
+      load: ({ pluginDir }: { pluginDir: string }) =>
+        loadOpenClawPlugins({
+          cache: false,
+          config: {
+            plugins: {
+              load: { paths: [pluginDir] },
+            },
+          },
+          onlyPluginIds: ["setup-runtime-startup-scope-test"],
+        }),
+      expectFullLoaded: false,
+      expectSetupLoaded: true,
+      expectedChannels: 1,
+    },
+    {
       name: "can prefer setupEntry for configured channel loads during startup",
       fixture: {
         id: "setup-runtime-preferred-test",
@@ -4224,3 +4248,4 @@ describe("clearPluginLoaderCache", () => {
     expect(getMemoryEmbeddingProvider("stale")).toBeUndefined();
   });
 });
+

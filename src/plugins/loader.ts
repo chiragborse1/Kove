@@ -1089,25 +1089,34 @@ export function loadOpenClawPlugins(options: PluginLoadOptions = {}): PluginRegi
       });
     };
 
+    const shouldUseSetupRuntime =
+      !validateOnly &&
+      shouldLoadChannelPluginInSetupRuntime({
+        manifestChannels: manifestRecord.channels,
+        setupSource: manifestRecord.setupSource,
+        startupDeferConfiguredChannelFullLoadUntilAfterListen:
+          manifestRecord.startupDeferConfiguredChannelFullLoadUntilAfterListen,
+        cfg,
+        env,
+        preferSetupRuntimeForChannelPlugins,
+      });
+    const canUseSelectedSetupRuntime =
+      shouldUseSetupRuntime &&
+      onlyPluginIdSet?.has(pluginId) &&
+      (enableState.reason === "bundled (disabled by default)" ||
+        enableState.reason === "not in allowlist");
     const registrationMode = enableState.enabled
-      ? !validateOnly &&
-        shouldLoadChannelPluginInSetupRuntime({
-          manifestChannels: manifestRecord.channels,
-          setupSource: manifestRecord.setupSource,
-          startupDeferConfiguredChannelFullLoadUntilAfterListen:
-            manifestRecord.startupDeferConfiguredChannelFullLoadUntilAfterListen,
-          cfg,
-          env,
-          preferSetupRuntimeForChannelPlugins,
-        })
+      ? shouldUseSetupRuntime
         ? "setup-runtime"
         : "full"
-      : includeSetupOnlyChannelPlugins &&
-          !validateOnly &&
-          onlyPluginIdSet &&
-          manifestRecord.channels.length > 0
-        ? "setup-only"
-        : null;
+      : canUseSelectedSetupRuntime
+        ? "setup-runtime"
+        : includeSetupOnlyChannelPlugins &&
+            !validateOnly &&
+            onlyPluginIdSet &&
+            manifestRecord.channels.length > 0
+          ? "setup-only"
+          : null;
 
     if (!registrationMode) {
       record.status = "disabled";
@@ -1741,3 +1750,5 @@ function safeRealpathOrResolve(value: string): string {
     return path.resolve(value);
   }
 }
+
+

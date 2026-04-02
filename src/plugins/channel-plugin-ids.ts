@@ -16,6 +16,20 @@ import { loadPluginManifestRegistry } from "./manifest-registry.js";
 
 type ModelListLike = string | { primary?: string; fallbacks?: string[] } | undefined;
 
+const QR_LOGIN_STARTUP_CHANNEL_IDS = new Set(["whatsapp"]);
+
+function shouldIncludeStartupQrLoginChannelPlugin(params: {
+  plugin: {
+    channels: string[];
+  };
+  config: OpenClawConfig;
+}): boolean {
+  if (params.config.web?.enabled === false) {
+    return false;
+  }
+  return params.plugin.channels.some((channelId) => QR_LOGIN_STARTUP_CHANNEL_IDS.has(channelId));
+}
+
 function addResolvedActivationId(params: {
   raw: string | undefined;
   activationIds: Set<string>;
@@ -309,7 +323,11 @@ export function resolveGatewayStartupPluginIds(params: {
         return true;
       }
       if (plugin.channels.length > 0) {
-        return false;
+        return shouldIncludeStartupQrLoginChannelPlugin({
+          plugin,
+          config: params.config,
+          pluginsConfig,
+        });
       }
       if (
         plugin.origin === "bundled" &&
@@ -340,3 +358,7 @@ export function resolveGatewayStartupPluginIds(params: {
     })
     .map((plugin) => plugin.id);
 }
+
+
+
+

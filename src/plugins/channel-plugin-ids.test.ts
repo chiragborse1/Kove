@@ -162,4 +162,49 @@ describe("resolveGatewayStartupPluginIds", () => {
   ] as const)("%s", (_name, config, expected) => {
     expectStartupPluginIdsCase({ config, expected });
   });
+
+  it("includes unconfigured WhatsApp so QR login can start before first link", () => {
+    listPotentialConfiguredChannelIds.mockReturnValue([]);
+    loadPluginManifestRegistry.mockReturnValue({
+      plugins: [
+        {
+          id: "whatsapp",
+          channels: ["whatsapp"],
+          origin: "bundled",
+          enabledByDefault: undefined,
+          providers: [],
+          cliBackends: [],
+        },
+      ],
+      diagnostics: [],
+    });
+
+    expectStartupPluginIdsCase({
+      config: {} as OpenClawConfig,
+      expected: ["whatsapp"],
+    });
+  });
+
+  it("does not include unconfigured WhatsApp when the web surface is disabled", () => {
+    listPotentialConfiguredChannelIds.mockReturnValue([]);
+    loadPluginManifestRegistry.mockReturnValue({
+      plugins: [
+        {
+          id: "whatsapp",
+          channels: ["whatsapp"],
+          origin: "bundled",
+          enabledByDefault: undefined,
+          providers: [],
+          cliBackends: [],
+        },
+      ],
+      diagnostics: [],
+    });
+
+    expectStartupPluginIdsCase({
+      config: { web: { enabled: false } } as OpenClawConfig,
+      expected: [],
+    });
+  });
 });
+
