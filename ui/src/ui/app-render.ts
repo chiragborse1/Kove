@@ -721,6 +721,7 @@ export function renderApp(state: AppViewState) {
                 nostrProfileAccountId: state.nostrProfileAccountId,
                 onRefresh: (probe) => loadChannels(state, probe),
                 onWhatsAppStart: (force) => state.handleWhatsAppStart(force),
+                onWhatsAppRelink: () => state.handleWhatsAppRelink(),
                 onWhatsAppWait: () => state.handleWhatsAppWait(),
                 onWhatsAppLogout: () => state.handleWhatsAppLogout(),
                 onTelegramTokenInput: (next) => updateTelegramSetupToken(state, next),

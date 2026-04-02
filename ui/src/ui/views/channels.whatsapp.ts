@@ -8,6 +8,15 @@ function resolveWhatsAppIdentity(whatsapp?: WhatsAppStatus) {
   return whatsapp?.self?.e164?.trim() || whatsapp?.self?.jid?.trim() || null;
 }
 
+function resolveMessageText(message: string | null): string | null {
+  const trimmed = message?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function isAlreadyLinkedMessage(message: string | null): boolean {
+  return /already linked/i.test(message ?? "");
+}
+
 export function renderWhatsAppCard(params: {
   props: ChannelsProps;
   whatsapp?: WhatsAppStatus;
@@ -15,9 +24,13 @@ export function renderWhatsAppCard(params: {
 }) {
   const { props, whatsapp, accountCountLabel } = params;
   const phoneNumber = resolveWhatsAppIdentity(whatsapp);
-  const connected = Boolean(whatsapp?.connected || props.whatsappConnected || phoneNumber);
+  const connected = whatsapp?.connected === true || props.whatsappConnected === true;
+  const linked = Boolean(whatsapp?.linked || phoneNumber);
+  const staleLinked = !connected && linked;
   const hasQr = Boolean(props.whatsappQrDataUrl);
-  const setupMessage = props.whatsappMessage;
+  const setupMessage = resolveMessageText(props.whatsappMessage);
+  const showClearRelink = staleLinked && isAlreadyLinkedMessage(setupMessage);
+  const showRelink = staleLinked && !showClearRelink;
 
   return html`
     <div class="card">
@@ -68,6 +81,39 @@ export function renderWhatsAppCard(params: {
               </div>
             </div>
           `
+        : staleLinked
+          ? html`
+              <div class="callout" style="margin-top: 14px;">
+                Stored WhatsApp credentials were found for ${phoneNumber ?? "this account"}, but the
+                gateway is not currently connected. Clear the stale session and relink to generate a
+                fresh QR.
+              </div>
+              ${setupMessage
+                ? html`<div class="callout" style="margin-top: 12px;">${setupMessage}</div>`
+                : nothing}
+              <div class="status-list" style="margin-top: 16px;">
+                <div>
+                  <span class="label">Stored identity</span>
+                  <span>${phoneNumber ?? "n/a"}</span>
+                </div>
+                <div>
+                  <span class="label">Linked</span>
+                  <span>${whatsapp?.linked ? "Yes" : "No"}</span>
+                </div>
+                <div>
+                  <span class="label">Running</span>
+                  <span>${whatsapp?.running ? "Yes" : "No"}</span>
+                </div>
+                <div>
+                  <span class="label">Last connect</span>
+                  <span>
+                    ${whatsapp?.lastConnectedAt
+                      ? formatRelativeTimestamp(whatsapp.lastConnectedAt)
+                      : "n/a"}
+                  </span>
+                </div>
+              </div>
+            `
         : html`
             <div class="callout" style="margin-top: 14px;">
               Open WhatsApp -> Linked Devices -> Scan QR.
@@ -98,25 +144,37 @@ export function renderWhatsAppCard(params: {
       ${renderChannelConfigSection({ channelId: "whatsapp", props })}
 
       <div class="row" style="margin-top: 14px; flex-wrap: wrap;">
+        ${showClearRelink
+          ? html`
+              <button class="btn danger" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppRelink()}>
+                ${props.whatsappBusy ? "Working..." : "Clear & Relink"}
+              </button>
+            `
+          : nothing}
+        ${showRelink
+          ? html`
+              <button class="btn primary" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppRelink()}>
+                ${props.whatsappBusy ? "Working..." : "Relink"}
+              </button>
+            `
+          : nothing}
         ${connected
           ? html`
-              <button
-                class="btn danger"
-                ?disabled=${props.whatsappBusy}
-                @click=${() => props.onWhatsAppLogout()}
-              >
+              <button class="btn danger" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppLogout()}>
                 ${props.whatsappBusy ? "Working..." : "Disconnect"}
               </button>
             `
-          : html`
-              <button
-                class="btn primary"
-                ?disabled=${props.whatsappBusy}
-                @click=${() => props.onWhatsAppStart(false)}
-              >
-                ${props.whatsappBusy ? "Starting..." : hasQr ? "Refresh QR" : "Connect WhatsApp"}
-              </button>
-            `}
+          : !staleLinked
+            ? html`
+                <button
+                  class="btn primary"
+                  ?disabled=${props.whatsappBusy}
+                  @click=${() => props.onWhatsAppStart(false)}
+                >
+                  ${props.whatsappBusy ? "Starting..." : hasQr ? "Refresh QR" : "Connect WhatsApp"}
+                </button>
+              `
+            : nothing}
         <button class="btn" ?disabled=${props.loading || props.whatsappBusy} @click=${() => props.onRefresh(true)}>
           Refresh
         </button>

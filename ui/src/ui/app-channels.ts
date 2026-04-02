@@ -10,11 +10,13 @@ import type { NostrProfile, WhatsAppStatus } from "./types.ts";
 import { createNostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
 
 const WHATSAPP_QR_REFRESH_MS = 30_000;
-const WHATSAPP_STATUS_POLL_MS = 5_000;
+const WHATSAPP_STATUS_POLL_MS = 3_000;
+const WHATSAPP_CONNECTED_POLL_WINDOW_MS = 30_000;
 
 const whatsappFlowTokens = new WeakMap<OpenClawApp, number>();
 const whatsappRefreshTimers = new WeakMap<OpenClawApp, ReturnType<typeof globalThis.setTimeout>>();
 const whatsappQrIssuedAt = new WeakMap<OpenClawApp, number>();
+const whatsappPollDeadlines = new WeakMap<OpenClawApp, number>();
 
 function resolveWhatsAppStatus(host: OpenClawApp): WhatsAppStatus | null {
   const channels = host.channelsSnapshot?.channels as Record<string, unknown> | null;
@@ -28,6 +30,10 @@ function resolveWhatsAppIdentity(status: WhatsAppStatus | null): string | null {
   }
   const jid = status?.self?.jid?.trim();
   return jid || null;
+}
+
+function isWhatsAppConnected(status: WhatsAppStatus | null): boolean {
+  return status?.connected === true;
 }
 
 function currentWhatsAppFlowToken(host: OpenClawApp): number {
@@ -45,6 +51,7 @@ function clearWhatsAppRefreshTimer(host: OpenClawApp) {
 function stopWhatsAppSetupFlow(host: OpenClawApp) {
   clearWhatsAppRefreshTimer(host);
   whatsappQrIssuedAt.delete(host);
+  whatsappPollDeadlines.delete(host);
   whatsappFlowTokens.set(host, currentWhatsAppFlowToken(host) + 1);
 }
 
@@ -60,6 +67,18 @@ function markWhatsAppConnected(host: OpenClawApp, status: WhatsAppStatus | null)
   host.whatsappLoginMessage = identity ? `Connected as ${identity}.` : "Connected.";
   clearWhatsAppRefreshTimer(host);
   whatsappQrIssuedAt.delete(host);
+  whatsappPollDeadlines.delete(host);
+}
+
+function beginWhatsAppConnectedPolling(
+  host: OpenClawApp,
+  token: number,
+  opts: { resetWindow?: boolean } = {},
+) {
+  if (opts.resetWindow || !whatsappPollDeadlines.has(host)) {
+    whatsappPollDeadlines.set(host, Date.now() + WHATSAPP_CONNECTED_POLL_WINDOW_MS);
+  }
+  scheduleWhatsAppSetupTick(host, token);
 }
 
 function scheduleWhatsAppSetupTick(host: OpenClawApp, token: number) {
@@ -80,12 +99,13 @@ async function runWhatsAppSetupTick(host: OpenClawApp, token: number) {
   }
 
   const status = resolveWhatsAppStatus(host);
-  if (status?.connected || resolveWhatsAppIdentity(status)) {
+  if (isWhatsAppConnected(status)) {
     markWhatsAppConnected(host, status);
     return;
   }
 
   const issuedAt = whatsappQrIssuedAt.get(host) ?? 0;
+  const pollDeadline = whatsappPollDeadlines.get(host) ?? 0;
   const shouldRefreshQr =
     Boolean(host.whatsappLoginQrDataUrl) && Date.now() - issuedAt >= WHATSAPP_QR_REFRESH_MS;
 
@@ -100,12 +120,19 @@ async function runWhatsAppSetupTick(host: OpenClawApp, token: number) {
     }
     if (host.whatsappLoginQrDataUrl) {
       whatsappQrIssuedAt.set(host, Date.now());
+      whatsappPollDeadlines.set(host, Date.now() + WHATSAPP_CONNECTED_POLL_WINDOW_MS);
     }
   }
 
-  if (host.whatsappLoginQrDataUrl) {
+  if (host.whatsappLoginQrDataUrl && Date.now() < pollDeadline) {
     scheduleWhatsAppSetupTick(host, token);
   }
+}
+
+function noteWhatsAppQrReceived(host: OpenClawApp) {
+  const token = currentWhatsAppFlowToken(host);
+  whatsappQrIssuedAt.set(host, Date.now());
+  beginWhatsAppConnectedPolling(host, token, { resetWindow: true });
 }
 
 export async function handleWhatsAppStart(host: OpenClawApp, force: boolean) {
@@ -118,31 +145,50 @@ export async function handleWhatsAppStart(host: OpenClawApp, force: boolean) {
   }
 
   const status = resolveWhatsAppStatus(host);
-  if (status?.connected || resolveWhatsAppIdentity(status)) {
+  if (isWhatsAppConnected(status)) {
     markWhatsAppConnected(host, status);
     return;
   }
 
   if (host.whatsappLoginQrDataUrl) {
-    whatsappQrIssuedAt.set(host, Date.now());
     if (!host.whatsappLoginMessage) {
       host.whatsappLoginMessage = "Open WhatsApp -> Linked Devices -> Scan QR.";
     }
-    scheduleWhatsAppSetupTick(host, token);
+    noteWhatsAppQrReceived(host);
   }
+}
+
+export function handleWhatsAppQrCodeEvent(host: OpenClawApp) {
+  host.whatsappLoginConnected = false;
+  if (!host.whatsappLoginQrDataUrl) {
+    return;
+  }
+  noteWhatsAppQrReceived(host);
+}
+
+export async function handleWhatsAppRelink(host: OpenClawApp) {
+  stopWhatsAppSetupFlow(host);
+  host.whatsappLoginConnected = false;
+  host.whatsappLoginQrDataUrl = null;
+  host.whatsappLoginMessage = "Clearing the stored WhatsApp session and generating a fresh QR…";
+  await logoutWhatsApp(host);
+  await loadChannels(host, true);
+  await handleWhatsAppStart(host, false);
 }
 
 export async function handleWhatsAppWait(host: OpenClawApp) {
   await waitWhatsAppLogin(host);
   await loadChannels(host, true);
   const status = resolveWhatsAppStatus(host);
-  if (status?.connected || resolveWhatsAppIdentity(status)) {
+  if (isWhatsAppConnected(status)) {
     markWhatsAppConnected(host, status);
   }
 }
 
 export async function handleWhatsAppLogout(host: OpenClawApp) {
   stopWhatsAppSetupFlow(host);
+  host.whatsappLoginConnected = false;
+  host.whatsappLoginQrDataUrl = null;
   await logoutWhatsApp(host);
   await loadChannels(host, true);
 }

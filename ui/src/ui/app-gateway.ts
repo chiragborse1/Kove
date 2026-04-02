@@ -2,6 +2,7 @@ import {
   GATEWAY_EVENT_UPDATE_AVAILABLE,
   type GatewayUpdateAvailableEventPayload,
 } from "../../../src/gateway/events.js";
+import { handleWhatsAppQrCodeEvent } from "./app-channels.ts";
 import {
   CHAT_SESSIONS_ACTIVE_MINUTES,
   clearPendingQueueItemsForRun,
@@ -422,6 +423,7 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
       host.whatsappLoginMessage =
         typeof payload.message === "string" && payload.message.trim() ? payload.message : null;
       host.whatsappLoginConnected = false;
+      handleWhatsAppQrCodeEvent(host as unknown as OpenClawApp);
     }
     return;
   }

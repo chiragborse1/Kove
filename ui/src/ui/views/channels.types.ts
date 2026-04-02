@@ -47,6 +47,7 @@ export type ChannelsProps = {
   nostrProfileAccountId: string | null;
   onRefresh: (probe: boolean) => void;
   onWhatsAppStart: (force: boolean) => void;
+  onWhatsAppRelink: () => void;
   onWhatsAppWait: () => void;
   onWhatsAppLogout: () => void;
   onTelegramTokenInput: (next: string) => void;

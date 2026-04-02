@@ -44,6 +44,7 @@ function syncWhatsAppStateFromSnapshot(state: ChannelsState, snapshot: ChannelsS
   const jid = typeof whatsapp?.self?.jid === "string" ? whatsapp.self.jid.trim() : "";
   const identity = e164 || jid;
   if (!connected) {
+    state.whatsappLoginConnected = false;
     return;
   }
   state.whatsappLoginConnected = true;

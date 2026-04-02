@@ -34,6 +34,7 @@ function createProps(snapshot: ChannelsProps["snapshot"]): ChannelsProps {
     nostrProfileAccountId: null,
     onRefresh: () => {},
     onWhatsAppStart: () => {},
+    onWhatsAppRelink: () => {},
     onWhatsAppWait: () => {},
     onWhatsAppLogout: () => {},
     onTelegramTokenInput: () => {},
