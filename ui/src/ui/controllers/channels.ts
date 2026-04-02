@@ -34,6 +34,25 @@ function getErrorMessage(err: unknown): string {
   return String(err);
 }
 
+function syncWhatsAppStateFromSnapshot(state: ChannelsState, snapshot: ChannelsStatusSnapshot | null) {
+  const channels = snapshot?.channels as Record<string, unknown> | null;
+  const whatsapp = (channels?.whatsapp ?? null) as
+    | { connected?: unknown; self?: { e164?: unknown; jid?: unknown } | null }
+    | null;
+  const connected = whatsapp?.connected === true;
+  const e164 = typeof whatsapp?.self?.e164 === "string" ? whatsapp.self.e164.trim() : "";
+  const jid = typeof whatsapp?.self?.jid === "string" ? whatsapp.self.jid.trim() : "";
+  const identity = e164 || jid;
+  if (!connected) {
+    return;
+  }
+  state.whatsappLoginConnected = true;
+  state.whatsappLoginQrDataUrl = null;
+  if (identity) {
+    state.whatsappLoginMessage = `Connected as ${identity}.`;
+  }
+}
+
 function setTelegramSetupMessage(
   state: ChannelsState,
   message: TelegramSetupMessage | null,
@@ -100,6 +119,7 @@ export async function loadChannels(state: ChannelsState, probe: boolean) {
       timeoutMs: 8000,
     });
     state.channelsSnapshot = res;
+    syncWhatsAppStateFromSnapshot(state, res);
     state.channelsLastSuccess = Date.now();
   } catch (err) {
     if (isMissingOperatorReadScopeError(err)) {

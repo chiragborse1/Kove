@@ -10,6 +10,7 @@ import { formatForLog } from "../ws-log.js";
 import type { GatewayRequestHandlers, RespondFn } from "./types.js";
 
 const WEB_LOGIN_METHODS = new Set(["web.login.start", "web.login.wait"]);
+const DEFAULT_QR_TIMEOUT_MS = 30_000;
 
 const resolveWebLoginProvider = () =>
   listChannelPlugins().find((plugin) =>
@@ -19,6 +20,12 @@ const resolveWebLoginProvider = () =>
 function resolveAccountId(params: unknown): string | undefined {
   return typeof (params as { accountId?: unknown }).accountId === "string"
     ? (params as { accountId?: string }).accountId
+    : undefined;
+}
+
+function resolveTimeoutMs(params: unknown): number | undefined {
+  return typeof (params as { timeoutMs?: unknown }).timeoutMs === "number"
+    ? (params as { timeoutMs?: number }).timeoutMs
     : undefined;
 }
 
@@ -53,6 +60,7 @@ export const webHandlers: GatewayRequestHandlers = {
     }
     try {
       const accountId = resolveAccountId(params);
+      const timeoutMs = resolveTimeoutMs(params);
       const provider = resolveWebLoginProvider();
       if (!provider) {
         respondProviderUnavailable(respond);
@@ -65,13 +73,18 @@ export const webHandlers: GatewayRequestHandlers = {
       }
       const result = await provider.gateway.loginWithQrStart({
         force: Boolean((params as { force?: boolean }).force),
-        timeoutMs:
-          typeof (params as { timeoutMs?: unknown }).timeoutMs === "number"
-            ? (params as { timeoutMs?: number }).timeoutMs
-            : undefined,
+        timeoutMs,
         verbose: Boolean((params as { verbose?: boolean }).verbose),
         accountId,
       });
+      if (provider.id === "whatsapp" && result.qrDataUrl) {
+        context.broadcast("qr_code", {
+          channel: provider.id,
+          qrDataUrl: result.qrDataUrl,
+          message: result.message,
+          timeoutMs: timeoutMs ?? DEFAULT_QR_TIMEOUT_MS,
+        });
+      }
       respond(true, result, undefined);
     } catch (err) {
       respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, formatForLog(err)));
@@ -101,10 +114,7 @@ export const webHandlers: GatewayRequestHandlers = {
         return;
       }
       const result = await provider.gateway.loginWithQrWait({
-        timeoutMs:
-          typeof (params as { timeoutMs?: unknown }).timeoutMs === "number"
-            ? (params as { timeoutMs?: number }).timeoutMs
-            : undefined,
+        timeoutMs: resolveTimeoutMs(params),
         accountId,
       });
       if (result.connected) {

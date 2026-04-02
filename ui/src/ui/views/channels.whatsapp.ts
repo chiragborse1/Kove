@@ -1,13 +1,12 @@
-import { html, nothing } from "lit";
-import { formatRelativeTimestamp, formatDurationHuman } from "../format.ts";
+import { html } from "lit";
+import { formatRelativeTimestamp } from "../format.ts";
 import type { WhatsAppStatus } from "../types.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
-import {
-  formatNullableBoolean,
-  renderSingleAccountChannelCard,
-  resolveChannelConfigured,
-} from "./channels.shared.ts";
 import type { ChannelsProps } from "./channels.types.ts";
+
+function resolveWhatsAppIdentity(whatsapp?: WhatsAppStatus) {
+  return whatsapp?.self?.e164?.trim() || whatsapp?.self?.jid?.trim() || null;
+}
 
 export function renderWhatsAppCard(params: {
   props: ChannelsProps;
@@ -15,70 +14,113 @@ export function renderWhatsAppCard(params: {
   accountCountLabel: unknown;
 }) {
   const { props, whatsapp, accountCountLabel } = params;
-  const configured = resolveChannelConfigured("whatsapp", props);
+  const phoneNumber = resolveWhatsAppIdentity(whatsapp);
+  const connected = Boolean(whatsapp?.connected || props.whatsappConnected || phoneNumber);
+  const hasQr = Boolean(props.whatsappQrDataUrl);
+  const setupMessage = props.whatsappMessage;
 
-  return renderSingleAccountChannelCard({
-    title: "WhatsApp",
-    subtitle: "Link WhatsApp Web and monitor connection health.",
-    accountCountLabel,
-    statusRows: [
-      { label: "Configured", value: formatNullableBoolean(configured) },
-      { label: "Linked", value: whatsapp?.linked ? "Yes" : "No" },
-      { label: "Running", value: whatsapp?.running ? "Yes" : "No" },
-      { label: "Connected", value: whatsapp?.connected ? "Yes" : "No" },
-      {
-        label: "Last connect",
-        value: whatsapp?.lastConnectedAt
-          ? formatRelativeTimestamp(whatsapp.lastConnectedAt)
-          : "n/a",
-      },
-      {
-        label: "Last message",
-        value: whatsapp?.lastMessageAt ? formatRelativeTimestamp(whatsapp.lastMessageAt) : "n/a",
-      },
-      {
-        label: "Auth age",
-        value: whatsapp?.authAgeMs != null ? formatDurationHuman(whatsapp.authAgeMs) : "n/a",
-      },
-    ],
-    lastError: whatsapp?.lastError,
-    extraContent: html`
-      ${props.whatsappMessage
-        ? html`<div class="callout" style="margin-top: 12px;">${props.whatsappMessage}</div>`
+  return html`
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: flex-start; gap: 12px;">
+        <div>
+          <div class="card-title">WhatsApp</div>
+          <div class="card-sub">
+            ${connected
+              ? "WhatsApp is linked and ready for messages."
+              : "Link WhatsApp Web from the Channels page with a QR code."}
+          </div>
+        </div>
+        <span class="pill pill--sm ${connected ? "pill--ok" : ""}">
+          ${connected ? "Connected" : "Setup"}
+        </span>
+      </div>
+
+      ${accountCountLabel}
+
+      ${connected
+        ? html`
+            <div class="status-list" style="margin-top: 16px;">
+              <div>
+                <span class="label">Phone</span>
+                <span>${phoneNumber ?? "n/a"}</span>
+              </div>
+              <div>
+                <span class="label">Linked</span>
+                <span>${whatsapp?.linked ? "Yes" : "No"}</span>
+              </div>
+              <div>
+                <span class="label">Running</span>
+                <span>${whatsapp?.running ? "Yes" : "No"}</span>
+              </div>
+              <div>
+                <span class="label">Last connect</span>
+                <span>
+                  ${whatsapp?.lastConnectedAt
+                    ? formatRelativeTimestamp(whatsapp.lastConnectedAt)
+                    : "n/a"}
+                </span>
+              </div>
+              <div>
+                <span class="label">Last message</span>
+                <span>
+                  ${whatsapp?.lastMessageAt ? formatRelativeTimestamp(whatsapp.lastMessageAt) : "n/a"}
+                </span>
+              </div>
+            </div>
+          `
+        : html`
+            <div class="callout" style="margin-top: 14px;">
+              Open WhatsApp -> Linked Devices -> Scan QR.
+            </div>
+            ${setupMessage
+              ? html`<div class="callout" style="margin-top: 12px;">${setupMessage}</div>`
+              : nothing}
+            ${hasQr
+              ? html`
+                  <div class="qr-wrap">
+                    <img src=${props.whatsappQrDataUrl ?? ""} alt="WhatsApp QR" />
+                  </div>
+                  <div class="muted" style="margin-top: 8px;">
+                    QR refreshes automatically every 30 seconds until WhatsApp connects.
+                  </div>
+                `
+              : html`
+                  <div class="muted" style="margin-top: 12px;">
+                    Start a WhatsApp login to generate a QR code.
+                  </div>
+                `}
+          `}
+
+      ${whatsapp?.lastError
+        ? html`<div class="callout danger" style="margin-top: 12px;">${whatsapp.lastError}</div>`
         : nothing}
-      ${props.whatsappQrDataUrl
-        ? html`<div class="qr-wrap">
-            <img src=${props.whatsappQrDataUrl} alt="WhatsApp QR" />
-          </div>`
-        : nothing}
-    `,
-    configSection: renderChannelConfigSection({ channelId: "whatsapp", props }),
-    footer: html`<div class="row" style="margin-top: 14px; flex-wrap: wrap;">
-      <button
-        class="btn primary"
-        ?disabled=${props.whatsappBusy}
-        @click=${() => props.onWhatsAppStart(false)}
-      >
-        ${props.whatsappBusy ? "Working…" : "Show QR"}
-      </button>
-      <button
-        class="btn"
-        ?disabled=${props.whatsappBusy}
-        @click=${() => props.onWhatsAppStart(true)}
-      >
-        Relink
-      </button>
-      <button class="btn" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppWait()}>
-        Wait for scan
-      </button>
-      <button
-        class="btn danger"
-        ?disabled=${props.whatsappBusy}
-        @click=${() => props.onWhatsAppLogout()}
-      >
-        Logout
-      </button>
-      <button class="btn" @click=${() => props.onRefresh(true)}>Refresh</button>
-    </div>`,
-  });
+
+      ${renderChannelConfigSection({ channelId: "whatsapp", props })}
+
+      <div class="row" style="margin-top: 14px; flex-wrap: wrap;">
+        ${connected
+          ? html`
+              <button
+                class="btn danger"
+                ?disabled=${props.whatsappBusy}
+                @click=${() => props.onWhatsAppLogout()}
+              >
+                ${props.whatsappBusy ? "Working..." : "Disconnect"}
+              </button>
+            `
+          : html`
+              <button
+                class="btn primary"
+                ?disabled=${props.whatsappBusy}
+                @click=${() => props.onWhatsAppStart(false)}
+              >
+                ${props.whatsappBusy ? "Starting..." : hasQr ? "Refresh QR" : "Connect WhatsApp"}
+              </button>
+            `}
+        <button class="btn" ?disabled=${props.loading || props.whatsappBusy} @click=${() => props.onRefresh(true)}>
+          Refresh
+        </button>
+      </div>
+    </div>
+  `;
 }

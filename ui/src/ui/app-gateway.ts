@@ -85,6 +85,9 @@ type GatewayHost = {
   serverVersion: string | null;
   sessionKey: string;
   chatRunId: string | null;
+  whatsappLoginMessage: string | null;
+  whatsappLoginQrDataUrl: string | null;
+  whatsappLoginConnected: boolean | null;
   refreshSessionsAfterChat: Set<string>;
   execApprovalQueue: ExecApprovalRequest[];
   execApprovalError: string | null;
@@ -407,6 +410,19 @@ function handleGatewayEventUnsafe(host: GatewayHost, evt: GatewayEventFrame) {
     (host as GatewayHostWithShutdownMessage).pendingShutdownMessage = shutdownMessage;
     host.lastError = shutdownMessage;
     host.lastErrorCode = null;
+    return;
+  }
+
+  if (evt.event === "qr_code") {
+    const payload = evt.payload as
+      | { channel?: unknown; qrDataUrl?: unknown; message?: unknown }
+      | undefined;
+    if (payload?.channel === "whatsapp" && typeof payload.qrDataUrl === "string") {
+      host.whatsappLoginQrDataUrl = payload.qrDataUrl;
+      host.whatsappLoginMessage =
+        typeof payload.message === "string" && payload.message.trim() ? payload.message : null;
+      host.whatsappLoginConnected = false;
+    }
     return;
   }
 
