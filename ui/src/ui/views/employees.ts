@@ -1,4 +1,4 @@
-﻿import { html, nothing } from "lit";
+import { html, nothing } from "lit";
 import { formatRelativeTimestamp } from "../format.ts";
 import {
   KOVA_EMPLOYEES,
@@ -11,6 +11,8 @@ export type EmployeesProps = {
   loading: boolean;
   error: string | null;
   dashboard: EmployeesDashboardResult | null;
+  filterAgentId: KovaEmployeeId | null;
+  onClearFilter: () => void;
   onRefresh: () => void;
   onOpenChat: (agentId: KovaEmployeeId) => void;
   onViewSessions: (agentId: KovaEmployeeId) => void;
@@ -31,7 +33,15 @@ export function renderEmployees(props: EmployeesProps) {
     sessionsToday: cardsById.get(employee.id)?.sessionsToday ?? 0,
     totalMessages: cardsById.get(employee.id)?.totalMessages ?? 0,
   } satisfies EmployeeCard));
-  const activity = props.dashboard?.activity ?? [];
+  const selectedEmployee = props.filterAgentId
+    ? (KOVA_EMPLOYEES.find((employee) => employee.id === props.filterAgentId) ?? null)
+    : null;
+  const visibleEmployees = selectedEmployee
+    ? employees.filter((employee) => employee.id === selectedEmployee.id)
+    : employees;
+  const activity = (props.dashboard?.activity ?? []).filter(
+    (entry) => !selectedEmployee || entry.id === selectedEmployee.id,
+  );
 
   return html`
     <div class="employees-page">
@@ -39,16 +49,30 @@ export function renderEmployees(props: EmployeesProps) {
         <div>
           <div class="card-title employees-hero__title">Your AI Team</div>
           <div class="card-sub">5 employees active</div>
+          ${selectedEmployee
+            ? html`
+                <div class="employees-hero__filter">
+                  Showing activity for <strong>${selectedEmployee.avatar} ${selectedEmployee.name}</strong>
+                </div>
+              `
+            : nothing}
         </div>
-        <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "Refreshing..." : "Refresh"}
-        </button>
+        <div class="employees-hero__actions">
+          ${selectedEmployee
+            ? html`
+                <button class="btn btn--ghost" @click=${props.onClearFilter}>Show all</button>
+              `
+            : nothing}
+          <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
+            ${props.loading ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
       </section>
 
       ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
 
       <section class="employees-grid">
-        ${employees.map((employee) => renderEmployeeCard(employee, props))}
+        ${visibleEmployees.map((employee) => renderEmployeeCard(employee, props))}
       </section>
 
       <section class="card employees-activity">
@@ -60,7 +84,9 @@ export function renderEmployees(props: EmployeesProps) {
               <div class="employees-activity__empty">
                 ${props.loading
                   ? "Loading recent activity..."
-                  : "No activity yet. Start chatting with your employees."}
+                  : selectedEmployee
+                    ? `No recent activity for ${selectedEmployee.name} yet.`
+                    : "No activity yet. Start chatting with your employees."}
               </div>
             `
           : html`

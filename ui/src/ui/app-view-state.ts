@@ -10,7 +10,7 @@ import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { EmployeesDashboardResult } from "./controllers/employees.ts";
+import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -212,6 +212,7 @@ export type AppViewState = {
   employeesLoading: boolean;
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
+  employeesFilterAgentId: KovaEmployeeId | null;
   sessionsLoading: boolean;
   sessionsResult: SessionsListResult | null;
   sessionsError: string | null;

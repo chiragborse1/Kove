@@ -75,7 +75,7 @@
 }
 
 /* ===========================================
-   Topbar
+   Topba
    =========================================== */
 
 .topbar {
@@ -305,7 +305,7 @@
 }
 
 /* ===========================================
-   Navigation Sidebar
+   Navigation Sideba
    =========================================== */
 
 .shell-nav {
@@ -1241,5 +1241,201 @@
 
   .employees-activity__time {
     margin-left: 44px;
+  }
+}
+
+.agents-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.agents-toolbar--kova {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border) 78%);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 12%, transparent), transparent 40%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-subtle) 52%, var(--bg-elevated) 48%), var(--card));
+}
+
+.agents-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agents-section__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.agents-employee-grid,
+.agents-other-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.agents-employee-card,
+.agents-system-card,
+.agents-other-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.agents-employee-card,
+.agents-system-card {
+  cursor: pointer;
+}
+
+.agents-employee-card:hover,
+.agents-system-card:hover,
+.agents-other-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--border) 76%);
+  box-shadow: 0 18px 32px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.agents-employee-card.is-selected,
+.agents-system-card.is-selected,
+.agents-other-card.is-selected {
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--border) 54%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+.agents-employee-card.is-unavailable {
+  opacity: 0.78;
+}
+
+.agents-employee-card__header,
+.agents-employee-card__meta-row,
+.agents-employee-card__actions,
+.agents-system-card,
+.agents-other-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.agents-employee-card__identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.agents-employee-card__name-row,
+.agents-system-card__title-row,
+.agents-other-card__title-row,
+.employees-hero__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agents-employee-card__avatar,
+.agents-system-card__icon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--accent-subtle) 76%, var(--bg-elevated) 24%);
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+.agents-employee-card__name,
+.agents-system-card__title,
+.agents-other-card__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.agents-employee-card__role,
+.agents-employee-card__agent-id,
+.agents-system-card__sub,
+.agents-other-card__sub,
+.employees-hero__filter {
+  color: var(--muted);
+}
+
+.agents-autonomy-badge,
+.agents-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.agents-autonomy-badge--supervised {
+  border-color: color-mix(in srgb, var(--muted) 38%, transparent);
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+  color: color-mix(in srgb, var(--muted) 82%, var(--text) 18%);
+}
+
+.agents-autonomy-badge--act-notify {
+  border-color: color-mix(in srgb, #3a7afe 30%, transparent);
+  background: color-mix(in srgb, #3a7afe 12%, transparent);
+  color: #3a7afe;
+}
+
+.agents-autonomy-badge--autonomous {
+  border-color: color-mix(in srgb, #2fbf8b 28%, transparent);
+  background: color-mix(in srgb, #2fbf8b 12%, transparent);
+  color: #2fbf8b;
+}
+
+.agents-chip {
+  background: color-mix(in srgb, var(--accent-subtle) 70%, var(--bg-elevated) 30%);
+  color: var(--accent);
+}
+
+.agents-chip--selected {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.agents-system-card__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.agents-system-card--empty {
+  justify-content: flex-start;
+}
+
+.employees-hero__filter {
+  margin-top: 8px;
+}
+
+@media (max-width: 760px) {
+  .agents-toolbar-row,
+  .agents-employee-card__header,
+  .agents-employee-card__meta-row,
+  .agents-employee-card__actions,
+  .agents-system-card,
+  .agents-other-card,
+  .employees-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .employees-hero__actions {
+    width: 100%;
   }
 }

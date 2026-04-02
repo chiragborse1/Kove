@@ -944,6 +944,10 @@ export function renderApp(state: AppViewState) {
                 loading: state.employeesLoading,
                 error: state.employeesError,
                 dashboard: state.employeesDashboard,
+                filterAgentId: state.employeesFilterAgentId,
+                onClearFilter: () => {
+                  state.employeesFilterAgentId = null;
+                },
                 onRefresh: () => loadEmployeesDashboard(state),
                 onOpenChat: (agentId) => {
                   switchChatSession(state, buildAgentMainSessionKey({ agentId }));
@@ -1350,6 +1354,14 @@ export function renderApp(state: AppViewState) {
                     return;
                   }
                   updateConfigFormValue(state, ["agents", "defaultId"], agentId);
+                },
+                onNavigateToChat: (agentId) => {
+                  switchChatSession(state, buildAgentMainSessionKey({ agentId }));
+                  state.setTab("chat" as import("./navigation.ts").Tab);
+                },
+                onNavigateToActivity: (agentId) => {
+                  state.employeesFilterAgentId = agentId;
+                  state.setTab("employees" as import("./navigation.ts").Tab);
                 },
               }),
             )

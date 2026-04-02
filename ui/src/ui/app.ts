@@ -72,7 +72,7 @@ import type { TelegramPendingApproval, TelegramSetupMessage } from "./controller
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { EmployeesDashboardResult } from "./controllers/employees.ts";
+import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -319,6 +319,7 @@ export class OpenClawApp extends LitElement {
   @state() employeesLoading = false;
   @state() employeesError: string | null = null;
   @state() employeesDashboard: EmployeesDashboardResult | null = null;
+  @state() employeesFilterAgentId: KovaEmployeeId | null = null;
 
   @state() sessionsLoading = false;
   @state() sessionsResult: SessionsListResult | null = null;
