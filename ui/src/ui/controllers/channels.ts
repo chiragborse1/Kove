@@ -296,8 +296,9 @@ export async function startWhatsAppLogin(state: ChannelsState, force: boolean) {
   state.whatsappBusy = true;
   try {
     const res = await state.client.request<{ message?: string; qrDataUrl?: string }>(
-      "web.login.start",
+      "channels.login",
       {
+        channel: "whatsapp",
         force,
         timeoutMs: 30000,
       },
@@ -321,8 +322,9 @@ export async function waitWhatsAppLogin(state: ChannelsState) {
   state.whatsappBusy = true;
   try {
     const res = await state.client.request<{ message?: string; connected?: boolean }>(
-      "web.login.wait",
+      "channels.login.wait",
       {
+        channel: "whatsapp",
         timeoutMs: 120000,
       },
     );
@@ -355,3 +357,5 @@ export async function logoutWhatsApp(state: ChannelsState) {
     state.whatsappBusy = false;
   }
 }
+
+

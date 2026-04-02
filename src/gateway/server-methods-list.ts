@@ -13,6 +13,8 @@ const BASE_METHODS = [
   "doctor.memory.status",
   "logs.tail",
   "channels.status",
+  "channels.login",
+  "channels.login.wait",
   "channels.logout",
   "status",
   "usage.status",
@@ -157,3 +159,4 @@ export const GATEWAY_EVENTS = [
   "plugin.approval.resolved",
   GATEWAY_EVENT_UPDATE_AVAILABLE,
 ];
+

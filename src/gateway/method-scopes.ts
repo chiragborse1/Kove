@@ -131,6 +131,8 @@ const METHOD_SCOPE_GROUPS: Record<OperatorScope, readonly string[]> = {
     "apiKeys.provider.set",
     "apiKeys.activeModel.set",
     "apiKeys.openrouter.set",
+    "channels.login",
+    "channels.login.wait",
     "channels.logout",
     "agents.create",
     "agents.update",
@@ -243,3 +245,4 @@ export function isGatewayMethodClassified(method: string): boolean {
   }
   return resolveRequiredOperatorScopeForMethod(method) !== undefined;
 }
+

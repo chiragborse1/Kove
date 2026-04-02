@@ -1,3 +1,4 @@
+import { getBundledChannelPlugin } from "../../channels/plugins/bundled.js";
 import { buildChannelUiCatalog } from "../../channels/plugins/catalog.js";
 import { resolveChannelDefaultAccountId } from "../../channels/plugins/helpers.js";
 import {
@@ -18,12 +19,13 @@ import {
   ErrorCodes,
   errorShape,
   formatValidationErrors,
+  validateChannelsLoginParams,
+  validateChannelsLoginWaitParams,
   validateChannelsLogoutParams,
   validateChannelsStatusParams,
 } from "../protocol/index.js";
 import { formatForLog } from "../ws-log.js";
 import type { GatewayRequestContext, GatewayRequestHandlers } from "./types.js";
-
 type ChannelLogoutPayload = {
   channel: ChannelId;
   accountId: string;
@@ -65,6 +67,48 @@ export async function logoutChannelAccount(params: {
     ...result,
     cleared,
   };
+}
+
+function resolveLoginChannelPlugin(channelId: ChannelId): ChannelPlugin | null {
+  const activePlugin = getChannelPlugin(channelId);
+  if (
+    activePlugin?.gateway?.loginWithQrStart ||
+    activePlugin?.gateway?.loginWithQrWait ||
+    activePlugin?.auth?.login
+  ) {
+    return activePlugin;
+  }
+  const bundledPlugin = getBundledChannelPlugin(channelId);
+  if (
+    bundledPlugin?.gateway?.loginWithQrStart ||
+    bundledPlugin?.gateway?.loginWithQrWait ||
+    bundledPlugin?.auth?.login
+  ) {
+    return bundledPlugin;
+  }
+  return activePlugin ?? bundledPlugin ?? null;
+}
+
+function resolveRequestedAccountId(params: unknown): string | undefined {
+  return typeof (params as { accountId?: unknown }).accountId === "string"
+    ? (params as { accountId?: string }).accountId
+    : undefined;
+}
+
+function resolveRequestedTimeoutMs(params: unknown): number | undefined {
+  return typeof (params as { timeoutMs?: unknown }).timeoutMs === "number"
+    ? (params as { timeoutMs?: number }).timeoutMs
+    : undefined;
+}
+
+function resolveChannelLoginAccountId(plugin: ChannelPlugin, cfg: OpenClawConfig, params: unknown): string {
+  const requestedAccountId = resolveRequestedAccountId(params)?.trim();
+  return (
+    requestedAccountId ||
+    plugin.config.defaultAccountId?.(cfg) ||
+    plugin.config.listAccountIds(cfg)[0] ||
+    DEFAULT_ACCOUNT_ID
+  );
 }
 
 export const channelsHandlers: GatewayRequestHandlers = {
@@ -238,6 +282,131 @@ export const channelsHandlers: GatewayRequestHandlers = {
 
     respond(true, payload, undefined);
   },
+  "channels.login": async ({ params, respond, context }) => {
+    if (!validateChannelsLoginParams(params)) {
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          `invalid channels.login params: ${formatValidationErrors(validateChannelsLoginParams.errors)}`,
+        ),
+      );
+      return;
+    }
+    const rawChannel = (params as { channel?: unknown }).channel;
+    const channelId = typeof rawChannel === "string" ? normalizeChannelId(rawChannel) : null;
+    if (!channelId) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "invalid channels.login channel"),
+      );
+      return;
+    }
+    const plugin = resolveLoginChannelPlugin(channelId);
+    if (!plugin) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, `channel ${channelId} does not support login`),
+      );
+      return;
+    }
+    const cfg = applyPluginAutoEnable({
+      config: loadConfig(),
+      env: process.env,
+    }).config;
+    const accountId = resolveChannelLoginAccountId(plugin, cfg, params);
+    try {
+      if (plugin.gateway?.loginWithQrStart) {
+        await context.stopChannel(channelId, accountId);
+        const result = await plugin.gateway.loginWithQrStart({
+          force: Boolean((params as { force?: boolean }).force),
+          timeoutMs: resolveRequestedTimeoutMs(params),
+          verbose: Boolean((params as { verbose?: boolean }).verbose),
+          accountId,
+        });
+        if (channelId === "whatsapp" && result.qrDataUrl) {
+          context.broadcast("qr_code", {
+            channel: channelId,
+            qrDataUrl: result.qrDataUrl,
+            message: result.message,
+            timeoutMs: resolveRequestedTimeoutMs(params) ?? 30_000,
+          });
+        }
+        respond(true, result, undefined);
+        return;
+      }
+      if (!plugin.auth?.login) {
+        respond(
+          false,
+          undefined,
+          errorShape(ErrorCodes.INVALID_REQUEST, `channel ${channelId} does not support login`),
+        );
+        return;
+      }
+      await plugin.auth.login({
+        cfg,
+        accountId,
+        runtime: defaultRuntime,
+        verbose: Boolean((params as { verbose?: boolean }).verbose),
+        channelInput: channelId,
+      });
+      respond(true, { message: `${channelId} login complete.` }, undefined);
+    } catch (err) {
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, formatForLog(err)));
+    }
+  },
+  "channels.login.wait": async ({ params, respond, context }) => {
+    if (!validateChannelsLoginWaitParams(params)) {
+      respond(
+        false,
+        undefined,
+        errorShape(
+          ErrorCodes.INVALID_REQUEST,
+          `invalid channels.login.wait params: ${formatValidationErrors(validateChannelsLoginWaitParams.errors)}`,
+        ),
+      );
+      return;
+    }
+    const rawChannel = (params as { channel?: unknown }).channel;
+    const channelId = typeof rawChannel === "string" ? normalizeChannelId(rawChannel) : null;
+    if (!channelId) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, "invalid channels.login.wait channel"),
+      );
+      return;
+    }
+    const plugin = resolveLoginChannelPlugin(channelId);
+    if (!plugin?.gateway?.loginWithQrWait) {
+      respond(
+        false,
+        undefined,
+        errorShape(ErrorCodes.INVALID_REQUEST, `channel ${channelId} does not support login wait`),
+      );
+      return;
+    }
+    const cfg = applyPluginAutoEnable({
+      config: loadConfig(),
+      env: process.env,
+    }).config;
+    const accountId = resolveChannelLoginAccountId(plugin, cfg, params);
+    try {
+      const result = await plugin.gateway.loginWithQrWait({
+        timeoutMs: resolveRequestedTimeoutMs(params),
+        accountId,
+      });
+      if (result.connected) {
+        await context.startChannel(channelId, accountId);
+      }
+      respond(true, result, undefined);
+    } catch (err) {
+      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, formatForLog(err)));
+    }
+  },
   "channels.logout": async ({ params, respond, context }) => {
     if (!validateChannelsLogoutParams(params)) {
       respond(
@@ -294,3 +463,6 @@ export const channelsHandlers: GatewayRequestHandlers = {
     }
   },
 };
+
+
+
