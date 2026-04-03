@@ -1,4 +1,5 @@
 import { getSafeLocalStorage } from "../../local-storage.ts";
+import type { GatewaySessionRow } from "../types.ts";
 
 const MEETING_HISTORY_STORAGE_KEY = "openclaw.control.meetings.v1";
 const MAX_MEETING_HISTORY = 5;
@@ -6,7 +7,7 @@ const MAX_MEETING_HISTORY = 5;
 export const MEETING_ANALYSIS_AGENT_ID = "kova-morgan";
 export const MEETING_EMPTY_SECTION_TEXT = "None identified";
 export const MEETING_ANALYSIS_INSTRUCTION =
-  "You are analysing a meeting transcript. Return only markdown using these exact headers in this exact order: `## Summary`, `## Action Items`, `## Key Decisions`, `## Follow-up Email`. Do not merge sections. Put every item under the correct header. If a section has nothing concrete, write `None identified`.";
+  "You are analysing a meeting transcript. Reply with markdown only. Start with `## Summary` and use exactly these headers in this exact order: `## Summary`, `## Action Items`, `## Key Decisions`, `## Follow-up Email`. Do not include any text before `## Summary`. Do not merge sections. Put every item under the correct header. If a section has nothing concrete, write `None identified`.";
 
 export type MeetingAnalysisResult = {
   id: string;
@@ -72,6 +73,13 @@ function normalizeMeetingSectionText(value: string): string {
   return trimmed || MEETING_EMPTY_SECTION_TEXT;
 }
 
+function normalizeMeetingHeaderKey(header: string): SectionKey | null {
+  const normalized = header.trim().toLowerCase();
+  return (
+    SECTION_DEFINITIONS.find((section) => section.header.toLowerCase() === normalized)?.key ?? null
+  );
+}
+
 export function buildMeetingAnalysisPrompt(params: {
   title: string;
   transcript: string;
@@ -82,13 +90,14 @@ export function buildMeetingAnalysisPrompt(params: {
   return [
     MEETING_ANALYSIS_INSTRUCTION,
     "",
-    "Return the result using these exact markdown headers:",
+    "Use exactly these markdown headers, each on its own line:",
     "## Summary",
     "## Action Items",
     "## Key Decisions",
     "## Follow-up Email",
     "",
     `If a section has no concrete items, write exactly: ${MEETING_EMPTY_SECTION_TEXT}`,
+    "Do not include any introduction before `## Summary`.",
     "",
     titleLine,
     "",
@@ -112,26 +121,11 @@ export function parseMeetingAnalysisResponse(response: string): Pick<
     };
   }
 
-  const sectionByHeader = new Map(
-    SECTION_DEFINITIONS.map((section) => [section.header.toLowerCase(), section] as const),
-  );
-  const headerRegex = /^##\s+(Summary|Action Items|Key Decisions|Follow-up Email)\s*$/gim;
-  const matches: Array<{ key: SectionKey; start: number; end: number }> = [];
-  let match: RegExpExecArray | null = headerRegex.exec(rawResponse);
-  while (match) {
-    const header = match[1]?.trim().toLowerCase();
-    const section = header ? sectionByHeader.get(header) : undefined;
-    if (section) {
-      matches.push({
-        key: section.key,
-        start: match.index,
-        end: headerRegex.lastIndex,
-      });
-    }
-    match = headerRegex.exec(rawResponse);
-  }
+  const firstHeaderIndex = rawResponse.search(/^## /m);
+  const parseableResponse =
+    firstHeaderIndex >= 0 ? rawResponse.slice(firstHeaderIndex).trim() : rawResponse;
 
-  if (matches.length === 0) {
+  if (firstHeaderIndex < 0) {
     return {
       summary: normalizeMeetingSectionText(rawResponse),
       actionItems: MEETING_EMPTY_SECTION_TEXT,
@@ -142,16 +136,20 @@ export function parseMeetingAnalysisResponse(response: string): Pick<
   }
 
   const sections = new Map<SectionKey, string>();
-  for (let index = 0; index < matches.length; index += 1) {
-    const current = matches[index];
-    if (sections.has(current.key)) {
+  const blocks = parseableResponse
+    .split(/^## /gm)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  for (const block of blocks) {
+    const newlineIndex = block.indexOf("\n");
+    const rawHeader = (newlineIndex === -1 ? block : block.slice(0, newlineIndex)).trim();
+    const sectionKey = normalizeMeetingHeaderKey(rawHeader);
+    if (!sectionKey || sections.has(sectionKey)) {
       continue;
     }
-    const next = matches[index + 1];
-    const content = rawResponse
-      .slice(current.end, next?.start ?? rawResponse.length)
-      .trim();
-    sections.set(current.key, normalizeMeetingSectionText(content));
+    const content = newlineIndex === -1 ? "" : block.slice(newlineIndex + 1);
+    sections.set(sectionKey, normalizeMeetingSectionText(content));
   }
 
   return {
@@ -160,6 +158,48 @@ export function parseMeetingAnalysisResponse(response: string): Pick<
     decisions: sections.get("decisions") ?? MEETING_EMPTY_SECTION_TEXT,
     followUpEmail: sections.get("followUpEmail") ?? MEETING_EMPTY_SECTION_TEXT,
     rawResponse,
+  };
+}
+
+function isMeetingTelegramSession(row: GatewaySessionRow): boolean {
+  return (
+    row.channel === "telegram" ||
+    row.lastChannel === "telegram" ||
+    row.key === "telegram" ||
+    row.key.startsWith("telegram:") ||
+    row.key.includes(":telegram:")
+  );
+}
+
+function normalizeMeetingTelegramChatId(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  return trimmed.replace(/^telegram:/i, "");
+}
+
+export function resolveLatestMeetingTelegramTarget(
+  sessions: readonly GatewaySessionRow[],
+): { sessionKey: string; chatId: string; label: string } | null {
+  const session = [...sessions]
+    .filter((entry) => isMeetingTelegramSession(entry))
+    .sort((left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0))
+    .find((entry) => typeof entry.lastTo === "string" && normalizeMeetingTelegramChatId(entry.lastTo));
+
+  if (!session || typeof session.lastTo !== "string") {
+    return null;
+  }
+
+  const chatId = normalizeMeetingTelegramChatId(session.lastTo);
+  if (!chatId) {
+    return null;
+  }
+
+  return {
+    sessionKey: session.key,
+    chatId,
+    label: session.displayName?.trim() || chatId,
   };
 }
 

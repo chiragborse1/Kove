@@ -106,6 +106,7 @@ import {
   MEETING_ANALYSIS_AGENT_ID,
   parseMeetingAnalysisResponse,
   readMeetingTranscriptFile,
+  resolveLatestMeetingTelegramTarget,
   upsertMeetingHistory,
   type MeetingAnalysisResult,
 } from "./controllers/meetings.ts";
@@ -312,10 +313,6 @@ function resolveLatestAssistantMessageInfo(
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-function isTelegramSession(row: GatewaySessionRow): boolean {
-  return row.channel === "telegram" || row.key === "telegram" || row.key.startsWith("telegram:");
 }
 
 function resolveMeetingHistoryEntry(
@@ -1428,22 +1425,20 @@ export class OpenClawApp extends LitElement {
         includeGlobal: true,
         includeUnknown: true,
       });
-      const telegramSession = [...(sessions.sessions ?? [])]
-        .filter((entry) => isTelegramSession(entry) && typeof entry.lastTo === "string" && entry.lastTo.trim())
-        .sort((left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0))[0];
+      const telegramTarget = resolveLatestMeetingTelegramTarget(sessions.sessions ?? []);
 
-      if (!telegramSession?.lastTo?.trim()) {
-        throw new Error("Connect Telegram and open a Telegram conversation before sending this draft.");
+      if (!telegramTarget) {
+        throw new Error("Send a message to your Telegram bot first to enable this.");
       }
 
       await this.client.request("chat.send", {
-        sessionKey: telegramSession.key,
+        sessionKey: telegramTarget.sessionKey,
         message,
         deliver: true,
         idempotencyKey: generateUUID(),
       });
 
-      this.meetingsNotice = `Follow-up email sent to Telegram via ${telegramSession.displayName ?? telegramSession.lastTo}.`;
+      this.meetingsNotice = `Follow-up email sent to Telegram via ${telegramTarget.label}.`;
     } catch (error) {
       this.meetingsError = `Could not send via Telegram: ${formatMeetingError(error)}`;
     } finally {
