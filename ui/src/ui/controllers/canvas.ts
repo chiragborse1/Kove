@@ -14,6 +14,7 @@ export type CanvasEmployeeOption = {
 const CANVAS_SW_PATH = "openclaw-canvas-auth-sw.js";
 const CANVAS_MESSAGE_TYPE = "openclaw-canvas-auth:set-token";
 const CANVAS_HOST_PATH = "/__openclaw__/canvas/";
+const CANVAS_AUTH_ACK_TIMEOUT_MS = 1_500;
 
 function deriveEmployeeName(agentId: string): string {
   return agentId
@@ -106,7 +107,6 @@ export function resolveCanvasAuthToken(params: {
 export function buildCanvasUrl(params: {
   baseUrl: string;
   agentId?: string | null;
-  token?: string | null;
   refreshKey?: string | null;
 }): string {
   const url = new URL(params.baseUrl, window.location.href);
@@ -116,9 +116,6 @@ export function buildCanvasUrl(params: {
   url.hash = "";
   if (params.agentId?.trim()) {
     url.searchParams.set("agent", params.agentId.trim());
-  }
-  if (params.token?.trim()) {
-    url.searchParams.set("token", params.token.trim());
   }
   if (params.refreshKey?.trim()) {
     url.searchParams.set("_ui_refresh", params.refreshKey.trim());
@@ -144,19 +141,59 @@ export async function ensureCanvasAuthWorker(params: {
       resolveCanvasWorkerScriptUrl(params.basePath),
       { scope: "/" },
     );
-    await navigator.serviceWorker.ready;
+    const readyRegistration = await navigator.serviceWorker.ready;
     const message = {
       type: CANVAS_MESSAGE_TYPE,
       token: params.token.trim(),
     };
-    registration.active?.postMessage(message);
-    registration.waiting?.postMessage(message);
-    registration.installing?.postMessage(message);
-    navigator.serviceWorker.controller?.postMessage(message);
-    return true;
+    const targets = [
+      registration.active,
+      readyRegistration.active,
+      navigator.serviceWorker.controller,
+      registration.waiting,
+      readyRegistration.waiting,
+      registration.installing,
+      readyRegistration.installing,
+    ].filter((target, index, list): target is ServiceWorker => Boolean(target) && list.indexOf(target) === index);
+
+    for (const target of targets) {
+      if (await postCanvasAuthToken(target, message)) {
+        return true;
+      }
+    }
+    return false;
   } catch {
     return false;
   }
+}
+
+async function postCanvasAuthToken(
+  target: Pick<ServiceWorker, "postMessage">,
+  message: { type: string; token: string },
+): Promise<boolean> {
+  if (typeof MessageChannel === "undefined") {
+    try {
+      target.postMessage(message);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return await new Promise<boolean>((resolve) => {
+    const channel = new MessageChannel();
+    const timeoutId = window.setTimeout(() => resolve(false), CANVAS_AUTH_ACK_TIMEOUT_MS);
+    channel.port1.onmessage = () => {
+      clearTimeout(timeoutId);
+      resolve(true);
+    };
+    try {
+      target.postMessage(message, [channel.port2]);
+    } catch {
+      clearTimeout(timeoutId);
+      resolve(false);
+    }
+  });
 }
 
 export async function probeCanvasUrl(params: {

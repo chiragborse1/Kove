@@ -28,6 +28,7 @@ self.addEventListener("message", (event) => {
     return;
   }
   canvasBearerToken = typeof data.token === "string" ? data.token.trim() : "";
+  event.ports?.[0]?.postMessage({ ok: true });
 });
 
 self.addEventListener("fetch", (event) => {

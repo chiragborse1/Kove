@@ -1,11 +1,17 @@
 /* @vitest-environment jsdom */
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildCanvasUrl,
+  ensureCanvasAuthWorker,
   resolveCanvasAuthToken,
   resolveCanvasBaseUrl,
 } from "../../../ui/src/ui/controllers/canvas.ts";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe("resolveCanvasBaseUrl", () => {
   it("preserves the scoped canvas host URL from hello", () => {
@@ -57,29 +63,59 @@ describe("resolveCanvasAuthToken", () => {
 });
 
 describe("buildCanvasUrl", () => {
-  it("includes the selected agent and auth token in the iframe URL", () => {
+  it("includes the selected agent in the iframe URL", () => {
     const url = buildCanvasUrl({
       baseUrl: "https://control.example.com",
       agentId: "main",
-      token: "secret-token",
       refreshKey: "123",
     });
 
-    expect(url).toBe(
-      "https://control.example.com/__openclaw__/canvas/?agent=main&token=secret-token&_ui_refresh=123",
-    );
+    expect(url).toBe("https://control.example.com/__openclaw__/canvas/?agent=main&_ui_refresh=123");
   });
 
   it("keeps the scoped host path when the gateway advertises a capability URL", () => {
     const url = buildCanvasUrl({
       baseUrl: "http://127.0.0.1:18789/__openclaw__/cap/node-capability",
       agentId: "kova-ops",
-      token: "device-token-123",
       refreshKey: "refresh-1",
     });
 
     expect(url).toBe(
-      "http://127.0.0.1:18789/__openclaw__/cap/node-capability/__openclaw__/canvas/?agent=kova-ops&token=device-token-123&_ui_refresh=refresh-1",
+      "http://127.0.0.1:18789/__openclaw__/cap/node-capability/__openclaw__/canvas/?agent=kova-ops&_ui_refresh=refresh-1",
     );
+  });
+});
+
+describe("ensureCanvasAuthWorker", () => {
+  it("waits for the service worker to accept the auth token", async () => {
+    const active = {
+      postMessage(message: unknown, transfer?: Transferable[]) {
+        expect(message).toEqual({
+          type: "openclaw-canvas-auth:set-token",
+          token: "device-token-123",
+        });
+        const port = transfer?.[0];
+        expect(port).toBeInstanceOf(MessagePort);
+        (port as MessagePort).postMessage({ ok: true });
+      },
+    };
+    const register = vi.fn().mockResolvedValue({ active });
+    Object.defineProperty(window.navigator, "serviceWorker", {
+      configurable: true,
+      value: {
+        register,
+        ready: Promise.resolve({ active }),
+        controller: null,
+      },
+    });
+
+    await expect(
+      ensureCanvasAuthWorker({
+        basePath: "",
+        token: "device-token-123",
+      }),
+    ).resolves.toBe(true);
+
+    expect(register).toHaveBeenCalledWith("/openclaw-canvas-auth-sw.js", { scope: "/" });
   });
 });

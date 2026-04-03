@@ -1156,7 +1156,6 @@ export class OpenClawApp extends LitElement {
     const canvasUrl = buildCanvasUrl({
       baseUrl,
       agentId: this.canvasSelectedAgentId,
-      token,
       refreshKey,
     });
 
@@ -1200,7 +1199,6 @@ export class OpenClawApp extends LitElement {
     const canvasUrl = buildCanvasUrl({
       baseUrl,
       agentId: this.canvasSelectedAgentId,
-      token,
       refreshKey: null,
     });
     window.open(canvasUrl, "_blank", "noopener,noreferrer");
