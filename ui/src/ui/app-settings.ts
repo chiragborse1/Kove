@@ -240,6 +240,12 @@ export async function refreshActiveTab(host: SettingsHost) {
   if (host.tab === "cron") {
     await loadCron(host);
   }
+  if (host.tab === "briefing") {
+    await Promise.all([
+      loadChannels(host as unknown as OpenClawApp, false),
+      loadCron(host),
+    ]);
+  }
   if (host.tab === "employees") {
     await loadEmployeesDashboard(host as unknown as OpenClawApp);
   }

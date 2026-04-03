@@ -5,6 +5,10 @@ import type {
   ApiKeyProviderId,
   ApiKeyProviderStatus,
 } from "./controllers/api-keys.ts";
+import type {
+  BriefingFormState,
+  BriefingMessage,
+} from "./controllers/briefing.ts";
 import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
 import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
@@ -53,6 +57,11 @@ export type AppViewState = {
   onboarding: boolean;
   onboardingStep: 1 | 2 | 3;
   onboardingProvider: ApiKeyProviderId;
+  briefingForm: BriefingFormState;
+  briefingDirty: boolean;
+  briefingLoading: boolean;
+  briefingSaving: boolean;
+  briefingMessage: BriefingMessage | null;
   basePath: string;
   connected: boolean;
   theme: ThemeName;
@@ -368,6 +377,7 @@ export type AppViewState = {
     loadOverview: () => Promise<void>;
     loadAssistantIdentity: () => Promise<void>;
     loadCron: () => Promise<void>;
+    saveBriefing: () => Promise<void>;
     handleWhatsAppStart: (force: boolean) => Promise<void>;
     handleWhatsAppWait: () => Promise<void>;
     handleWhatsAppLogout: () => Promise<void>;

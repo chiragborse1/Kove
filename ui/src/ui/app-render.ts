@@ -40,6 +40,10 @@ import {
   updateProviderApiKeyInput,
 } from "./controllers/api-keys.ts";
 import {
+  getLocalBriefingTimeZone,
+  resolveBriefingConnectedChannels,
+} from "./controllers/briefing.ts";
+import {
   approveTelegramPairing,
   connectTelegram,
   disconnectTelegram,
@@ -152,6 +156,7 @@ function createLazy<T>(loader: () => Promise<T>): () => T | null {
 }
 
 const lazyAgents = createLazy(() => import("./views/agents.ts"));
+const lazyBriefing = createLazy(() => import("./views/briefing.ts"));
 const lazyChannels = createLazy(() => import("./views/channels.ts"));
 const lazyCron = createLazy(() => import("./views/cron.ts"));
 const lazyDebug = createLazy(() => import("./views/debug.ts"));
@@ -506,6 +511,10 @@ export function renderApp(state: AppViewState) {
     ),
   );
   const visibleCronJobs = getVisibleCronJobs(state);
+  const briefingChannels = resolveBriefingConnectedChannels(
+    state.channelsSnapshot,
+    state.whatsappLoginConnected,
+  );
   const selectedDeliveryChannel =
     state.cronForm.deliveryChannel && state.cronForm.deliveryChannel.trim()
       ? state.cronForm.deliveryChannel.trim()
@@ -1082,6 +1091,49 @@ export function renderApp(state: AppViewState) {
                   state.sessionsSelectedKeys = new Set();
                   state.setTab("sessions" as import("./navigation.ts").Tab);
                 },
+              }),
+            )
+          : nothing}
+        ${state.tab === "briefing"
+          ? lazyRender(lazyBriefing, (m) =>
+              m.renderBriefing({
+                connected: state.connected,
+                loading: state.briefingLoading || state.channelsLoading || state.cronLoading,
+                saving: state.briefingSaving,
+                timezone: getLocalBriefingTimeZone(),
+                availableChannels: briefingChannels,
+                form: state.briefingForm,
+                message: state.briefingMessage,
+                previewDate: new Intl.DateTimeFormat(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                }).format(new Date()),
+                onEnabledChange: (next) => {
+                  state.briefingForm = { ...state.briefingForm, enabled: next };
+                  state.briefingDirty = true;
+                  state.briefingMessage = null;
+                },
+                onTimeChange: (next) => {
+                  state.briefingForm = { ...state.briefingForm, time: next };
+                  state.briefingDirty = true;
+                  state.briefingMessage = null;
+                },
+                onChannelChange: (next) => {
+                  state.briefingForm = { ...state.briefingForm, channel: next };
+                  state.briefingDirty = true;
+                  state.briefingMessage = null;
+                },
+                onSectionChange: (section, next) => {
+                  state.briefingForm = {
+                    ...state.briefingForm,
+                    sections: { ...state.briefingForm.sections, [section]: next },
+                  };
+                  state.briefingDirty = true;
+                  state.briefingMessage = null;
+                },
+                onSave: () => state.saveBriefing(),
+                onOpenChannels: () => state.setTab("channels"),
               }),
             )
           : nothing}

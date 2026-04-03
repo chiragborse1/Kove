@@ -70,6 +70,20 @@ import {
   type ApiKeyProviderId,
   type ApiKeyProviderStatus,
 } from "./controllers/api-keys.ts";
+import {
+  buildBriefingDescription,
+  buildBriefingPrompt,
+  buildDailyBriefingCronExpr,
+  createDefaultBriefingForm,
+  DAILY_BRIEFING_JOB_NAME,
+  findDailyBriefingJob,
+  formatBriefingChannelLabel,
+  getLocalBriefingTimeZone,
+  hydrateBriefingForm,
+  resolveBriefingConnectedChannels,
+  type BriefingChannelId,
+  type BriefingMessage,
+} from "./controllers/briefing.ts";
 import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
@@ -148,6 +162,11 @@ export class OpenClawApp extends LitElement {
   @state() onboardingStep: 1 | 2 | 3 = 1;
   @state() onboardingProvider: ApiKeyProviderId = "openrouter";
   @state() onboardingInteracted = false;
+  @state() briefingForm = createDefaultBriefingForm();
+  @state() briefingDirty = false;
+  @state() briefingLoading = false;
+  @state() briefingSaving = false;
+  @state() briefingMessage: BriefingMessage | null = null;
   @state() connected = false;
   @state() theme: ThemeName = this.settings.theme ?? "claw";
   @state() themeMode: ThemeMode = this.settings.themeMode ?? "system";
@@ -498,6 +517,7 @@ export class OpenClawApp extends LitElement {
   private chatScrollTimeout: number | null = null;
   private chatHasAutoScrolled = false;
   private chatUserNearBottom = true;
+  private briefingHydrationKey: string | null = null;
   @state() chatNewMessagesBelow = false;
   private nodesPollInterval: number | null = null;
   private logsPollInterval: number | null = null;
@@ -562,6 +582,15 @@ export class OpenClawApp extends LitElement {
     handleUpdated(this as unknown as Parameters<typeof handleUpdated>[0], changed);
     if (this.syncOnboardingRouteState()) {
       return;
+    }
+    if (
+      this.tab === "briefing" &&
+      (changed.has("tab") ||
+        changed.has("cronJobs") ||
+        changed.has("channelsSnapshot") ||
+        changed.has("whatsappLoginConnected"))
+    ) {
+      this.syncBriefingFormFromState(changed.has("tab"));
     }
     if (!changed.has("sessionKey") || this.agentsPanel !== "tools") {
       return;
@@ -688,6 +717,86 @@ export class OpenClawApp extends LitElement {
 
   async loadCron() {
     await loadCronInternal(this as unknown as Parameters<typeof loadCronInternal>[0]);
+  }
+
+  async saveBriefing() {
+    if (!this.client || !this.connected || this.briefingSaving) {
+      return;
+    }
+    const availableChannels = resolveBriefingConnectedChannels(
+      this.channelsSnapshot,
+      this.whatsappLoginConnected,
+    );
+    if (availableChannels.length === 0) {
+      this.briefingMessage = {
+        kind: "error",
+        text: "Connect Telegram or WhatsApp before saving a daily briefing.",
+      };
+      return;
+    }
+    if (!Object.values(this.briefingForm.sections).some(Boolean)) {
+      this.briefingMessage = {
+        kind: "error",
+        text: "Select at least one briefing section before saving.",
+      };
+      return;
+    }
+    const channel =
+      availableChannels.includes(this.briefingForm.channel as BriefingChannelId)
+        ? this.briefingForm.channel
+        : availableChannels[0];
+    const timezone = getLocalBriefingTimeZone();
+    const jobPatch = {
+      name: DAILY_BRIEFING_JOB_NAME,
+      description: buildBriefingDescription({ ...this.briefingForm, channel }, timezone),
+      agentId: "kova-alex",
+      enabled: this.briefingForm.enabled,
+      deleteAfterRun: false,
+      schedule: {
+        kind: "cron" as const,
+        expr: buildDailyBriefingCronExpr(this.briefingForm.time),
+        tz: timezone,
+      },
+      sessionTarget: "isolated" as const,
+      wakeMode: "next-heartbeat" as const,
+      payload: {
+        kind: "agentTurn" as const,
+        message: buildBriefingPrompt({ ...this.briefingForm, channel }, timezone),
+        lightContext: true,
+      },
+      delivery: {
+        mode: "announce" as const,
+        channel,
+        bestEffort: true,
+      },
+      failureAlert: false as const,
+    };
+    const existingJob = findDailyBriefingJob(this.cronJobs);
+    this.briefingSaving = true;
+    this.briefingLoading = true;
+    this.briefingMessage = null;
+    try {
+      if (existingJob) {
+        await this.client.request("cron.update", { id: existingJob.id, patch: jobPatch });
+      } else {
+        await this.client.request("cron.add", jobPatch);
+      }
+      this.briefingForm = { ...this.briefingForm, channel };
+      this.briefingDirty = false;
+      this.briefingMessage = {
+        kind: "success",
+        text: `Daily briefing saved for ${formatBriefingChannelLabel(channel)} at ${this.briefingForm.time}.`,
+      };
+      await this.loadCron();
+    } catch (error) {
+      this.briefingMessage = {
+        kind: "error",
+        text: `Could not save the daily briefing: ${String(error)}`,
+      };
+    } finally {
+      this.briefingLoading = false;
+      this.briefingSaving = false;
+    }
   }
 
   async handleAbortChat() {
@@ -849,6 +958,35 @@ export class OpenClawApp extends LitElement {
 
   private persistOnboardingFlag() {
     getSafeLocalStorage()?.setItem("kova_onboarded", "1");
+  }
+
+  private syncBriefingFormFromState(force = false) {
+    const availableChannels = resolveBriefingConnectedChannels(
+      this.channelsSnapshot,
+      this.whatsappLoginConnected,
+    );
+    const job = findDailyBriefingJob(this.cronJobs);
+    const nextHydrationKey = JSON.stringify({
+      jobId: job?.id ?? null,
+      updatedAtMs: job?.updatedAtMs ?? null,
+      description: job?.description ?? null,
+      enabled: job?.enabled ?? null,
+      schedule:
+        job?.schedule.kind === "cron"
+          ? `${job.schedule.expr}|${job.schedule.tz ?? ""}`
+          : job?.schedule.kind ?? null,
+      deliveryChannel: job?.delivery?.channel ?? null,
+      availableChannels,
+    });
+    if (!force && this.briefingDirty) {
+      return;
+    }
+    if (!force && this.briefingHydrationKey === nextHydrationKey) {
+      return;
+    }
+    this.briefingForm = hydrateBriefingForm(job, availableChannels);
+    this.briefingDirty = false;
+    this.briefingHydrationKey = nextHydrationKey;
   }
 
   private syncOnboardingRouteState(): boolean {

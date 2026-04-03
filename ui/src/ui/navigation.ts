@@ -7,7 +7,7 @@ export const TAB_GROUPS = [
     label: "control",
     tabs: ["overview", "channels", "instances", "sessions", "usage", "cron"],
   },
-  { label: "agent", tabs: ["employees", "agents", "skills", "nodes"] },
+  { label: "agent", tabs: ["employees", "briefing", "agents", "skills", "nodes"] },
   {
     label: "settings",
     tabs: [
@@ -27,6 +27,7 @@ export const TAB_GROUPS = [
 export type Tab =
   | "onboarding"
   | "employees"
+  | "briefing"
   | "agents"
   | "overview"
   | "channels"
@@ -50,6 +51,7 @@ export type Tab =
 const TAB_PATHS: Record<Tab, string> = {
   onboarding: "/onboarding",
   employees: "/employees",
+  briefing: "/briefing",
   agents: "/agents",
   overview: "/overview",
   channels: "/channels",
@@ -158,6 +160,8 @@ export function iconForTab(tab: Tab): IconName {
       return "spark";
     case "employees":
       return "brain";
+    case "briefing":
+      return "sun";
     case "agents":
       return "folder";
     case "chat":
@@ -205,12 +209,18 @@ export function titleForTab(tab: Tab) {
   if (tab === "onboarding") {
     return "Onboarding";
   }
+  if (tab === "briefing") {
+    return "Daily Briefing";
+  }
   return t(`tabs.${tab}`);
 }
 
 export function subtitleForTab(tab: Tab) {
   if (tab === "onboarding") {
     return "Set up Kova without the terminal.";
+  }
+  if (tab === "briefing") {
+    return "Schedule Kova's morning digest for Telegram or WhatsApp.";
   }
   return t(`subtitles.${tab}`);
 }
