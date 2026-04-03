@@ -389,6 +389,8 @@ export type AgentCreatorDraft = {
   instructions: string;
 };
 
+export type MeetingAnalysisResult = import("./controllers/meetings.ts").MeetingAnalysisResult;
+
 export type SessionRunStatus = "running" | "done" | "failed" | "killed" | "timeout";
 
 export type GatewaySessionRow = {

@@ -7,7 +7,10 @@ export const TAB_GROUPS = [
     label: "control",
     tabs: ["overview", "channels", "instances", "sessions", "usage", "cron"],
   },
-  { label: "agent", tabs: ["employees", "inbox", "briefing", "agents", "skills", "nodes"] },
+  {
+    label: "agent",
+    tabs: ["employees", "inbox", "briefing", "meetings", "agents", "skills", "nodes"],
+  },
   {
     label: "settings",
     tabs: [
@@ -29,6 +32,7 @@ export type Tab =
   | "employees"
   | "inbox"
   | "briefing"
+  | "meetings"
   | "agents"
   | "overview"
   | "channels"
@@ -54,6 +58,7 @@ const TAB_PATHS: Record<Tab, string> = {
   employees: "/employees",
   inbox: "/inbox",
   briefing: "/briefing",
+  meetings: "/meetings",
   agents: "/agents",
   overview: "/overview",
   channels: "/channels",
@@ -166,6 +171,8 @@ export function iconForTab(tab: Tab): IconName {
       return "inbox";
     case "briefing":
       return "sun";
+    case "meetings":
+      return "penLine";
     case "agents":
       return "folder";
     case "chat":
@@ -219,6 +226,9 @@ export function titleForTab(tab: Tab) {
   if (tab === "inbox") {
     return "Inbox";
   }
+  if (tab === "meetings") {
+    return "Meetings";
+  }
   return t(`tabs.${tab}`);
 }
 
@@ -231,6 +241,9 @@ export function subtitleForTab(tab: Tab) {
   }
   if (tab === "inbox") {
     return "All conversations across your connected channels.";
+  }
+  if (tab === "meetings") {
+    return "Upload or paste transcripts for summaries, action items, and follow-up drafts.";
   }
   return t(`subtitles.${tab}`);
 }

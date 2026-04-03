@@ -37,6 +37,7 @@ import type {
   LogLevel,
   ChatModelOverride,
   ModelCatalogEntry,
+  MeetingAnalysisResult,
   NostrProfile,
   PresenceEntry,
   SessionsUsageResult,
@@ -230,6 +231,15 @@ export type AppViewState = {
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
   employeesFilterAgentId: KovaEmployeeId | null;
+  meetingsTitle: string;
+  meetingsTranscript: string;
+  meetingsSourceName: string | null;
+  meetingsAnalyzing: boolean;
+  meetingsSendingTelegram: boolean;
+  meetingsError: string | null;
+  meetingsNotice: string | null;
+  meetingsResult: MeetingAnalysisResult | null;
+  meetingsHistory: MeetingAnalysisResult[];
   showAgentCreator: boolean;
   agentCreatorStep: 1 | 2 | 3;
   agentCreatorCreating: boolean;
@@ -394,6 +404,15 @@ export type AppViewState = {
     loadCron: () => Promise<void>;
     loadInbox: () => Promise<void>;
     setInboxFilter: (filter: InboxChannelFilter) => void;
+    handleMeetingsTitleChange: (next: string) => void;
+    handleMeetingsTranscriptChange: (next: string) => void;
+    handleMeetingsFileSelect: (file: File | null) => Promise<void>;
+    analyzeMeeting: () => Promise<void>;
+    saveMeetingResult: () => void;
+    loadMeetingHistoryEntry: (id: string) => void;
+    clearMeetingHistory: () => void;
+    copyMeetingSection: (label: string, value: string) => Promise<void>;
+    sendMeetingFollowUpViaTelegram: () => Promise<void>;
     openAgentCreator: () => void;
     closeAgentCreator: () => void;
     createEmployee: (params: AgentCreatorDraft) => Promise<void>;

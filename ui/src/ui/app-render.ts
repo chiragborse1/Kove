@@ -166,6 +166,7 @@ const lazyEmployees = createLazy(() => import("./views/employees.ts"));
 const lazyInbox = createLazy(() => import("./views/inbox.ts"));
 const lazyInstances = createLazy(() => import("./views/instances.ts"));
 const lazyLogs = createLazy(() => import("./views/logs.ts"));
+const lazyMeetings = createLazy(() => import("./views/meetings.ts"));
 const lazyNodes = createLazy(() => import("./views/nodes.ts"));
 const lazySessions = createLazy(() => import("./views/sessions.ts"));
 const lazySkills = createLazy(() => import("./views/skills.ts"));
@@ -1154,6 +1155,31 @@ export function renderApp(state: AppViewState) {
                 },
                 onSave: () => state.saveBriefing(),
                 onOpenChannels: () => state.setTab("channels"),
+              }),
+            )
+          : nothing}
+        ${state.tab === "meetings"
+          ? lazyRender(lazyMeetings, (m) =>
+              m.renderMeetings({
+                connected: state.connected,
+                title: state.meetingsTitle,
+                transcript: state.meetingsTranscript,
+                sourceName: state.meetingsSourceName,
+                analyzing: state.meetingsAnalyzing,
+                sendingTelegram: state.meetingsSendingTelegram,
+                error: state.meetingsError,
+                notice: state.meetingsNotice,
+                result: state.meetingsResult,
+                history: state.meetingsHistory,
+                onTitleChange: (next) => state.handleMeetingsTitleChange(next),
+                onTranscriptChange: (next) => state.handleMeetingsTranscriptChange(next),
+                onFileSelect: (file) => state.handleMeetingsFileSelect(file),
+                onAnalyze: () => state.analyzeMeeting(),
+                onCopy: (label, value) => state.copyMeetingSection(label, value),
+                onSave: () => state.saveMeetingResult(),
+                onLoadHistory: (id) => state.loadMeetingHistoryEntry(id),
+                onClearHistory: () => state.clearMeetingHistory(),
+                onSendTelegram: () => state.sendMeetingFollowUpViaTelegram(),
               }),
             )
           : nothing}

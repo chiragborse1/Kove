@@ -57,6 +57,7 @@ import {
 import type { AppViewState } from "./app-view-state.ts";
 import { normalizeAssistantIdentity } from "./assistant-identity.ts";
 import { exportChatMarkdown } from "./chat/export.ts";
+import { extractText } from "./chat/message-extract.ts";
 import {
   loadAgents,
   loadToolsEffective as loadToolsEffectiveInternal,
@@ -95,6 +96,16 @@ import {
   loadInbox as loadInboxInternal,
   type InboxChannelFilter,
 } from "./controllers/inbox.ts";
+import {
+  buildMeetingAnalysisPrompt,
+  clearMeetingHistoryStorage,
+  loadMeetingHistoryFromStorage,
+  MEETING_ANALYSIS_AGENT_ID,
+  parseMeetingAnalysisResponse,
+  readMeetingTranscriptFile,
+  upsertMeetingHistory,
+  type MeetingAnalysisResult,
+} from "./controllers/meetings.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -141,6 +152,7 @@ declare global {
 const bootAssistantIdentity = normalizeAssistantIdentity({});
 
 const DEFAULT_EMPLOYEE_MODEL = "openrouter/auto";
+const MEETING_ANALYSIS_SESSION_KEY = `agent:${MEETING_ANALYSIS_AGENT_ID}:meetings`;
 const DEFAULT_AGENT_CREATOR_DRAFT: AgentCreatorDraft = {
   name: "",
   role: "",
@@ -235,6 +247,52 @@ function buildEmployeeSoul(draft: AgentCreatorDraft): string {
 
 function formatAgentCreatorError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function formatMeetingError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function extractAssistantTextFromMessage(message: unknown): string {
+  const text = extractText(message);
+  return typeof text === "string" ? text.trim() : "";
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function isTelegramSession(row: GatewaySessionRow): boolean {
+  return row.channel === "telegram" || row.key === "telegram" || row.key.startsWith("telegram:");
+}
+
+function resolveMeetingHistoryEntry(
+  history: MeetingAnalysisResult[],
+  id: string,
+): MeetingAnalysisResult | null {
+  return history.find((entry) => entry.id === id) ?? null;
+}
+
+function createMeetingResult(params: {
+  id: string;
+  title: string;
+  transcript: string;
+  sourceName: string | null;
+  rawResponse: string;
+}): MeetingAnalysisResult {
+  const parsed = parseMeetingAnalysisResponse(params.rawResponse);
+  return {
+    id: params.id,
+    title: params.title.trim(),
+    transcript: params.transcript.trim(),
+    sourceName: params.sourceName,
+    createdAt: Date.now(),
+    summary: parsed.summary,
+    actionItems: parsed.actionItems,
+    decisions: parsed.decisions,
+    followUpEmail: parsed.followUpEmail,
+    rawResponse: parsed.rawResponse,
+  };
 }
 
 function resolveOnboardingMode(): boolean {
@@ -455,6 +513,15 @@ export class OpenClawApp extends LitElement {
   @state() employeesError: string | null = null;
   @state() employeesDashboard: EmployeesDashboardResult | null = null;
   @state() employeesFilterAgentId: KovaEmployeeId | null = null;
+  @state() meetingsTitle = "";
+  @state() meetingsTranscript = "";
+  @state() meetingsSourceName: string | null = null;
+  @state() meetingsAnalyzing = false;
+  @state() meetingsSendingTelegram = false;
+  @state() meetingsError: string | null = null;
+  @state() meetingsNotice: string | null = null;
+  @state() meetingsResult: MeetingAnalysisResult | null = null;
+  @state() meetingsHistory: MeetingAnalysisResult[] = loadMeetingHistoryFromStorage();
   @state() showAgentCreator = false;
   @state() agentCreatorStep: 1 | 2 | 3 = 1;
   @state() agentCreatorCreating = false;
@@ -846,6 +913,202 @@ export class OpenClawApp extends LitElement {
 
   setInboxFilter(next: InboxChannelFilter) {
     this.inboxChannelFilter = next;
+  }
+
+  handleMeetingsTitleChange(next: string) {
+    this.meetingsTitle = next;
+    this.meetingsNotice = null;
+  }
+
+  handleMeetingsTranscriptChange(next: string) {
+    this.meetingsTranscript = next;
+    this.meetingsNotice = null;
+  }
+
+  async handleMeetingsFileSelect(file: File | null) {
+    if (!file) {
+      return;
+    }
+    this.meetingsError = null;
+    this.meetingsNotice = null;
+    try {
+      const { transcript, sourceName } = await readMeetingTranscriptFile(file);
+      this.meetingsTranscript = transcript;
+      this.meetingsSourceName = sourceName;
+      if (!this.meetingsTitle.trim()) {
+        this.meetingsTitle = sourceName.replace(/\.[^.]+$/, "");
+      }
+      this.meetingsNotice = `Loaded transcript from ${sourceName}.`;
+    } catch (error) {
+      this.meetingsError = `Could not read transcript: ${formatMeetingError(error)}`;
+    }
+  }
+
+  async analyzeMeeting() {
+    if (!this.client || !this.connected || this.meetingsAnalyzing) {
+      return;
+    }
+
+    const transcript = this.meetingsTranscript.trim();
+    if (!transcript) {
+      this.meetingsError = "Paste a transcript or upload a file before running the analysis.";
+      return;
+    }
+
+    const title = this.meetingsTitle.trim();
+    this.meetingsAnalyzing = true;
+    this.meetingsError = null;
+    this.meetingsNotice = null;
+
+    try {
+      const beforeHistory = await this.client.request<{ messages?: unknown[] }>("chat.history", {
+        sessionKey: MEETING_ANALYSIS_SESSION_KEY,
+        limit: 200,
+      });
+      const beforeAssistantCount = (beforeHistory.messages ?? []).filter(
+        (message) => extractAssistantTextFromMessage(message).length > 0,
+      ).length;
+
+      await this.client.request("chat.send", {
+        sessionKey: MEETING_ANALYSIS_SESSION_KEY,
+        message: buildMeetingAnalysisPrompt({ title, transcript }),
+        deliver: false,
+        idempotencyKey: generateUUID(),
+      });
+
+      let rawResponse = "";
+      for (let attempt = 0; attempt < 40; attempt += 1) {
+        await wait(attempt === 0 ? 400 : 800);
+        const history = await this.client.request<{ messages?: unknown[] }>("chat.history", {
+          sessionKey: MEETING_ANALYSIS_SESSION_KEY,
+          limit: 200,
+        });
+        const assistantMessages = (history.messages ?? [])
+          .map((message) => extractAssistantTextFromMessage(message))
+          .filter(Boolean);
+        if (assistantMessages.length > beforeAssistantCount) {
+          rawResponse = assistantMessages.at(-1) ?? "";
+          break;
+        }
+      }
+
+      if (!rawResponse.trim()) {
+        throw new Error("Morgan did not return a completed analysis yet. Please try again.");
+      }
+
+      const nextResult = createMeetingResult({
+        id: generateUUID(),
+        title,
+        transcript,
+        sourceName: this.meetingsSourceName,
+        rawResponse,
+      });
+      this.meetingsResult = nextResult;
+      this.meetingsNotice = "Meeting analysis is ready.";
+    } catch (error) {
+      this.meetingsError = `Could not analyse the meeting: ${formatMeetingError(error)}`;
+    } finally {
+      this.meetingsAnalyzing = false;
+    }
+  }
+
+  saveMeetingResult() {
+    if (!this.meetingsResult) {
+      return;
+    }
+    const nextResult: MeetingAnalysisResult = {
+      ...this.meetingsResult,
+      title: this.meetingsTitle.trim(),
+      transcript: this.meetingsTranscript.trim(),
+      sourceName: this.meetingsSourceName,
+    };
+    this.meetingsResult = nextResult;
+    this.meetingsHistory = upsertMeetingHistory(this.meetingsHistory, nextResult);
+    this.meetingsError = null;
+    this.meetingsNotice = `Saved ${nextResult.title || "meeting analysis"} to history.`;
+  }
+
+  loadMeetingHistoryEntry(id: string) {
+    const entry = resolveMeetingHistoryEntry(this.meetingsHistory, id);
+    if (!entry) {
+      this.meetingsError = "That meeting is no longer available in local history.";
+      return;
+    }
+    this.meetingsTitle = entry.title;
+    this.meetingsTranscript = entry.transcript;
+    this.meetingsSourceName = entry.sourceName;
+    this.meetingsResult = entry;
+    this.meetingsError = null;
+    this.meetingsNotice = `Loaded ${entry.title || "saved meeting"} from history.`;
+  }
+
+  clearMeetingHistory() {
+    clearMeetingHistoryStorage();
+    this.meetingsHistory = [];
+    this.meetingsError = null;
+    this.meetingsNotice = "Meeting history cleared.";
+  }
+
+  async copyMeetingSection(label: string, value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      this.meetingsError = `There is no ${label} text to copy yet.`;
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(trimmed);
+      this.meetingsError = null;
+      this.meetingsNotice = `Copied ${label}.`;
+    } catch (error) {
+      this.meetingsError = `Could not copy ${label}: ${formatMeetingError(error)}`;
+    }
+  }
+
+  async sendMeetingFollowUpViaTelegram() {
+    if (!this.client || !this.connected || !this.meetingsResult || this.meetingsSendingTelegram) {
+      return;
+    }
+    const message = this.meetingsResult.followUpEmail.trim();
+    if (!message) {
+      this.meetingsError = "Generate a follow-up email before sending it to Telegram.";
+      return;
+    }
+
+    this.meetingsSendingTelegram = true;
+    this.meetingsError = null;
+    this.meetingsNotice = null;
+
+    try {
+      const sessions = await this.client.request<SessionsListResult>("sessions.list", {
+        limit: 100,
+        includeGlobal: true,
+        includeUnknown: true,
+      });
+      const telegramSession = [...(sessions.sessions ?? [])]
+        .filter((entry) => isTelegramSession(entry) && typeof entry.lastTo === "string" && entry.lastTo.trim())
+        .sort((left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0))[0];
+
+      if (!telegramSession?.lastTo?.trim()) {
+        throw new Error("Connect Telegram and open a Telegram conversation before sending this draft.");
+      }
+
+      await this.client.request("send", {
+        to: telegramSession.lastTo,
+        message,
+        channel: "telegram",
+        accountId: telegramSession.lastAccountId ?? undefined,
+        threadId: telegramSession.lastThreadId ?? undefined,
+        sessionKey: telegramSession.key,
+        agentId: resolveAgentIdFromSessionKey(telegramSession.key),
+        idempotencyKey: generateUUID(),
+      });
+
+      this.meetingsNotice = `Follow-up email sent to Telegram via ${telegramSession.displayName ?? telegramSession.lastTo}.`;
+    } catch (error) {
+      this.meetingsError = `Could not send via Telegram: ${formatMeetingError(error)}`;
+    } finally {
+      this.meetingsSendingTelegram = false;
+    }
   }
 
   openAgentCreator() {
