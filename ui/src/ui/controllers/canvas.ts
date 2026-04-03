@@ -112,6 +112,7 @@ export function buildCanvasUrl(params: {
   baseUrl: string;
   agentId?: string | null;
   refreshKey?: string | null;
+  token?: string | null;
 }): string {
   const url = new URL(params.baseUrl, window.location.href);
   const currentPath = url.pathname.replace(/\/+$/, "");
@@ -123,6 +124,9 @@ export function buildCanvasUrl(params: {
   }
   if (params.refreshKey?.trim()) {
     url.searchParams.set("_ui_refresh", params.refreshKey.trim());
+  }
+  if (params.token?.trim()) {
+    url.searchParams.set("token", params.token.trim());
   }
   return url.toString();
 }

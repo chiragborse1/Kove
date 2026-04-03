@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { resolveCanvasAuthToken } from "./canvas.ts";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildCanvasUrl, resolveCanvasAuthToken } from "./canvas.ts";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("resolveCanvasAuthToken", () => {
   it("prefers the shared gateway token over the device token", () => {
@@ -35,5 +39,24 @@ describe("resolveCanvasAuthToken", () => {
         password: "",
       }),
     ).toBe("persisted-shared-token");
+  });
+});
+
+describe("buildCanvasUrl", () => {
+  it("appends the shared token for iframe navigation requests", () => {
+    vi.stubGlobal("window", {
+      location: new URL("http://127.0.0.1:4173/control"),
+    });
+
+    expect(
+      buildCanvasUrl({
+        baseUrl: "http://127.0.0.1:18789",
+        agentId: "main",
+        refreshKey: "refresh-1",
+        token: "shared-gateway-token",
+      }),
+    ).toBe(
+      "http://127.0.0.1:18789/__openclaw__/canvas/?agent=main&_ui_refresh=refresh-1&token=shared-gateway-token",
+    );
   });
 });
