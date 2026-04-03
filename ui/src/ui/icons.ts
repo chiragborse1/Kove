@@ -49,6 +49,15 @@ export const icons = {
   zap: html`
     <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
   `,
+  shuffle: html`
+    <svg viewBox="0 0 24 24">
+      <path d="M16 3h5v5" />
+      <path d="M4 20 21 3" />
+      <path d="M21 16v5h-5" />
+      <path d="m15 15 6 6" />
+      <path d="M4 4h5" />
+    </svg>
+  `,
   monitor: html`
     <svg viewBox="0 0 24 24">
       <rect width="20" height="14" x="2" y="3" rx="2" />

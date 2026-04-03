@@ -9,7 +9,7 @@ export const TAB_GROUPS = [
   },
   {
     label: "agent",
-    tabs: ["employees", "inbox", "briefing", "meetings", "agents", "skills", "nodes"],
+    tabs: ["employees", "inbox", "briefing", "meetings", "routing", "agents", "skills", "nodes"],
   },
   {
     label: "settings",
@@ -33,6 +33,7 @@ export type Tab =
   | "inbox"
   | "briefing"
   | "meetings"
+  | "routing"
   | "agents"
   | "overview"
   | "channels"
@@ -59,6 +60,7 @@ const TAB_PATHS: Record<Tab, string> = {
   inbox: "/inbox",
   briefing: "/briefing",
   meetings: "/meetings",
+  routing: "/routing",
   agents: "/agents",
   overview: "/overview",
   channels: "/channels",
@@ -173,6 +175,8 @@ export function iconForTab(tab: Tab): IconName {
       return "sun";
     case "meetings":
       return "penLine";
+    case "routing":
+      return "shuffle";
     case "agents":
       return "folder";
     case "chat":
@@ -229,6 +233,9 @@ export function titleForTab(tab: Tab) {
   if (tab === "meetings") {
     return "Meetings";
   }
+  if (tab === "routing") {
+    return "Routing";
+  }
   return t(`tabs.${tab}`);
 }
 
@@ -244,6 +251,9 @@ export function subtitleForTab(tab: Tab) {
   }
   if (tab === "meetings") {
     return "Upload or paste transcripts for summaries, action items, and follow-up drafts.";
+  }
+  if (tab === "routing") {
+    return "Choose which Kova employee handles Telegram and WhatsApp.";
   }
   return t(`subtitles.${tab}`);
 }

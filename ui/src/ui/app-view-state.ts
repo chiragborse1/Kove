@@ -16,6 +16,11 @@ import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
 import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { InboxChannelFilter } from "./controllers/inbox.ts";
+import type {
+  RoutingAssignments,
+  RoutingChannelId,
+  RoutingMessage,
+} from "./controllers/routing.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -231,6 +236,10 @@ export type AppViewState = {
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
   employeesFilterAgentId: KovaEmployeeId | null;
+  routingSaving: boolean;
+  routingDirty: boolean;
+  routingAssignments: RoutingAssignments;
+  routingMessage: RoutingMessage | null;
   meetingsTitle: string;
   meetingsTranscript: string;
   meetingsSourceName: string | null;
@@ -404,6 +413,9 @@ export type AppViewState = {
     loadCron: () => Promise<void>;
     loadInbox: () => Promise<void>;
     setInboxFilter: (filter: InboxChannelFilter) => void;
+    handleRoutingAssignmentChange: (channel: RoutingChannelId, agentId: string) => void;
+    applyRoutingPreset: (agentId: string) => void;
+    saveRouting: () => Promise<void>;
     handleMeetingsTitleChange: (next: string) => void;
     handleMeetingsTranscriptChange: (next: string) => void;
     handleMeetingsFileSelect: (file: File | null) => Promise<void>;

@@ -102,6 +102,7 @@ import {
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
+import { isRoutingChannelConnected, resolveRoutingEmployees } from "./controllers/routing.ts";
 import { deleteSessionsAndRefresh, loadSessions, patchSession } from "./controllers/sessions.ts";
 import {
   installSkill,
@@ -168,6 +169,7 @@ const lazyInstances = createLazy(() => import("./views/instances.ts"));
 const lazyLogs = createLazy(() => import("./views/logs.ts"));
 const lazyMeetings = createLazy(() => import("./views/meetings.ts"));
 const lazyNodes = createLazy(() => import("./views/nodes.ts"));
+const lazyRouting = createLazy(() => import("./views/routing.ts"));
 const lazySessions = createLazy(() => import("./views/sessions.ts"));
 const lazySkills = createLazy(() => import("./views/skills.ts"));
 
@@ -1180,6 +1182,32 @@ export function renderApp(state: AppViewState) {
                 onLoadHistory: (id) => state.loadMeetingHistoryEntry(id),
                 onClearHistory: () => state.clearMeetingHistory(),
                 onSendTelegram: () => state.sendMeetingFollowUpViaTelegram(),
+              }),
+            )
+          : nothing}
+        ${state.tab === "routing"
+          ? lazyRender(lazyRouting, (m) =>
+              m.renderRouting({
+                connected: state.connected,
+                loading: state.configLoading || state.channelsLoading || state.agentsLoading,
+                saving: state.routingSaving,
+                message: state.routingMessage,
+                assignments: state.routingAssignments,
+                employees: resolveRoutingEmployees(state.agentsList),
+                telegramConnected: isRoutingChannelConnected(
+                  state.channelsSnapshot,
+                  state.whatsappLoginConnected,
+                  "telegram",
+                ),
+                whatsappConnected: isRoutingChannelConnected(
+                  state.channelsSnapshot,
+                  state.whatsappLoginConnected,
+                  "whatsapp",
+                ),
+                onAssignmentChange: (channel, agentId) =>
+                  state.handleRoutingAssignmentChange(channel, agentId),
+                onPreset: (agentId) => state.applyRoutingPreset(agentId),
+                onSave: () => state.saveRouting(),
               }),
             )
           : nothing}

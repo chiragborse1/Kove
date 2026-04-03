@@ -250,6 +250,9 @@ export async function refreshActiveTab(host: SettingsHost) {
       loadCron(host),
     ]);
   }
+  if (host.tab === "routing") {
+    await loadRoutingTab(host);
+  }
   if (host.tab === "inbox") {
     await loadInbox(host as unknown as OpenClawApp);
   }
@@ -678,6 +681,11 @@ export async function loadChannelsTab(host: SettingsHost) {
     loadConfigSchema(host as unknown as OpenClawApp),
     loadConfig(host as unknown as OpenClawApp),
   ]);
+}
+
+export async function loadRoutingTab(host: SettingsHost) {
+  const app = host as unknown as OpenClawApp;
+  await Promise.all([loadAgents(app), loadChannels(app, false), loadConfig(app)]);
 }
 
 export async function loadCron(host: SettingsHost) {

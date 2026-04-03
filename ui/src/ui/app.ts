@@ -88,6 +88,8 @@ import {
   type BriefingMessage,
 } from "./controllers/briefing.ts";
 import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
+import { loadChannels } from "./controllers/channels.ts";
+import { loadConfig } from "./controllers/config.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
@@ -106,6 +108,13 @@ import {
   upsertMeetingHistory,
   type MeetingAnalysisResult,
 } from "./controllers/meetings.ts";
+import {
+  hydrateRoutingAssignments,
+  serializeRoutingConfig,
+  type RoutingAssignments,
+  type RoutingChannelId,
+  type RoutingMessage,
+} from "./controllers/routing.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -513,6 +522,10 @@ export class OpenClawApp extends LitElement {
   @state() employeesError: string | null = null;
   @state() employeesDashboard: EmployeesDashboardResult | null = null;
   @state() employeesFilterAgentId: KovaEmployeeId | null = null;
+  @state() routingSaving = false;
+  @state() routingDirty = false;
+  @state() routingAssignments: RoutingAssignments = { telegram: "main", whatsapp: "main" };
+  @state() routingMessage: RoutingMessage | null = null;
   @state() meetingsTitle = "";
   @state() meetingsTranscript = "";
   @state() meetingsSourceName: string | null = null;
@@ -780,6 +793,9 @@ export class OpenClawApp extends LitElement {
     ) {
       this.syncBriefingFormFromState(changed.has("tab"));
     }
+    if ((changed.has("tab") || changed.has("configSnapshot")) && this.tab === "routing") {
+      this.syncRoutingAssignmentsFromState(changed.has("tab"));
+    }
     if (!changed.has("sessionKey") || this.agentsPanel !== "tools") {
       return;
     }
@@ -913,6 +929,58 @@ export class OpenClawApp extends LitElement {
 
   setInboxFilter(next: InboxChannelFilter) {
     this.inboxChannelFilter = next;
+  }
+
+  handleRoutingAssignmentChange(channel: RoutingChannelId, agentId: string) {
+    this.routingAssignments = {
+      ...this.routingAssignments,
+      [channel]: agentId,
+    };
+    this.routingDirty = true;
+    this.routingMessage = null;
+  }
+
+  applyRoutingPreset(agentId: string) {
+    this.routingAssignments = {
+      telegram: agentId,
+      whatsapp: agentId,
+    };
+    this.routingDirty = true;
+    this.routingMessage = null;
+  }
+
+  async saveRouting() {
+    if (!this.client || !this.connected || this.routingSaving) {
+      return;
+    }
+    const baseHash = this.configSnapshot?.hash;
+    if (!baseHash) {
+      this.routingMessage = {
+        kind: "error",
+        text: "Config is not loaded yet. Reload and try again.",
+      };
+      return;
+    }
+
+    this.routingSaving = true;
+    this.routingMessage = null;
+    try {
+      const raw = serializeRoutingConfig(this.configSnapshot, this.routingAssignments);
+      await this.client.request("config.set", { raw, baseHash });
+      this.routingDirty = false;
+      await Promise.allSettled([loadConfig(this), loadChannels(this, false), loadAgents(this)]);
+      this.routingMessage = {
+        kind: "success",
+        text: "Routing saved. Changes take effect immediately - no restart needed.",
+      };
+    } catch (error) {
+      this.routingMessage = {
+        kind: "error",
+        text: `Could not save routing: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    } finally {
+      this.routingSaving = false;
+    }
   }
 
   handleMeetingsTitleChange(next: string) {
@@ -1459,6 +1527,23 @@ export class OpenClawApp extends LitElement {
     this.briefingForm = hydrateBriefingForm(job, availableChannels);
     this.briefingDirty = false;
     this.briefingHydrationKey = nextHydrationKey;
+  }
+
+  private syncRoutingAssignmentsFromState(force = false) {
+    if (!force && this.routingDirty) {
+      return;
+    }
+    const nextAssignments = hydrateRoutingAssignments(this.configSnapshot);
+    const currentKey = JSON.stringify(this.routingAssignments);
+    const nextKey = JSON.stringify(nextAssignments);
+    if (!force && currentKey === nextKey) {
+      return;
+    }
+    this.routingAssignments = nextAssignments;
+    this.routingDirty = false;
+    if (force) {
+      this.routingMessage = null;
+    }
   }
 
   private syncOnboardingRouteState(): boolean {
