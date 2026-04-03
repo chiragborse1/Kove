@@ -87,7 +87,7 @@ import {
   revokeDeviceToken,
   rotateDeviceToken,
 } from "./controllers/devices.ts";
-import { loadEmployeesDashboard } from "./controllers/employees.ts";
+import { KOVA_EMPLOYEES, loadEmployeesDashboard } from "./controllers/employees.ts";
 import {
   loadExecApprovals,
   removeExecApprovalsFormValue,
@@ -169,6 +169,82 @@ function lazyRender<M>(getter: () => M | null, render: (mod: M) => unknown) {
 
 const UPDATE_BANNER_DISMISS_KEY = "openclaw:control-ui:update-banner-dismissed:v1";
 const CRON_THINKING_SUGGESTIONS = ["off", "minimal", "low", "medium", "high"];
+
+function readChannelStatus<T>(
+  snapshot: AppViewState["channelsSnapshot"],
+  channelId: string,
+): T | null {
+  const channel = snapshot?.channels?.[channelId];
+  if (!channel || typeof channel !== "object" || Array.isArray(channel)) {
+    return null;
+  }
+  return channel as T;
+}
+
+function countConnectedChannels(state: AppViewState): number {
+  const telegram = readChannelStatus<{ running?: boolean | null }>(state.channelsSnapshot, "telegram");
+  const whatsapp = readChannelStatus<{ connected?: boolean | null }>(state.channelsSnapshot, "whatsapp");
+  let count = 0;
+  if (telegram?.running === true) {
+    count += 1;
+  }
+  if (whatsapp?.connected === true || state.whatsappLoginConnected === true) {
+    count += 1;
+  }
+  return count;
+}
+
+function countActiveEmployees(state: AppViewState): number {
+  const employeeIds = new Set(KOVA_EMPLOYEES.map((employee) => employee.id));
+  const dashboardCount =
+    state.employeesDashboard?.employees.filter((employee) => employeeIds.has(employee.id)).length ?? 0;
+  if (dashboardCount > 0) {
+    return dashboardCount;
+  }
+  const agentsCount =
+    state.agentsList?.agents.filter((agent) => employeeIds.has(agent.id as (typeof KOVA_EMPLOYEES)[number]["id"]))
+      .length ?? 0;
+  return agentsCount > 0 ? agentsCount : KOVA_EMPLOYEES.length;
+}
+
+function renderGatewayHealthBar(state: AppViewState) {
+  const channelCount = countConnectedChannels(state);
+  const employeeCount = countActiveEmployees(state);
+  const version = state.hello?.server?.version ?? state.serverVersion ?? "";
+
+  return html`
+    <div class="health-bar" aria-label="Gateway health">
+      <div class="health-item" title=${state.connected ? "Gateway is connected" : "Gateway is disconnected"}>
+        <span
+          class="health-dot ${state.connected ? "health-dot--online" : "health-dot--offline"}"
+          aria-hidden="true"
+        ></span>
+        <span>${state.connected ? "Online" : "Offline"}</span>
+      </div>
+      <button
+        type="button"
+        class="health-item health-item--action"
+        title="Open channels"
+        @click=${() => state.setTab("channels")}
+      >
+        <span class="health-icon" aria-hidden="true">${icons.zap}</span>
+        <span>${channelCount} ${channelCount === 1 ? "channel" : "channels"}</span>
+      </button>
+      <button
+        type="button"
+        class="health-item health-item--action"
+        title="Open employees"
+        @click=${() => state.setTab("employees")}
+      >
+        <span class="health-icon" aria-hidden="true">${icons.brain}</span>
+        <span>${employeeCount} employees</span>
+      </button>
+      ${version
+        ? html`<div class="health-item health-item--version" title=${`Gateway version v${version}`}>v${version}</div>`
+        : nothing}
+    </div>
+  `;
+}
 const CRON_TIMEZONE_SUGGESTIONS = [
   "UTC",
   "America/Los_Angeles",
@@ -525,6 +601,7 @@ export function renderApp(state: AppViewState) {
             </button>
             <div class="topbar-status">
               ${isChat ? renderChatMobileToggle(state) : nothing}
+              ${renderGatewayHealthBar(state)}
               ${renderTopbarThemeModeToggle(state)}
             </div>
           </div>

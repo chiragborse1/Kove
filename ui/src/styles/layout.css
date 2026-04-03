@@ -174,6 +174,81 @@
   gap: 8px;
 }
 
+.health-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.health-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.health-item--action {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: filter var(--duration-fast) ease;
+}
+
+.health-item--action:hover {
+  filter: brightness(1.12);
+}
+
+.health-item--version {
+  color: color-mix(in srgb, var(--muted) 88%, transparent);
+}
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #ef4444;
+}
+
+.health-dot--online {
+  background: #22c55e;
+  animation: health-pulse 2s infinite;
+}
+
+.health-dot--offline {
+  background: #ef4444;
+}
+
+.health-icon {
+  width: 13px;
+  height: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+@keyframes health-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, #22c55e 36%, transparent);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, #22c55e 0%, transparent);
+    opacity: 0.9;
+  }
+}
+
 .topbar-status .pill {
   padding: 6px 10px;
   gap: 6px;

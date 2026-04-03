@@ -273,6 +273,25 @@
     flex-wrap: nowrap;
   }
 
+  .health-bar {
+    gap: 8px;
+  }
+
+  .health-item {
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .health-item--version {
+    display: none;
+  }
+
+  .health-icon,
+  .health-icon svg {
+    width: 12px;
+    height: 12px;
+  }
+
   .topbar-search {
     min-width: 0;
     flex: 1;
