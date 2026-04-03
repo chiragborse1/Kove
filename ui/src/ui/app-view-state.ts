@@ -151,6 +151,7 @@ export type AppViewState = {
   aiAgentsActiveSection: string | null;
   aiAgentsActiveSubsection: string | null;
   apiKeysLoading: boolean;
+  apiKeysLoaded: boolean;
   apiKeysSavingProviderId: ApiKeyProviderId | null;
   apiKeysTestingProviderId: ApiKeyProviderId | null;
   apiKeysModelSaving: boolean;

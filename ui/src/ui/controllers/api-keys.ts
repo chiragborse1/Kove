@@ -123,6 +123,7 @@ export type ApiKeysState = {
   client: GatewayBrowserClient | null;
   connected: boolean;
   apiKeysLoading: boolean;
+  apiKeysLoaded: boolean;
   apiKeysSavingProviderId: ApiKeyProviderId | null;
   apiKeysTestingProviderId: ApiKeyProviderId | null;
   apiKeysModelSaving: boolean;
@@ -205,6 +206,7 @@ function applySnapshot(state: ApiKeysState, snapshot: ApiKeysSnapshot, options?:
   for (const status of snapshot.providers) {
     nextStatuses[status.provider] = status;
   }
+  state.apiKeysLoaded = true;
   state.apiKeyProviderStatuses = nextStatuses;
   state.apiKeysConfigHash = snapshot.configHash;
   syncModelDraft(state, snapshot.currentModel);

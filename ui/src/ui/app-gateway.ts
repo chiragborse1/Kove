@@ -24,6 +24,7 @@ import { loadAssistantIdentity } from "./controllers/assistant-identity.ts";
 import { loadChatHistory } from "./controllers/chat.ts";
 import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import { handleChatEvent, type ChatEventPayload } from "./controllers/chat.ts";
+import { loadApiKeys } from "./controllers/api-keys.ts";
 import { loadConfig } from "./controllers/config.ts";
 import { loadDevices } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
@@ -257,6 +258,7 @@ export function connectGateway(host: GatewayHost, options?: ConnectGatewayOption
       void loadHealthState(host as unknown as OpenClawApp);
       void loadNodes(host as unknown as OpenClawApp, { quiet: true });
       void loadDevices(host as unknown as OpenClawApp, { quiet: true });
+      void loadApiKeys(host as unknown as OpenClawApp);
       void loadConfig(host as unknown as OpenClawApp);
       void refreshActiveTab(host as unknown as Parameters<typeof refreshActiveTab>[0]);
     },

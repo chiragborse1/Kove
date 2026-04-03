@@ -257,6 +257,7 @@ export class OpenClawApp extends LitElement {
   @state() aiAgentsActiveSection: string | null = null;
   @state() aiAgentsActiveSubsection: string | null = null;
   @state() apiKeysLoading = false;
+  @state() apiKeysLoaded = false;
   @state() apiKeysSavingProviderId: ApiKeyProviderId | null = null;
   @state() apiKeysTestingProviderId: ApiKeyProviderId | null = null;
   @state() apiKeysModelSaving = false;
@@ -838,16 +839,8 @@ export class OpenClawApp extends LitElement {
     return renderApp(this as unknown as AppViewState);
   }
 
-  private hasConfiguredProvider(): boolean {
-    const auth = (this.configSnapshot?.config as { auth?: unknown } | null)?.auth;
-    if (!auth || typeof auth !== "object" || Array.isArray(auth)) {
-      return false;
-    }
-    const profiles = (auth as { profiles?: unknown }).profiles;
-    if (!profiles || typeof profiles !== "object" || Array.isArray(profiles)) {
-      return false;
-    }
-    return Object.keys(profiles).length > 0;
+  private hasSavedProviderKey(): boolean {
+    return Object.values(this.apiKeyProviderStatuses).some((status) => status?.hasKey === true);
   }
 
   private hasCompletedOnboarding(): boolean {
@@ -867,15 +860,19 @@ export class OpenClawApp extends LitElement {
       return false;
     }
 
+    if (!this.apiKeysLoaded) {
+      return false;
+    }
+
     if (this.tab === "onboarding") {
-      if (this.hasCompletedOnboarding() || (this.hasConfiguredProvider() && !this.onboardingInteracted)) {
+      if (this.hasCompletedOnboarding() || (this.hasSavedProviderKey() && !this.onboardingInteracted)) {
         this.setTab("employees");
         return true;
       }
       return false;
     }
 
-    if (!this.hasCompletedOnboarding() && this.configSnapshot && !this.hasConfiguredProvider()) {
+    if (!this.hasCompletedOnboarding() && !this.hasSavedProviderKey()) {
       this.onboardingStep = 1;
       this.onboardingInteracted = false;
       this.setTab("onboarding");
