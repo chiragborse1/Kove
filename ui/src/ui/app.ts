@@ -1149,8 +1149,8 @@ export class OpenClawApp extends LitElement {
 
     const refreshKey = String(Date.now());
     const token = resolveCanvasAuthToken({
-      hello: this.hello,
       settings: this.settings,
+      password: this.password,
     });
     const canvasUrl = buildCanvasUrl({
       baseUrl,
@@ -1188,8 +1188,8 @@ export class OpenClawApp extends LitElement {
       return;
     }
     const token = resolveCanvasAuthToken({
-      hello: this.hello,
       settings: this.settings,
+      password: this.password,
     });
     await ensureCanvasAuthWorker({
       basePath: this.basePath,

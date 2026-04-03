@@ -31,7 +31,8 @@ import { renderTelegramCard } from "./channels.telegram.ts";
 import type { ChannelKey, ChannelsChannelData, ChannelsProps } from "./channels.types.ts";
 import { renderWhatsAppCard } from "./channels.whatsapp.ts";
 
-const SUPPORTED_CHANNELS = ["telegram", "whatsapp"] as const satisfies readonly ChannelKey[];
+const SHOW_WHATSAPP_CHANNEL = false;
+const SUPPORTED_CHANNELS = ["telegram"] as const satisfies readonly ChannelKey[];
 
 export function renderChannels(props: ChannelsProps) {
   const channels = props.snapshot?.channels as Record<string, unknown> | null;
@@ -101,13 +102,18 @@ function resolveChannelOrder(snapshot: ChannelsStatusSnapshot | null): ChannelKe
     : snapshot?.channelOrder?.length
       ? snapshot.channelOrder
       : [];
-  return [...new Set<ChannelKey>([...SUPPORTED_CHANNELS, ...snapshotOrder])];
+  return [...new Set<ChannelKey>([...SUPPORTED_CHANNELS, ...snapshotOrder])].filter(
+    (channelId) => SHOW_WHATSAPP_CHANNEL || channelId !== "whatsapp",
+  );
 }
 
 function renderChannel(key: ChannelKey, props: ChannelsProps, data: ChannelsChannelData) {
   const accountCountLabel = renderChannelAccountCount(key, data.channelAccounts);
   switch (key) {
     case "whatsapp":
+      if (!SHOW_WHATSAPP_CHANNEL) {
+        return nothing;
+      }
       return renderWhatsAppCard({
         props,
         whatsapp: data.whatsapp,

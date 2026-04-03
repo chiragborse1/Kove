@@ -1,4 +1,3 @@
-import type { GatewayHelloOk } from "../gateway.ts";
 import { normalizeBasePath } from "../navigation.ts";
 import type { UiSettings } from "../storage.ts";
 import type { AgentsListResult } from "../types.ts";
@@ -74,7 +73,7 @@ function toHttpOrigin(gatewayUrl: string): string | null {
 }
 
 export function resolveCanvasBaseUrl(params: {
-  hello: GatewayHelloOk | null;
+  hello: import("../gateway.ts").GatewayHelloOk | null;
   settings: Pick<UiSettings, "gatewayUrl">;
 }): string | null {
   const helloUrl = params.hello?.canvasHostUrl?.trim();
@@ -89,14 +88,14 @@ export function resolveCanvasBaseUrl(params: {
 }
 
 export function resolveCanvasAuthToken(params: {
-  hello: GatewayHelloOk | null;
   settings: Pick<UiSettings, "token">;
+  password?: string | null;
 }): string {
-  const deviceToken = params.hello?.auth?.deviceToken?.trim();
-  if (deviceToken) {
-    return deviceToken;
+  const sharedToken = params.settings.token.trim();
+  if (sharedToken) {
+    return sharedToken;
   }
-  return params.settings.token.trim();
+  return params.password?.trim() ?? "";
 }
 
 export function buildCanvasUrl(params: {
