@@ -109,7 +109,7 @@ export function renderMeetings(props: MeetingsProps) {
           <section class="card" style="display: grid; gap: 16px;">
             <div style="display: grid; gap: 4px;">
               <div class="card-title">Upload Transcript</div>
-              <div class="card-sub">Accepts `.txt`, `.md`, and `.pdf` files, or paste the transcript below.</div>
+              <div class="card-sub">Accepts '.txt', '.md', and '.pdf' files, or paste the transcript below.</div>
             </div>
 
             <label
