@@ -33,7 +33,7 @@ self.addEventListener("message", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (!shouldIntercept(request.url) || !canvasBearerToken) {
+  if (!shouldIntercept(request.url) || !canvasBearerToken || request.mode === "navigate") {
     return;
   }
 
