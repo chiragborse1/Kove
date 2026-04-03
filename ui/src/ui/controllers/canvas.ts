@@ -102,6 +102,7 @@ export function resolveCanvasAuthToken(params: {
 export function buildCanvasUrl(params: {
   baseUrl: string;
   agentId?: string | null;
+  token?: string | null;
   refreshKey?: string | null;
 }): string {
   const url = new URL(params.baseUrl, window.location.href);
@@ -111,6 +112,9 @@ export function buildCanvasUrl(params: {
   url.hash = "";
   if (params.agentId?.trim()) {
     url.searchParams.set("agent", params.agentId.trim());
+  }
+  if (params.token?.trim()) {
+    url.searchParams.set("token", params.token.trim());
   }
   if (params.refreshKey?.trim()) {
     url.searchParams.set("_ui_refresh", params.refreshKey.trim());

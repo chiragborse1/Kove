@@ -1,16 +1,12 @@
 ﻿import type { GatewayBrowserClient } from "../gateway.ts";
+import type { AgentsListResult } from "../types.ts";
 import type { GatewaySessionRow, SessionsListResult, SessionsUsageResult } from "../types.ts";
 import {
   formatMissingOperatorReadScopeMessage,
   isMissingOperatorReadScopeError,
 } from "./scope-errors.ts";
 
-export type KovaEmployeeId =
-  | "kova-alex"
-  | "kova-casey"
-  | "kova-morgan"
-  | "kova-jordan"
-  | "kova-riley";
+export type KovaEmployeeId = string;
 
 export type EmployeeAutonomy = "Supervised" | "Act + Notify" | "Autonomous";
 export type EmployeeStatus = "active" | "idle" | "never";
@@ -47,6 +43,7 @@ export type EmployeesState = {
   employeesLoading: boolean;
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
+  agentsList?: AgentsListResult | null;
 };
 
 type EmployeeMeta = {
@@ -105,8 +102,12 @@ export async function loadEmployeesDashboard(state: EmployeesState) {
   state.employeesLoading = true;
   state.employeesError = null;
   try {
+    const agentsList =
+      state.agentsList ??
+      (await state.client.request<AgentsListResult>("agents.list", {}));
+    const employeeMeta = resolveKovaEmployeeMeta(agentsList);
     const sessionsByAgentEntries = await Promise.all(
-      KOVA_EMPLOYEES.map(async (employee) => {
+      employeeMeta.map(async (employee) => {
         const result = await state.client!.request<SessionsListResult>("sessions.list", {
           agentId: employee.id,
           includeGlobal: false,
@@ -121,10 +122,11 @@ export async function loadEmployeesDashboard(state: EmployeesState) {
       endDate: new Date().toISOString().slice(0, 10),
       limit: EMPLOYEE_USAGE_LIMIT,
     });
-    const sessionsByAgent = Object.fromEntries(
-      sessionsByAgentEntries,
-    ) as Record<KovaEmployeeId, SessionsListResult>;
-    state.employeesDashboard = buildEmployeesDashboard(sessionsByAgent, usageResult);
+    const sessionsByAgent = Object.fromEntries(sessionsByAgentEntries) as Record<
+      string,
+      SessionsListResult
+    >;
+    state.employeesDashboard = buildEmployeesDashboard(employeeMeta, sessionsByAgent, usageResult);
   } catch (err) {
     state.employeesDashboard = null;
     state.employeesError = isMissingOperatorReadScopeError(err)
@@ -135,8 +137,41 @@ export async function loadEmployeesDashboard(state: EmployeesState) {
   }
 }
 
+function resolveKovaEmployeeMeta(agentsList: AgentsListResult | null | undefined): EmployeeMeta[] {
+  const builtinById = new Map(KOVA_EMPLOYEES.map((employee) => [employee.id, employee] as const));
+  const dynamicEmployees = (agentsList?.agents ?? [])
+    .filter((agent) => agent.id.startsWith("kova-"))
+    .map((agent) => {
+      const builtin = builtinById.get(agent.id);
+      const fallbackName = agent.id
+        .replace(/^kova-/, "")
+        .split("-")
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+      return {
+        id: agent.id,
+        name:
+          agent.identity?.name?.trim() ||
+          agent.name?.trim() ||
+          builtin?.name ||
+          fallbackName ||
+          agent.id,
+        role: builtin?.role ?? "Employee",
+        avatar: agent.identity?.emoji?.trim() || builtin?.avatar || "🤖",
+        autonomy: builtin?.autonomy ?? "Act + Notify",
+      } satisfies EmployeeMeta;
+    });
+
+  if (dynamicEmployees.length > 0) {
+    return dynamicEmployees;
+  }
+  return KOVA_EMPLOYEES;
+}
+
 function buildEmployeesDashboard(
-  sessionsByAgent: Record<KovaEmployeeId, SessionsListResult>,
+  employeeMeta: EmployeeMeta[],
+  sessionsByAgent: Record<string, SessionsListResult>,
   usageResult: SessionsUsageResult,
 ): EmployeesDashboardResult {
   const now = Date.now();
@@ -145,9 +180,9 @@ function buildEmployeesDashboard(
   const todayStartMs = todayStart.getTime();
   const activity: EmployeeActivityItem[] = [];
 
-  const employees = KOVA_EMPLOYEES.map((employee) => {
+  const employees = employeeMeta.map((employee) => {
     const agentSessions = usageResult.sessions.filter(
-      (session): session is typeof session & { agentId: KovaEmployeeId } => session.agentId === employee.id,
+      (session): session is typeof session & { agentId: string } => session.agentId === employee.id,
     );
     const liveRows = sessionsByAgent[employee.id]?.sessions ?? [];
     const liveRowsByKey = new Map(liveRows.map((row) => [row.key, row] as const));

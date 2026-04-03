@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { MEETING_EMPTY_SECTION_TEXT } from "../controllers/meetings.ts";
 import { formatRelativeTimestamp } from "../format.ts";
 import { icons } from "../icons.ts";
 import type { MeetingAnalysisResult } from "../types.ts";
@@ -53,7 +54,7 @@ function renderResultCard(props: ResultCardProps) {
       <div
         style="white-space: pre-wrap; line-height: 1.65; font-size: 14px; color: var(--text); min-height: 120px;"
       >
-        ${props.body.trim() || "No content returned for this section yet."}
+        ${props.body.trim() || MEETING_EMPTY_SECTION_TEXT}
       </div>
       ${props.footer ?? nothing}
     </article>

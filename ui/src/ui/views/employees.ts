@@ -1,40 +1,25 @@
 import { html, nothing } from "lit";
 import { formatRelativeTimestamp } from "../format.ts";
 import {
-  KOVA_EMPLOYEES,
   type EmployeeCard,
   type EmployeesDashboardResult,
-  type KovaEmployeeId,
 } from "../controllers/employees.ts";
 
 export type EmployeesProps = {
   loading: boolean;
   error: string | null;
   dashboard: EmployeesDashboardResult | null;
-  filterAgentId: KovaEmployeeId | null;
+  filterAgentId: string | null;
   onClearFilter: () => void;
   onRefresh: () => void;
-  onOpenChat: (agentId: KovaEmployeeId) => void;
-  onViewSessions: (agentId: KovaEmployeeId) => void;
+  onOpenChat: (agentId: string) => void;
+  onViewSessions: (agentId: string) => void;
 };
 
 export function renderEmployees(props: EmployeesProps) {
-  const cardsById = new Map(
-    (props.dashboard?.employees ?? []).map((employee) => [employee.id, employee] as const),
-  );
-  const employees = KOVA_EMPLOYEES.map((employee) => ({
-    id: employee.id,
-    name: employee.name,
-    role: employee.role,
-    avatar: employee.avatar,
-    autonomy: employee.autonomy,
-    status: cardsById.get(employee.id)?.status ?? "never",
-    lastActiveAt: cardsById.get(employee.id)?.lastActiveAt ?? null,
-    sessionsToday: cardsById.get(employee.id)?.sessionsToday ?? 0,
-    totalMessages: cardsById.get(employee.id)?.totalMessages ?? 0,
-  } satisfies EmployeeCard));
+  const employees = props.dashboard?.employees ?? [];
   const selectedEmployee = props.filterAgentId
-    ? (KOVA_EMPLOYEES.find((employee) => employee.id === props.filterAgentId) ?? null)
+    ? (employees.find((employee) => employee.id === props.filterAgentId) ?? null)
     : null;
   const visibleEmployees = selectedEmployee
     ? employees.filter((employee) => employee.id === selectedEmployee.id)
@@ -48,7 +33,9 @@ export function renderEmployees(props: EmployeesProps) {
       <section class="card employees-hero">
         <div>
           <div class="card-title employees-hero__title">Your AI Team</div>
-          <div class="card-sub">5 employees active</div>
+          <div class="card-sub">
+            ${employees.length === 1 ? "1 employee available" : `${employees.length} employees available`}
+          </div>
           ${selectedEmployee
             ? html`
                 <div class="employees-hero__filter">
@@ -71,9 +58,21 @@ export function renderEmployees(props: EmployeesProps) {
 
       ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
 
-      <section class="employees-grid">
-        ${visibleEmployees.map((employee) => renderEmployeeCard(employee, props))}
-      </section>
+      ${visibleEmployees.length === 0
+        ? html`
+            <section class="card">
+              <div class="muted" style="font-size: 13px;">
+                ${props.loading
+                  ? "Loading Kova employees..."
+                  : "No Kova employees found yet. Create one from the Agents page to see it here."}
+              </div>
+            </section>
+          `
+        : html`
+            <section class="employees-grid">
+              ${visibleEmployees.map((employee) => renderEmployeeCard(employee, props))}
+            </section>
+          `}
 
       <section class="card employees-activity">
         <div class="employees-activity__header">

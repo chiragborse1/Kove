@@ -101,7 +101,7 @@ import {
   revokeDeviceToken,
   rotateDeviceToken,
 } from "./controllers/devices.ts";
-import { KOVA_EMPLOYEES, loadEmployeesDashboard } from "./controllers/employees.ts";
+import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import {
   loadExecApprovals,
   removeExecApprovalsFormValue,
@@ -217,16 +217,15 @@ function countConnectedChannels(state: AppViewState): number {
 }
 
 function countActiveEmployees(state: AppViewState): number {
-  const employeeIds = new Set(KOVA_EMPLOYEES.map((employee) => employee.id));
   const dashboardCount =
-    state.employeesDashboard?.employees.filter((employee) => employeeIds.has(employee.id)).length ?? 0;
+    state.employeesDashboard?.employees.filter((employee) => employee.id.startsWith("kova-")).length ?? 0;
   if (dashboardCount > 0) {
     return dashboardCount;
   }
   const agentsCount =
-    state.agentsList?.agents.filter((agent) => employeeIds.has(agent.id as (typeof KOVA_EMPLOYEES)[number]["id"]))
+    state.agentsList?.agents.filter((agent) => agent.id.startsWith("kova-"))
       .length ?? 0;
-  return agentsCount > 0 ? agentsCount : KOVA_EMPLOYEES.length;
+  return agentsCount;
 }
 
 function renderGatewayHealthBar(state: AppViewState) {
@@ -1635,9 +1634,7 @@ export function renderApp(state: AppViewState) {
                   state.setTab("chat" as import("./navigation.ts").Tab);
                 },
                 onNavigateToActivity: (agentId) => {
-                  state.employeesFilterAgentId = KOVA_EMPLOYEES.some((employee) => employee.id === agentId)
-                    ? (agentId as import("./controllers/employees.ts").KovaEmployeeId)
-                    : null;
+                  state.employeesFilterAgentId = agentId.startsWith("kova-") ? agentId : null;
                   state.setTab("employees" as import("./navigation.ts").Tab);
                 },
               }),

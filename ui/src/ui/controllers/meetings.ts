@@ -4,8 +4,9 @@ const MEETING_HISTORY_STORAGE_KEY = "openclaw.control.meetings.v1";
 const MAX_MEETING_HISTORY = 5;
 
 export const MEETING_ANALYSIS_AGENT_ID = "kova-morgan";
+export const MEETING_EMPTY_SECTION_TEXT = "None identified";
 export const MEETING_ANALYSIS_INSTRUCTION =
-  "You are analysing a meeting transcript. Produce: 1) A 3-paragraph summary, 2) Action items as a numbered list with owner and deadline if mentioned, 3) Key decisions made, 4) A follow-up email draft addressed to meeting participants. Format clearly with headers.";
+  "You are analysing a meeting transcript. Return only markdown using these exact headers in this exact order: `## Summary`, `## Action Items`, `## Key Decisions`, `## Follow-up Email`. Do not merge sections. Put every item under the correct header. If a section has nothing concrete, write `None identified`.";
 
 export type MeetingAnalysisResult = {
   id: string;
@@ -20,32 +21,21 @@ export type MeetingAnalysisResult = {
   rawResponse: string;
 };
 
+type SectionKey = keyof Pick<
+  MeetingAnalysisResult,
+  "summary" | "actionItems" | "decisions" | "followUpEmail"
+>;
+
 type SectionDefinition = {
-  key: keyof Pick<
-    MeetingAnalysisResult,
-    "summary" | "actionItems" | "decisions" | "followUpEmail"
-  >;
-  label: string;
-  patterns: string[];
+  key: SectionKey;
+  header: string;
 };
 
 const SECTION_DEFINITIONS: SectionDefinition[] = [
-  { key: "summary", label: "Summary", patterns: ["summary"] },
-  {
-    key: "actionItems",
-    label: "Action Items",
-    patterns: ["action items", "actions", "next steps"],
-  },
-  {
-    key: "decisions",
-    label: "Key Decisions",
-    patterns: ["key decisions", "decisions", "decisions made"],
-  },
-  {
-    key: "followUpEmail",
-    label: "Follow-up Email",
-    patterns: ["follow-up email", "follow up email", "email draft", "draft email"],
-  },
+  { key: "summary", header: "Summary" },
+  { key: "actionItems", header: "Action Items" },
+  { key: "decisions", header: "Key Decisions" },
+  { key: "followUpEmail", header: "Follow-up Email" },
 ];
 
 type ParsedMeetingHistory = Partial<MeetingAnalysisResult>[];
@@ -77,23 +67,9 @@ function isMeetingAnalysisResult(value: unknown): value is MeetingAnalysisResult
   );
 }
 
-function buildHeaderRegex(patterns: string[]): RegExp {
-  return new RegExp(`^(?:#{1,6}\\s*)?(?:${patterns.join("|")})\\s*:?\\s*$`, "gim");
-}
-
-function pickSectionText(params: {
-  key: SectionDefinition["key"];
-  sections: Map<SectionDefinition["key"], string>;
-  rawResponse: string;
-}): string {
-  const exact = params.sections.get(params.key)?.trim();
-  if (exact) {
-    return exact;
-  }
-  if (params.key === "summary") {
-    return params.rawResponse.trim();
-  }
-  return "";
+function normalizeMeetingSectionText(value: string): string {
+  const trimmed = value.trim();
+  return trimmed || MEETING_EMPTY_SECTION_TEXT;
 }
 
 export function buildMeetingAnalysisPrompt(params: {
@@ -112,6 +88,8 @@ export function buildMeetingAnalysisPrompt(params: {
     "## Key Decisions",
     "## Follow-up Email",
     "",
+    `If a section has no concrete items, write exactly: ${MEETING_EMPTY_SECTION_TEXT}`,
+    "",
     titleLine,
     "",
     "Transcript:",
@@ -126,47 +104,61 @@ export function parseMeetingAnalysisResponse(response: string): Pick<
   const rawResponse = normalizeLineEndings(response).trim();
   if (!rawResponse) {
     return {
-      summary: "",
-      actionItems: "",
-      decisions: "",
-      followUpEmail: "",
+      summary: MEETING_EMPTY_SECTION_TEXT,
+      actionItems: MEETING_EMPTY_SECTION_TEXT,
+      decisions: MEETING_EMPTY_SECTION_TEXT,
+      followUpEmail: MEETING_EMPTY_SECTION_TEXT,
       rawResponse: "",
     };
   }
 
-  const matches: Array<{ key: SectionDefinition["key"]; start: number; end: number }> = [];
-  for (const section of SECTION_DEFINITIONS) {
-    const regex = buildHeaderRegex(section.patterns);
-    let match: RegExpExecArray | null = regex.exec(rawResponse);
-    while (match) {
+  const sectionByHeader = new Map(
+    SECTION_DEFINITIONS.map((section) => [section.header.toLowerCase(), section] as const),
+  );
+  const headerRegex = /^##\s+(Summary|Action Items|Key Decisions|Follow-up Email)\s*$/gim;
+  const matches: Array<{ key: SectionKey; start: number; end: number }> = [];
+  let match: RegExpExecArray | null = headerRegex.exec(rawResponse);
+  while (match) {
+    const header = match[1]?.trim().toLowerCase();
+    const section = header ? sectionByHeader.get(header) : undefined;
+    if (section) {
       matches.push({
         key: section.key,
         start: match.index,
-        end: regex.lastIndex,
+        end: headerRegex.lastIndex,
       });
-      match = regex.exec(rawResponse);
     }
+    match = headerRegex.exec(rawResponse);
   }
 
-  matches.sort((left, right) => left.start - right.start);
-  const sections = new Map<SectionDefinition["key"], string>();
+  if (matches.length === 0) {
+    return {
+      summary: normalizeMeetingSectionText(rawResponse),
+      actionItems: MEETING_EMPTY_SECTION_TEXT,
+      decisions: MEETING_EMPTY_SECTION_TEXT,
+      followUpEmail: MEETING_EMPTY_SECTION_TEXT,
+      rawResponse,
+    };
+  }
+
+  const sections = new Map<SectionKey, string>();
   for (let index = 0; index < matches.length; index += 1) {
-    const match = matches[index];
-    if (sections.has(match.key)) {
+    const current = matches[index];
+    if (sections.has(current.key)) {
       continue;
     }
     const next = matches[index + 1];
     const content = rawResponse
-      .slice(match.end, next?.start ?? rawResponse.length)
+      .slice(current.end, next?.start ?? rawResponse.length)
       .trim();
-    sections.set(match.key, content);
+    sections.set(current.key, normalizeMeetingSectionText(content));
   }
 
   return {
-    summary: pickSectionText({ key: "summary", sections, rawResponse }),
-    actionItems: pickSectionText({ key: "actionItems", sections, rawResponse }),
-    decisions: pickSectionText({ key: "decisions", sections, rawResponse }),
-    followUpEmail: pickSectionText({ key: "followUpEmail", sections, rawResponse }),
+    summary: sections.get("summary") ?? MEETING_EMPTY_SECTION_TEXT,
+    actionItems: sections.get("actionItems") ?? MEETING_EMPTY_SECTION_TEXT,
+    decisions: sections.get("decisions") ?? MEETING_EMPTY_SECTION_TEXT,
+    followUpEmail: sections.get("followUpEmail") ?? MEETING_EMPTY_SECTION_TEXT,
     rawResponse,
   };
 }

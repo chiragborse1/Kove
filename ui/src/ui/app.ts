@@ -1151,14 +1151,15 @@ export class OpenClawApp extends LitElement {
     }
 
     const refreshKey = String(Date.now());
-    const canvasUrl = buildCanvasUrl({
-      baseUrl,
-      agentId: this.canvasSelectedAgentId,
-      refreshKey,
-    });
     const token = resolveCanvasAuthToken({
       hello: this.hello,
       settings: this.settings,
+    });
+    const canvasUrl = buildCanvasUrl({
+      baseUrl,
+      agentId: this.canvasSelectedAgentId,
+      token,
+      refreshKey,
     });
 
     this.canvasRefreshing = true;
@@ -1200,6 +1201,7 @@ export class OpenClawApp extends LitElement {
     const canvasUrl = buildCanvasUrl({
       baseUrl,
       agentId: this.canvasSelectedAgentId,
+      token,
       refreshKey: null,
     });
     window.open(canvasUrl, "_blank", "noopener,noreferrer");
@@ -1434,14 +1436,10 @@ export class OpenClawApp extends LitElement {
         throw new Error("Connect Telegram and open a Telegram conversation before sending this draft.");
       }
 
-      await this.client.request("send", {
-        to: telegramSession.lastTo,
-        message,
-        channel: "telegram",
-        accountId: telegramSession.lastAccountId ?? undefined,
-        threadId: telegramSession.lastThreadId ?? undefined,
+      await this.client.request("chat.send", {
         sessionKey: telegramSession.key,
-        agentId: resolveAgentIdFromSessionKey(telegramSession.key),
+        message,
+        deliver: true,
         idempotencyKey: generateUUID(),
       });
 

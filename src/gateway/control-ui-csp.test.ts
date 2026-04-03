@@ -17,6 +17,13 @@ describe("buildControlUiCspHeader", () => {
     expect(csp).toContain("font-src 'self' https://fonts.gstatic.com");
   });
 
+  it("allows required external APIs for marketplace and voice playback", () => {
+    const csp = buildControlUiCspHeader();
+    expect(csp).toContain("connect-src 'self' ws: wss:");
+    expect(csp).toContain("https://api.elevenlabs.io");
+    expect(csp).toContain("https://raw.githubusercontent.com");
+  });
+
   it("includes inline script hashes in script-src when provided", () => {
     const csp = buildControlUiCspHeader({
       inlineScriptHashes: ["sha256-abc123"],
