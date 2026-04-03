@@ -6,6 +6,12 @@ import {
 } from "../../../src/routing/session-key.js";
 import { t } from "../i18n/index.ts";
 import { getSafeLocalStorage } from "../local-storage.ts";
+import {
+  BRAND_TAGLINE,
+  BRAND_WORDMARK,
+  brandDisplayName,
+  brandDisplayText,
+} from "./branding.ts";
 import { refreshChatAvatar } from "./app-chat.ts";
 import { renderUsageTab } from "./app-render-usage-tab.ts";
 import {
@@ -476,6 +482,7 @@ export function renderApp(state: AppViewState) {
   const navCollapsed = Boolean(state.settings.navCollapsed && !navDrawerOpen);
   const showThinking = state.onboarding ? false : state.settings.chatShowThinking;
   const showToolCalls = state.onboarding ? true : state.settings.chatShowToolCalls;
+  const assistantName = brandDisplayName(state.assistantName) || state.assistantName;
   const assistantAvatarUrl = resolveAssistantAvatarUrl(state);
   const chatAvatarUrl = state.chatAvatarUrl ?? assistantAvatarUrl ?? null;
   const configValue =
@@ -635,14 +642,9 @@ export function renderApp(state: AppViewState) {
                 ${navCollapsed
                   ? nothing
                   : html`
-                      <img
-                        class="sidebar-brand__logo"
-                        src="${agentLogoUrl(basePath)}"
-                        alt="OpenClaw"
-                      />
                       <span class="sidebar-brand__copy">
-                        <span class="sidebar-brand__eyebrow">${t("nav.control")}</span>
-                        <span class="sidebar-brand__title">OpenClaw</span>
+                        <span class="sidebar-brand__title">${BRAND_WORDMARK}</span>
+                        <span class="sidebar-brand__tagline">${BRAND_TAGLINE}</span>
                       </span>
                     `}
               </div>
@@ -780,7 +782,7 @@ export function renderApp(state: AppViewState) {
               </div>
               <div class="page-meta">
                 ${state.lastError
-                  ? html`<div class="pill danger">${state.lastError}</div>`
+                  ? html`<div class="pill danger">${brandDisplayText(state.lastError)}</div>`
                   : nothing}
                 ${isChat ? renderChatControls(state) : nothing}
               </div>
@@ -1880,7 +1882,7 @@ export function renderApp(state: AppViewState) {
               onOpenSidebar: (content: string) => state.handleOpenSidebar(content),
               onCloseSidebar: () => state.handleCloseSidebar(),
               onSplitRatioChange: (ratio: number) => state.handleSplitRatioChange(ratio),
-              assistantName: state.assistantName,
+              assistantName,
               assistantAvatar: state.assistantAvatar,
               basePath: state.basePath ?? "",
             })
@@ -1963,7 +1965,7 @@ export function renderApp(state: AppViewState) {
               borderRadius: state.settings.borderRadius,
               setBorderRadius: (v) => state.setBorderRadius(v),
               gatewayUrl: state.settings.gatewayUrl,
-              assistantName: state.assistantName,
+              assistantName,
               configPath: state.configSnapshot?.path ?? null,
               rawAvailable: typeof state.configSnapshot?.raw === "string",
               excludeSections: [
@@ -2065,7 +2067,7 @@ export function renderApp(state: AppViewState) {
               borderRadius: state.settings.borderRadius,
               setBorderRadius: (v) => state.setBorderRadius(v),
               gatewayUrl: state.settings.gatewayUrl,
-              assistantName: state.assistantName,
+              assistantName,
               configPath: state.configSnapshot?.path ?? null,
               rawAvailable: typeof state.configSnapshot?.raw === "string",
               navRootLabel: "Communication",
@@ -2130,7 +2132,7 @@ export function renderApp(state: AppViewState) {
               borderRadius: state.settings.borderRadius,
               setBorderRadius: (v) => state.setBorderRadius(v),
               gatewayUrl: state.settings.gatewayUrl,
-              assistantName: state.assistantName,
+              assistantName,
               configPath: state.configSnapshot?.path ?? null,
               rawAvailable: typeof state.configSnapshot?.raw === "string",
               navRootLabel: "Appearance",
@@ -2195,7 +2197,7 @@ export function renderApp(state: AppViewState) {
               borderRadius: state.settings.borderRadius,
               setBorderRadius: (v) => state.setBorderRadius(v),
               gatewayUrl: state.settings.gatewayUrl,
-              assistantName: state.assistantName,
+              assistantName,
               configPath: state.configSnapshot?.path ?? null,
               rawAvailable: typeof state.configSnapshot?.raw === "string",
               navRootLabel: "Automation",
@@ -2260,7 +2262,7 @@ export function renderApp(state: AppViewState) {
               borderRadius: state.settings.borderRadius,
               setBorderRadius: (v) => state.setBorderRadius(v),
               gatewayUrl: state.settings.gatewayUrl,
-              assistantName: state.assistantName,
+              assistantName,
               configPath: state.configSnapshot?.path ?? null,
               rawAvailable: typeof state.configSnapshot?.raw === "string",
               navRootLabel: "Infrastructure",
@@ -2321,7 +2323,7 @@ export function renderApp(state: AppViewState) {
               borderRadius: state.settings.borderRadius,
               setBorderRadius: (v) => state.setBorderRadius(v),
               gatewayUrl: state.settings.gatewayUrl,
-              assistantName: state.assistantName,
+              assistantName,
               configPath: state.configSnapshot?.path ?? null,
               rawAvailable: typeof state.configSnapshot?.raw === "string",
               navRootLabel: "AI & Agents",

@@ -1,6 +1,7 @@
 import { html } from "lit";
 import { t } from "../../i18n/index.ts";
 import type { AppViewState } from "../app-view-state.ts";
+import { BRAND_NAME, brandDisplayText } from "../branding.ts";
 import { icons } from "../icons.ts";
 import { normalizeBasePath } from "../navigation.ts";
 import { agentLogoUrl } from "./agents-utils.ts";
@@ -14,8 +15,8 @@ export function renderLoginGate(state: AppViewState) {
     <div class="login-gate">
       <div class="login-gate__card">
         <div class="login-gate__header">
-          <img class="login-gate__logo" src=${faviconSrc} alt="OpenClaw" />
-          <div class="login-gate__title">OpenClaw</div>
+          <img class="login-gate__logo" src=${faviconSrc} alt=${BRAND_NAME} />
+          <div class="login-gate__title">${BRAND_NAME}</div>
           <div class="login-gate__sub">${t("login.subtitle")}</div>
         </div>
         <div class="login-gate__form">
@@ -102,7 +103,7 @@ export function renderLoginGate(state: AppViewState) {
         </div>
         ${state.lastError
           ? html`<div class="callout danger" style="margin-top: 14px;">
-              <div>${state.lastError}</div>
+              <div>${brandDisplayText(state.lastError)}</div>
             </div>`
           : ""}
         <div class="login-gate__help">

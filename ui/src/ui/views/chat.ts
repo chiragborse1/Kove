@@ -36,6 +36,7 @@ import type { ApiKeyMessage } from "../controllers/api-keys.ts";
 import type { GatewaySessionRow, SessionsListResult } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
+import { BRAND_NAME, brandDisplayName } from "../branding.ts";
 import { agentLogoUrl, resolveAgentAvatarUrl } from "./agents-utils.ts";
 import { renderMarkdownSidebar } from "./markdown-sidebar.ts";
 import "../components/resizable-divider.ts";
@@ -626,7 +627,7 @@ function tokenEstimate(draft: string): string | null {
  * Export chat markdown - delegates to shared utility.
  */
 function exportMarkdown(props: ChatProps): void {
-  exportChatMarkdown(props.messages, props.assistantName);
+  exportChatMarkdown(props.messages, brandDisplayName(props.assistantName) || props.assistantName);
 }
 
 const WELCOME_SUGGESTIONS = [
@@ -637,7 +638,7 @@ const WELCOME_SUGGESTIONS = [
 ];
 
 function renderWelcomeState(props: ChatProps): TemplateResult {
-  const name = props.assistantName || "Assistant";
+  const name = brandDisplayName(props.assistantName) || "Assistant";
   const avatar = resolveAgentAvatarUrl({
     identity: {
       avatar: props.assistantAvatar ?? undefined,
@@ -657,7 +658,7 @@ function renderWelcomeState(props: ChatProps): TemplateResult {
             style="width:56px; height:56px; border-radius:50%; object-fit:cover;"
           />`
           : html`<div class="agent-chat__avatar agent-chat__avatar--logo">
-            <img src=${logoUrl} alt="OpenClaw" />
+            <img src=${logoUrl} alt=${BRAND_NAME} />
           </div>`
       }
       <h2>${name}</h2>
@@ -915,11 +916,14 @@ function resolveAgentOptions(props: ChatProps) {
   for (const agent of props.agentsList?.agents ?? []) {
     pushOption(
       agent.id,
-      agent.identity?.name?.trim() || agent.name?.trim() || agent.id,
+      brandDisplayName(agent.identity?.name?.trim() || agent.name?.trim() || agent.id),
     );
   }
   if (!seen.has(props.currentAgentId)) {
-    pushOption(props.currentAgentId, props.assistantName || props.currentAgentId);
+    pushOption(
+      props.currentAgentId,
+      brandDisplayName(props.assistantName) || props.currentAgentId,
+    );
   }
   return options;
 }
@@ -952,11 +956,12 @@ export function renderChat(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
   const canAbort = Boolean(props.canAbort && props.onAbort);
+  const assistantName = brandDisplayName(props.assistantName) || props.assistantName || "Assistant";
   const activeSession = props.sessions?.sessions?.find((row) => row.key === props.sessionKey);
   const reasoningLevel = activeSession?.reasoningLevel ?? "off";
   const showReasoning = props.showThinking && reasoningLevel !== "off";
   const assistantIdentity = {
-    name: props.assistantName,
+    name: assistantName,
     avatar:
       resolveAgentAvatarUrl({
         identity: {
@@ -974,7 +979,7 @@ export function renderChat(props: ChatProps) {
   const placeholder = props.connected
     ? hasAttachments
       ? "Add a message or paste more images..."
-      : `Message ${props.assistantName || "agent"} (Enter to send)`
+      : `Message ${assistantName || "agent"} (Enter to send)`
     : "Connect to the gateway to start chatting...";
 
   const requestUpdate = props.onRequestUpdate ?? (() => {});
@@ -1084,7 +1089,7 @@ export function renderChat(props: ChatProps) {
                 onOpenSidebar: props.onOpenSidebar,
                 showReasoning,
                 showToolCalls: props.showToolCalls,
-                assistantName: props.assistantName,
+                assistantName,
                 assistantAvatar: assistantIdentity.avatar,
                 basePath: props.basePath,
                 contextWindow:
@@ -1231,7 +1236,7 @@ export function renderChat(props: ChatProps) {
         style="display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;"
       >
         <div style="display: grid; gap: 4px;">
-          <div class="card-title">${props.assistantName}</div>
+          <div class="card-title">${assistantName}</div>
           <div class="card-sub">Choose who replies here and whether that employee speaks their responses aloud.</div>
         </div>
         <div style="display: flex; align-items: end; gap: 12px; flex-wrap: wrap;">

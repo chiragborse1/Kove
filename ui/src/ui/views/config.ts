@@ -1,4 +1,5 @@
 import { html, nothing, type TemplateResult } from "lit";
+import { brandDisplayName } from "../branding.ts";
 import { icons } from "../icons.ts";
 import { BORDER_RADIUS_STOPS, type BorderRadiusStop } from "../storage.ts";
 import type { ThemeTransitionContext } from "../theme-transition.ts";
@@ -649,7 +650,7 @@ function renderAppearanceSection(props: ConfigProps) {
             ? html`
                 <div class="settings-info-row">
                   <span class="settings-info-row__label">Assistant</span>
-                  <span class="settings-info-row__value">${props.assistantName}</span>
+                  <span class="settings-info-row__value">${brandDisplayName(props.assistantName)}</span>
                 </div>
               `
             : nothing}

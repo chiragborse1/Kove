@@ -28,7 +28,7 @@ function deriveEmployeeName(agentId: string): string {
 export function resolveCanvasEmployees(agentsList: AgentsListResult | null): CanvasEmployeeOption[] {
   const knownIds = new Set<string>();
   const options: CanvasEmployeeOption[] = [
-    { id: "main", name: "Main", role: "Default OpenClaw agent" },
+    { id: "main", name: "Main", role: "Kova Core Agent" },
     ...KOVA_EMPLOYEES.map((employee) => ({
       id: employee.id,
       name: employee.name,

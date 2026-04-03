@@ -47,7 +47,7 @@ function resolveOwnerLabel(agentId: string, employees: Map<string, RoutingEmploy
 
 function resolveOwnerSubLabel(agentId: string, employees: Map<string, RoutingEmployeeOption>): string {
   if (agentId === "main") {
-    return "Current OpenClaw default";
+    return "Current Kova default";
   }
   return employees.get(agentId)?.role ?? "Assigned employee";
 }

@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { BRAND_NAME } from "../branding.ts";
 import { titleForTab, type Tab } from "../navigation.js";
 
 @customElement("dashboard-header")
@@ -23,7 +24,7 @@ export class DashboardHeader extends LitElement {
                 new CustomEvent("navigate", { detail: "overview", bubbles: true, composed: true }),
               )}
           >
-            OpenClaw
+            ${BRAND_NAME}
           </span>
           <span class="dashboard-header__breadcrumb-sep">›</span>
           <span class="dashboard-header__breadcrumb-current">${label}</span>

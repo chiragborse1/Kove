@@ -12,6 +12,7 @@ import type {
   ToolCatalogProfile,
   ToolsCatalogResult,
 } from "../types.ts";
+import { brandDisplayName } from "../branding.ts";
 
 export type AgentToolEntry = {
   id: string;
@@ -192,7 +193,7 @@ export function normalizeAgentLabel(agent: {
   name?: string;
   identity?: { name?: string };
 }) {
-  return agent.name?.trim() || agent.identity?.name?.trim() || agent.id;
+  return brandDisplayName(agent.name?.trim() || agent.identity?.name?.trim() || agent.id);
 }
 
 const AVATAR_URL_RE = /^(https?:\/\/|data:image\/|\/)/i;

@@ -240,7 +240,7 @@ export function renderAgents(props: AgentsProps) {
       <section class="agents-section">
         <div class="agents-section__header">
           <div class="card-title">System</div>
-          <div class="card-sub">The default OpenClaw system agent lives here.</div>
+          <div class="card-sub">The default Kova Core Agent lives here.</div>
         </div>
         ${systemAgent
           ? renderSystemCard({
@@ -500,7 +500,7 @@ function renderSystemCard(args: {
             <div class="agents-system-card__title">${normalizeAgentLabel(agent)}</div>
             ${badge ? html`<span class="agents-chip">${badge}</span>` : nothing}
           </div>
-          <div class="agents-system-card__sub">OpenClaw system agent</div>
+          <div class="agents-system-card__sub">Kova Core</div>
         </div>
       </div>
       <button type="button" class="btn btn--sm btn--ghost">Inspect</button>

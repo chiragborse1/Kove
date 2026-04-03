@@ -1,4 +1,5 @@
 import { coerceIdentityValue } from "../../../src/shared/assistant-identity-values.js";
+import { brandDisplayName } from "./branding.ts";
 
 const MAX_ASSISTANT_NAME = 50;
 const MAX_ASSISTANT_AVATAR = 200;
@@ -15,7 +16,8 @@ export type AssistantIdentity = {
 export function normalizeAssistantIdentity(
   input?: Partial<AssistantIdentity> | null,
 ): AssistantIdentity {
-  const name = coerceIdentityValue(input?.name, MAX_ASSISTANT_NAME) ?? DEFAULT_ASSISTANT_NAME;
+  const rawName = coerceIdentityValue(input?.name, MAX_ASSISTANT_NAME) ?? DEFAULT_ASSISTANT_NAME;
+  const name = brandDisplayName(rawName) || DEFAULT_ASSISTANT_NAME;
   const avatar = coerceIdentityValue(input?.avatar ?? undefined, MAX_ASSISTANT_AVATAR) ?? null;
   const agentId =
     typeof input?.agentId === "string" && input.agentId.trim() ? input.agentId.trim() : null;

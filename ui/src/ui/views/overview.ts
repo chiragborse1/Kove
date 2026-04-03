@@ -1,6 +1,7 @@
 import { html, nothing } from "lit";
 import { t, i18n, SUPPORTED_LOCALES, type Locale, isSupportedLocale } from "../../i18n/index.ts";
 import type { EventLogEntry } from "../app-events.ts";
+import { brandDisplayText } from "../branding.ts";
 import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "../external-link.ts";
 import { formatRelativeTimestamp, formatDurationHuman } from "../format.ts";
 import type { GatewayHelloOk } from "../gateway.ts";
@@ -375,7 +376,7 @@ export function renderOverview(props: OverviewProps) {
         </div>
         ${props.lastError
           ? html`<div class="callout danger" style="margin-top: 14px;">
-              <div>${props.lastError}</div>
+              <div>${brandDisplayText(props.lastError)}</div>
               ${pairingHint ?? ""} ${authHint ?? ""} ${insecureContextHint ?? ""}
             </div>`
           : html`

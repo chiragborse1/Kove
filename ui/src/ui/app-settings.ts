@@ -30,6 +30,7 @@ import { loadPresence } from "./controllers/presence.ts";
 import { loadSessions } from "./controllers/sessions.ts";
 import { loadSkills } from "./controllers/skills.ts";
 import { loadUsage } from "./controllers/usage.ts";
+import { brandDisplayText } from "./branding.ts";
 import {
   inferBasePathFromPathname,
   normalizeBasePath,
@@ -609,7 +610,7 @@ function buildAttentionItems(host: OpenClawApp) {
       severity: "error",
       icon: "x",
       title: "Gateway Error",
-      description: host.lastError,
+      description: brandDisplayText(host.lastError),
     });
   }
 

@@ -103,8 +103,9 @@ describe("control UI routing", () => {
     expect(app.querySelector(".sidebar-shell__body")).not.toBeNull();
     expect(app.querySelector(".sidebar-shell__footer")).not.toBeNull();
     expect(app.querySelector(".sidebar-brand")).not.toBeNull();
-    expect(app.querySelector(".sidebar-brand__logo")).not.toBeNull();
     expect(app.querySelector(".sidebar-brand__copy")).not.toBeNull();
+    expect(app.querySelector(".sidebar-brand__title")?.textContent?.trim()).toBe("KOVA");
+    expect(app.querySelector(".sidebar-brand__tagline")?.textContent?.trim()).toBe("Your AI Team");
   });
 
   it("does not render a desktop sidebar resizer or inject a custom nav width", async () => {
@@ -127,7 +128,7 @@ describe("control UI routing", () => {
     await app.updateComplete;
 
     expect(app.querySelector(".nav-section__label")).toBeNull();
-    expect(app.querySelector(".sidebar-brand__logo")).toBeNull();
+    expect(app.querySelector(".sidebar-brand__copy")).toBeNull();
   });
 
   it("keeps footer utilities available in collapsed mode", async () => {
