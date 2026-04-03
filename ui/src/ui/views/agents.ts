@@ -2,7 +2,6 @@ import { html, nothing } from "lit";
 import {
   KOVA_EMPLOYEES,
   type EmployeeAutonomy,
-  type KovaEmployeeId,
 } from "../controllers/employees.ts";
 import type {
   AgentIdentityResult,
@@ -92,6 +91,7 @@ export type AgentsProps = {
   agentIdentityLoading: boolean;
   agentIdentityError: string | null;
   agentIdentityById: Record<string, AgentIdentityResult>;
+  agentSoulContentById: Record<string, string | null>;
   agentSkills: AgentSkillsState;
   toolsCatalog: ToolsCatalogState;
   toolsEffective: ToolsEffectiveState;
@@ -124,7 +124,7 @@ export type AgentsProps = {
   onAgentSkillsDisableAll: (agentId: string) => void;
   onSetDefault: (agentId: string) => void;
   onNavigateToChat: (agentId: string) => void;
-  onNavigateToActivity: (agentId: KovaEmployeeId) => void;
+  onNavigateToActivity: (agentId: string) => void;
 };
 
 export function renderAgents(props: AgentsProps) {
@@ -134,14 +134,10 @@ export function renderAgents(props: AgentsProps) {
   const selectedAgent = selectedId
     ? (agents.find((agent) => agent.id === selectedId) ?? null)
     : null;
-  const kovaEmployeeIds = new Set(KOVA_EMPLOYEES.map((employee) => employee.id));
-  const kovaAgents = KOVA_EMPLOYEES.map((employee) => ({
-    meta: employee,
-    agent: agents.find((agent) => agent.id === employee.id) ?? null,
-  }));
+  const kovaAgents = buildKovaAgents(agents, props.agentIdentityById, props.agentSoulContentById);
   const systemAgent = agents.find((agent) => agent.id === "main") ?? null;
   const otherAgents = agents.filter(
-    (agent) => agent.id !== "main" && !kovaEmployeeIds.has(agent.id as KovaEmployeeId),
+    (agent) => agent.id !== "main" && !isKovaAgent(agent.id, props.agentSoulContentById[agent.id]),
   );
   const selectedSkillCount =
     selectedId && props.agentSkills.agentId === selectedId
@@ -214,7 +210,7 @@ export function renderAgents(props: AgentsProps) {
         >
           <div>
             <div class="card-title">Kova Team</div>
-            <div class="card-sub">Five branded employees with direct shortcuts into Chat and Activity.</div>
+            <div class="card-sub">All Kova employees and custom teammates live here.</div>
           </div>
           <button type="button" class="btn btn--sm primary" @click=${props.onOpenAgentCreator}>
             + New Employee
@@ -223,19 +219,22 @@ export function renderAgents(props: AgentsProps) {
         ${props.agentCreatorSuccess
           ? html`<div class="callout success" style="margin-top: 12px;">${props.agentCreatorSuccess}</div>`
           : nothing}
-        <div class="agents-employee-grid">
-          ${kovaAgents.map(({ meta, agent }) =>
-            renderEmployeeCard({
-              meta,
-              agent,
-              selectedId,
-              defaultId,
-              onSelectAgent: props.onSelectAgent,
-              onNavigateToChat: props.onNavigateToChat,
-              onNavigateToActivity: props.onNavigateToActivity,
-            }),
-          )}
-        </div>
+        ${kovaAgents.length === 0
+          ? html`<div class="card" style="margin-top: 12px;">
+              <div class="card-sub">No Kova employees are available yet.</div>
+            </div>`
+          : html`<div class="agents-employee-grid">
+              ${kovaAgents.map((meta) =>
+                renderEmployeeCard({
+                  meta,
+                  selectedId,
+                  defaultId,
+                  onSelectAgent: props.onSelectAgent,
+                  onNavigateToChat: props.onNavigateToChat,
+                  onNavigateToActivity: props.onNavigateToActivity,
+                }),
+              )}
+            </div>`}
       </section>
 
       <section class="agents-section">
@@ -417,32 +416,27 @@ export function renderAgents(props: AgentsProps) {
 
 function renderEmployeeCard(args: {
   meta: {
-    id: KovaEmployeeId;
+    id: string;
     name: string;
     role: string;
     avatar: string;
     autonomy: EmployeeAutonomy;
+    agent: AgentsListResult["agents"][number];
   };
-  agent: AgentsListResult["agents"][number] | null;
   selectedId: string | null;
   defaultId: string | null;
   onSelectAgent: (agentId: string) => void;
   onNavigateToChat: (agentId: string) => void;
-  onNavigateToActivity: (agentId: KovaEmployeeId) => void;
+  onNavigateToActivity: (agentId: string) => void;
 }) {
-  const { meta, agent, selectedId, defaultId } = args;
-  const available = Boolean(agent);
-  const isSelected = selectedId === meta.id;
-  const isDefault = defaultId === meta.id;
+  const { meta, selectedId, defaultId } = args;
+  const isSelected = selectedId === meta.agent.id;
+  const isDefault = defaultId === meta.agent.id;
   const badge = autonomyBadgeClass(meta.autonomy);
   return html`
     <article
-      class="card agents-employee-card ${isSelected ? "is-selected" : ""} ${available ? "" : "is-unavailable"}"
-      @click=${() => {
-        if (agent) {
-          args.onSelectAgent(agent.id);
-        }
-      }}
+      class="card agents-employee-card ${isSelected ? "is-selected" : ""}"
+      @click=${() => args.onSelectAgent(meta.agent.id)}
     >
       <div class="agents-employee-card__header">
         <div class="agents-employee-card__avatar">${meta.avatar}</div>
@@ -457,7 +451,7 @@ function renderEmployeeCard(args: {
       </div>
       <div class="agents-employee-card__meta-row">
         <span class="agents-autonomy-badge ${badge}">${meta.autonomy}</span>
-        <span class="agents-employee-card__agent-id">${agent?.id ?? "Not listed yet"}</span>
+        <span class="agents-employee-card__agent-id">${meta.agent.id}</span>
       </div>
       <div class="agents-employee-card__actions">
         <button
@@ -465,7 +459,7 @@ function renderEmployeeCard(args: {
           class="btn btn--sm"
           @click=${(event: MouseEvent) => {
             event.stopPropagation();
-            args.onNavigateToChat(meta.id);
+            args.onNavigateToChat(meta.agent.id);
           }}
         >
           Chat
@@ -475,7 +469,7 @@ function renderEmployeeCard(args: {
           class="btn btn--sm btn--ghost"
           @click=${(event: MouseEvent) => {
             event.stopPropagation();
-            args.onNavigateToActivity(meta.id);
+            args.onNavigateToActivity(meta.agent.id);
           }}
         >
           Activity
@@ -547,6 +541,131 @@ function autonomyBadgeClass(autonomy: EmployeeAutonomy) {
       return "agents-autonomy-badge--autonomous";
     default:
       return "agents-autonomy-badge--act-notify";
+  }
+}
+
+type ParsedKovaSoul = {
+  kova: boolean;
+  name?: string;
+  role?: string;
+  emoji?: string;
+  autonomy?: EmployeeAutonomy;
+};
+
+function buildKovaAgents(
+  agents: AgentsListResult["agents"],
+  identityById: Record<string, AgentIdentityResult>,
+  soulContentById: Record<string, string | null>,
+) {
+  const builtInOrder = new Map(KOVA_EMPLOYEES.map((employee, index) => [employee.id, index] as const));
+  return agents
+    .filter((agent) => agent.id !== "main" && isKovaAgent(agent.id, soulContentById[agent.id]))
+    .map((agent) => {
+      const builtIn = KOVA_EMPLOYEES.find((employee) => employee.id === agent.id);
+      const identity = identityById[agent.id];
+      const soul = parseKovaSoul(soulContentById[agent.id]);
+      return {
+        id: agent.id,
+        name: soul?.name ?? identity?.name ?? builtIn?.name ?? normalizeAgentLabel(agent),
+        role: soul?.role ?? builtIn?.role ?? "Kova Employee",
+        avatar: soul?.emoji ?? identity?.emoji ?? builtIn?.avatar ?? "\u{1F916}",
+        autonomy: soul?.autonomy ?? builtIn?.autonomy ?? "Act + Notify",
+        agent,
+        order: builtInOrder.get(agent.id) ?? KOVA_EMPLOYEES.length,
+      };
+    })
+    .toSorted((left, right) =>
+      left.order === right.order ? left.name.localeCompare(right.name) : left.order - right.order,
+    );
+}
+
+function isKovaAgent(agentId: string, soulContent: string | null | undefined): boolean {
+  return agentId.startsWith("kova-") || parseKovaSoul(soulContent)?.kova === true;
+}
+
+function parseKovaSoul(content: string | null | undefined): ParsedKovaSoul | null {
+  if (!content) {
+    return null;
+  }
+  const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const frontmatter = frontmatterMatch?.[1] ?? "";
+  const body = frontmatterMatch ? content.slice(frontmatterMatch[0].length) : content;
+  const result: ParsedKovaSoul = { kova: false };
+
+  for (const line of frontmatter.split(/\r?\n/)) {
+    const separator = line.indexOf(":");
+    if (separator < 0) {
+      continue;
+    }
+    const key = line.slice(0, separator).trim().toLowerCase();
+    const rawValue = line.slice(separator + 1).trim();
+    const value = unquoteFrontmatterValue(rawValue);
+    switch (key) {
+      case "kova":
+        result.kova = /^(true|1|yes)$/i.test(value);
+        break;
+      case "name":
+        result.name = value || undefined;
+        break;
+      case "role":
+        result.role = value || undefined;
+        break;
+      case "emoji":
+        result.emoji = value || undefined;
+        break;
+      case "autonomy":
+        result.autonomy = parseAutonomyValue(value) ?? result.autonomy;
+        break;
+      default:
+        break;
+    }
+  }
+
+  const headingMatch = body.match(/^#\s+(\S+)\s+(.+?)\s+[—-]\s+(.+)$/m);
+  if (headingMatch) {
+    result.emoji ??= headingMatch[1]?.trim() || undefined;
+    result.name ??= headingMatch[2]?.trim() || undefined;
+    result.role ??= headingMatch[3]?.trim() || undefined;
+  }
+
+  const autonomyMatch = body.match(/^Level:\s*(.+)$/m);
+  if (autonomyMatch) {
+    result.autonomy ??= parseAutonomyValue(autonomyMatch[1]);
+  }
+
+  return result;
+}
+
+function unquoteFrontmatterValue(value: string): string {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value.slice(1, -1);
+    }
+  }
+  return value;
+}
+
+function parseAutonomyValue(value: string | undefined): EmployeeAutonomy | undefined {
+  const normalized = value?.trim().toLowerCase();
+  switch (normalized) {
+    case "1":
+    case "supervised":
+      return "Supervised";
+    case "2":
+    case "act + notify":
+    case "act+notify":
+    case "act-notify":
+      return "Act + Notify";
+    case "3":
+    case "autonomous":
+      return "Autonomous";
+    default:
+      return undefined;
   }
 }
 

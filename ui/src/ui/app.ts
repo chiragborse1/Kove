@@ -63,6 +63,7 @@ import {
   refreshVisibleToolsEffectiveForCurrentSession as refreshVisibleToolsEffectiveForCurrentSessionInternal,
 } from "./controllers/agents.ts";
 import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
+import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import {
   createApiKeyInputRecord,
   createApiKeyMessageRecord,
@@ -150,6 +151,17 @@ const DEFAULT_AGENT_CREATOR_DRAFT: AgentCreatorDraft = {
   instructions: "",
 };
 
+function autonomyToSoulMarker(autonomy: AgentCreatorDraft["autonomy"]): 1 | 2 | 3 {
+  switch (autonomy) {
+    case "Supervised":
+      return 1;
+    case "Autonomous":
+      return 3;
+    default:
+      return 2;
+  }
+}
+
 function trimAgentCreatorDraft(draft: AgentCreatorDraft): AgentCreatorDraft {
   return {
     ...draft,
@@ -194,6 +206,14 @@ function resolveEmployeeWorkspacePath(agentsList: AgentsListResult | null, agent
 function buildEmployeeSoul(draft: AgentCreatorDraft): string {
   const normalized = trimAgentCreatorDraft(draft);
   return [
+    "---",
+    "kova: true",
+    `name: ${JSON.stringify(normalized.name)}`,
+    `role: ${JSON.stringify(normalized.role)}`,
+    `autonomy: ${autonomyToSoulMarker(normalized.autonomy)}`,
+    `emoji: ${JSON.stringify(normalized.emoji)}`,
+    "---",
+    "",
     `# ${normalized.emoji} ${normalized.name} \u2014 ${normalized.role}`,
     "",
     "## Identity",
@@ -425,6 +445,8 @@ export class OpenClawApp extends LitElement {
   @state() agentIdentityLoading = false;
   @state() agentIdentityError: string | null = null;
   @state() agentIdentityById: Record<string, AgentIdentityResult> = {};
+  @state() agentSoulLoading = false;
+  @state() agentSoulContentById: Record<string, string | null> = {};
   @state() agentSkillsLoading = false;
   @state() agentSkillsError: string | null = null;
   @state() agentSkillsReport: SkillStatusReport | null = null;
@@ -891,6 +913,11 @@ export class OpenClawApp extends LitElement {
       this.agentCreatorError = null;
       this.agentCreatorSuccess = `Created ${created.name} (${created.agentId}).`;
       await loadAgents(this);
+      this.agentSoulContentById = {
+        ...this.agentSoulContentById,
+        [created.agentId]: buildEmployeeSoul(draft),
+      };
+      await loadAgentSoulContents(this, [created.agentId]);
     } catch (error) {
       const detail = formatAgentCreatorError(error);
       this.agentCreatorError = createdAgentId

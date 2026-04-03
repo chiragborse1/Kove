@@ -1,5 +1,4 @@
 import { html, nothing } from "lit";
-import { ref } from "lit/directives/ref.js";
 import type { AgentCreatorDraft } from "../types.ts";
 
 const EMPLOYEE_EMOJIS = [
@@ -192,19 +191,13 @@ function renderReviewStep(props: AgentCreatorProps) {
 }
 
 export function renderAgentCreator(props: AgentCreatorProps) {
-  const ensureModalOpen = (element?: Element) => {
-    if (!(element instanceof HTMLDialogElement) || element.open) {
-      return;
-    }
-    element.showModal();
-  };
   const canContinue = props.step === 1 ? hasIdentity(props.value) : true;
   const canCreate = hasIdentity(props.value) && !props.creating;
 
   return html`
     <dialog
       class="md-preview-dialog"
-      ${ref(ensureModalOpen)}
+      ?open=${true}
       @click=${(event: Event) => {
         const dialog = event.currentTarget as HTMLDialogElement;
         if (event.target === dialog) {

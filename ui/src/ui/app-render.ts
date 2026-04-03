@@ -20,6 +20,7 @@ import {
 import type { AppViewState } from "./app-view-state.ts";
 import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
+import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
 import {
   buildToolsEffectiveRequestKey,
@@ -1195,6 +1196,7 @@ export function renderApp(state: AppViewState) {
                 agentIdentityLoading: state.agentIdentityLoading,
                 agentIdentityError: state.agentIdentityError,
                 agentIdentityById: state.agentIdentityById,
+                agentSoulContentById: state.agentSoulContentById,
                 agentSkills: {
                   report: state.agentSkillsReport,
                   loading: state.agentSkillsLoading,
@@ -1222,6 +1224,7 @@ export function renderApp(state: AppViewState) {
                   const agentIds = state.agentsList?.agents?.map((entry) => entry.id) ?? [];
                   if (agentIds.length > 0) {
                     void loadAgentIdentities(state, agentIds);
+                    void loadAgentSoulContents(state, agentIds);
                   }
                   const refreshedAgentId =
                     state.agentsSelectedId ??
@@ -1556,7 +1559,9 @@ export function renderApp(state: AppViewState) {
                   state.setTab("chat" as import("./navigation.ts").Tab);
                 },
                 onNavigateToActivity: (agentId) => {
-                  state.employeesFilterAgentId = agentId;
+                  state.employeesFilterAgentId = KOVA_EMPLOYEES.some((employee) => employee.id === agentId)
+                    ? (agentId as import("./controllers/employees.ts").KovaEmployeeId)
+                    : null;
                   state.setTab("employees" as import("./navigation.ts").Tab);
                 },
               }),
