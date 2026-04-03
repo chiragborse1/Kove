@@ -1149,6 +1149,7 @@ export class OpenClawApp extends LitElement {
 
     const refreshKey = String(Date.now());
     const token = resolveCanvasAuthToken({
+      hello: this.hello,
       settings: this.settings,
       password: this.password,
     });
@@ -1188,6 +1189,7 @@ export class OpenClawApp extends LitElement {
       return;
     }
     const token = resolveCanvasAuthToken({
+      hello: this.hello,
       settings: this.settings,
       password: this.password,
     });

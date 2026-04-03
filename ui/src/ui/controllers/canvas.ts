@@ -88,9 +88,14 @@ export function resolveCanvasBaseUrl(params: {
 }
 
 export function resolveCanvasAuthToken(params: {
+  hello?: import("../gateway.ts").GatewayHelloOk | null;
   settings: Pick<UiSettings, "token">;
   password?: string | null;
 }): string {
+  const deviceToken = params.hello?.auth?.deviceToken?.trim();
+  if (deviceToken) {
+    return deviceToken;
+  }
   const sharedToken = params.settings.token.trim();
   if (sharedToken) {
     return sharedToken;
