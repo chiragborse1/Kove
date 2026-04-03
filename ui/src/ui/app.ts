@@ -58,6 +58,7 @@ import type { AppViewState } from "./app-view-state.ts";
 import { normalizeAssistantIdentity } from "./assistant-identity.ts";
 import { exportChatMarkdown } from "./chat/export.ts";
 import {
+  loadAgents,
   loadToolsEffective as loadToolsEffectiveInternal,
   refreshVisibleToolsEffectiveForCurrentSession as refreshVisibleToolsEffectiveForCurrentSessionInternal,
 } from "./controllers/agents.ts";
@@ -99,9 +100,13 @@ import type { Tab } from "./navigation.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
 import { VALID_THEME_NAMES, type ResolvedTheme, type ThemeMode, type ThemeName } from "./theme.ts";
 import type {
-  AgentsListResult,
-  AgentsFilesListResult,
+  AgentCreatorDraft,
   AgentIdentityResult,
+  AgentsCreateResult,
+  AgentsFilesListResult,
+  AgentsFilesSetResult,
+  AgentsListResult,
+  AgentsUpdateResult,
   ConfigSnapshot,
   ConfigUiHints,
   GatewaySessionRow,
@@ -133,6 +138,84 @@ declare global {
 }
 
 const bootAssistantIdentity = normalizeAssistantIdentity({});
+
+const DEFAULT_EMPLOYEE_MODEL = "openrouter/auto";
+const DEFAULT_AGENT_CREATOR_DRAFT: AgentCreatorDraft = {
+  name: "",
+  role: "",
+  emoji: "\u{1F469}\u200D\u{1F4BC}",
+  autonomy: "Supervised",
+  personality: "",
+  focus: "",
+  instructions: "",
+};
+
+function trimAgentCreatorDraft(draft: AgentCreatorDraft): AgentCreatorDraft {
+  return {
+    ...draft,
+    name: draft.name.trim(),
+    role: draft.role.trim(),
+    personality: draft.personality.trim(),
+    focus: draft.focus.trim(),
+    instructions: draft.instructions.trim(),
+  };
+}
+
+function buildEmployeeAgentId(name: string): string {
+  return `kova-${name.toLowerCase().replace(/\s+/g, "-")}`;
+}
+
+function resolveAgentWorkspaceBaseDir(agentsList: AgentsListResult | null): string {
+  const agents = agentsList?.agents ?? [];
+  for (const agent of agents) {
+    const workspace = typeof agent.workspace === "string" ? agent.workspace.trim() : "";
+    const suffix = `workspace-${agent.id}`;
+    if (workspace && workspace.endsWith(suffix)) {
+      return workspace.slice(0, -suffix.length);
+    }
+  }
+
+  const mainWorkspace = agents.find((agent) => agent.id === "main")?.workspace?.trim();
+  if (mainWorkspace) {
+    const trimmed = mainWorkspace.replace(/[\\/]+$/g, "");
+    const lastSlash = Math.max(trimmed.lastIndexOf("/"), trimmed.lastIndexOf("\\"));
+    if (lastSlash >= 0) {
+      return trimmed.slice(0, lastSlash + 1);
+    }
+  }
+
+  return "~/.openclaw/";
+}
+
+function resolveEmployeeWorkspacePath(agentsList: AgentsListResult | null, agentId: string): string {
+  return `${resolveAgentWorkspaceBaseDir(agentsList)}workspace-${agentId}`;
+}
+
+function buildEmployeeSoul(draft: AgentCreatorDraft): string {
+  const normalized = trimAgentCreatorDraft(draft);
+  return [
+    `# ${normalized.emoji} ${normalized.name} \u2014 ${normalized.role}`,
+    "",
+    "## Identity",
+    `You are ${normalized.name}, Kova's ${normalized.role}.`,
+    "",
+    "## Personality",
+    normalized.personality,
+    "",
+    "## Focus",
+    normalized.focus,
+    "",
+    "## Instructions",
+    normalized.instructions,
+    "",
+    "## Autonomy",
+    `Level: ${normalized.autonomy}`,
+  ].join("\n");
+}
+
+function formatAgentCreatorError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function resolveOnboardingMode(): boolean {
   if (!window.location.search) {
@@ -350,6 +433,12 @@ export class OpenClawApp extends LitElement {
   @state() employeesError: string | null = null;
   @state() employeesDashboard: EmployeesDashboardResult | null = null;
   @state() employeesFilterAgentId: KovaEmployeeId | null = null;
+  @state() showAgentCreator = false;
+  @state() agentCreatorStep: 1 | 2 | 3 = 1;
+  @state() agentCreatorCreating = false;
+  @state() agentCreatorDraft: AgentCreatorDraft = { ...DEFAULT_AGENT_CREATOR_DRAFT };
+  @state() agentCreatorSuccess: string | null = null;
+  @state() agentCreatorError: string | null = null;
   @state() inboxSessions: GatewaySessionRow[] | null = null;
   @state() inboxLoading = false;
   @state() inboxError: string | null = null;
@@ -735,6 +824,81 @@ export class OpenClawApp extends LitElement {
 
   setInboxFilter(next: InboxChannelFilter) {
     this.inboxChannelFilter = next;
+  }
+
+  openAgentCreator() {
+    this.showAgentCreator = true;
+    this.agentCreatorStep = 1;
+    this.agentCreatorCreating = false;
+    this.agentCreatorDraft = { ...DEFAULT_AGENT_CREATOR_DRAFT };
+    this.agentCreatorSuccess = null;
+    this.agentCreatorError = null;
+  }
+
+  closeAgentCreator() {
+    this.showAgentCreator = false;
+    this.agentCreatorStep = 1;
+    this.agentCreatorCreating = false;
+    this.agentCreatorDraft = { ...DEFAULT_AGENT_CREATOR_DRAFT };
+    this.agentCreatorSuccess = null;
+    this.agentCreatorError = null;
+  }
+
+  async createEmployee(params: AgentCreatorDraft) {
+    if (!this.client || !this.connected || this.agentCreatorCreating) {
+      return;
+    }
+
+    const draft = trimAgentCreatorDraft(params);
+    if (!draft.name || !draft.role) {
+      this.agentCreatorStep = 1;
+      this.agentCreatorError = "Add a name and role before creating the employee.";
+      return;
+    }
+
+    const requestedAgentId = buildEmployeeAgentId(draft.name);
+    const workspace = resolveEmployeeWorkspacePath(this.agentsList, requestedAgentId);
+    let createdAgentId: string | null = null;
+
+    this.agentCreatorCreating = true;
+    this.agentCreatorDraft = { ...draft };
+    this.agentCreatorSuccess = null;
+    this.agentCreatorError = null;
+
+    try {
+      const created = await this.client.request<AgentsCreateResult>("agents.create", {
+        id: requestedAgentId,
+        name: draft.name,
+        emoji: draft.emoji,
+        workspace,
+      });
+      createdAgentId = created.agentId;
+
+      await this.client.request<AgentsFilesSetResult>("agents.files.set", {
+        agentId: created.agentId,
+        name: "SOUL.md",
+        content: buildEmployeeSoul(draft),
+      });
+
+      await this.client.request<AgentsUpdateResult>("agents.update", {
+        agentId: created.agentId,
+        model: DEFAULT_EMPLOYEE_MODEL,
+      });
+
+      this.showAgentCreator = false;
+      this.agentCreatorStep = 1;
+      this.agentCreatorDraft = { ...DEFAULT_AGENT_CREATOR_DRAFT };
+      this.agentCreatorError = null;
+      this.agentCreatorSuccess = `Created ${created.name} (${created.agentId}).`;
+      await loadAgents(this);
+    } catch (error) {
+      const detail = formatAgentCreatorError(error);
+      this.agentCreatorError = createdAgentId
+        ? `Employee ${createdAgentId} was created, but setup did not finish: ${detail}`
+        : `Could not create employee: ${detail}`;
+    } finally {
+      this.agentCreatorCreating = false;
+    }
   }
 
   async saveBriefing() {

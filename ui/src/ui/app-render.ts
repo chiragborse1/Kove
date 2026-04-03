@@ -122,6 +122,7 @@ import {
   resolveModelPrimary,
   sortLocaleStrings,
 } from "./views/agents-utils.ts";
+import { renderAgentCreator } from "./views/agent-creator.ts";
 import { renderApiKeys } from "./views/api-keys.ts";
 import { renderChat } from "./views/chat.ts";
 import { renderCommandPalette } from "./views/command-palette.ts";
@@ -1214,6 +1215,8 @@ export function renderApp(state: AppViewState) {
                 runtimeSessionKey: state.sessionKey,
                 runtimeSessionMatchesSelectedAgent: toolsPanelUsesActiveSession,
                 modelCatalog: state.chatModelCatalog ?? [],
+                agentCreatorSuccess: state.agentCreatorSuccess,
+                onOpenAgentCreator: () => state.openAgentCreator(),
                 onRefresh: async () => {
                   await loadAgents(state);
                   const agentIds = state.agentsList?.agents?.map((entry) => entry.id) ?? [];
@@ -2274,6 +2277,26 @@ export function renderApp(state: AppViewState) {
             )
           : nothing}
       </main>
+      ${state.showAgentCreator
+        ? renderAgentCreator({
+            step: state.agentCreatorStep,
+            value: state.agentCreatorDraft,
+            creating: state.agentCreatorCreating,
+            error: state.agentCreatorError,
+            onClose: () => state.closeAgentCreator(),
+            onStepChange: (step) => {
+              state.agentCreatorStep = step;
+              state.agentCreatorError = null;
+            },
+            onChange: (patch) => {
+              state.agentCreatorDraft = { ...state.agentCreatorDraft, ...patch };
+              state.agentCreatorError = null;
+            },
+            onCreate: (value) => {
+              void state.createEmployee(value);
+            },
+          })
+        : nothing}
       ${renderExecApprovalPrompt(state)} ${renderGatewayUrlConfirmation(state)} ${nothing}
     </div>
   `;

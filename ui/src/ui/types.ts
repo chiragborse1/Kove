@@ -367,6 +367,28 @@ export type AgentsFilesSetResult = {
   file: AgentFileEntry;
 };
 
+export type AgentsCreateResult = {
+  ok: true;
+  agentId: string;
+  name: string;
+  workspace: string;
+};
+
+export type AgentsUpdateResult = {
+  ok: true;
+  agentId: string;
+};
+
+export type AgentCreatorDraft = {
+  name: string;
+  role: string;
+  emoji: string;
+  autonomy: import("./controllers/employees.ts").EmployeeAutonomy;
+  personality: string;
+  focus: string;
+  instructions: string;
+};
+
 export type SessionRunStatus = "running" | "done" | "failed" | "killed" | "timeout";
 
 export type GatewaySessionRow = {

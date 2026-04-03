@@ -288,6 +288,50 @@ describe("agents.create", () => {
     expect(mocks.writeConfigFile).toHaveBeenCalled();
   });
 
+  it("creates a new agent with an explicit id", async () => {
+    const { respond, promise } = makeCall("agents.create", {
+      id: "kova-custom-employee",
+      name: "Custom Employee",
+      workspace: "/home/user/agents/custom",
+    });
+    await promise;
+
+    expect(respond).toHaveBeenCalledWith(
+      true,
+      expect.objectContaining({
+        ok: true,
+        agentId: "kova-custom-employee",
+        name: "Custom Employee",
+      }),
+      undefined,
+    );
+    expect(mocks.applyAgentConfig).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        agentId: "kova-custom-employee",
+        name: "Custom Employee",
+      }),
+    );
+  });
+
+  it("persists an optional model on create", async () => {
+    const { promise } = makeCall("agents.create", {
+      id: "model-agent",
+      name: "Model Agent",
+      workspace: "/tmp/ws",
+      model: "openrouter/auto",
+    });
+    await promise;
+
+    expect(mocks.applyAgentConfig).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        agentId: "model-agent",
+        model: "openrouter/auto",
+      }),
+    );
+  });
+
   it("ensures workspace is set up before writing config", async () => {
     const callOrder: string[] = [];
     mocks.ensureAgentWorkspace.mockImplementation(async () => {
@@ -311,6 +355,21 @@ describe("agents.create", () => {
   it("rejects creating an agent with reserved 'main' id", async () => {
     const { respond, promise } = makeCall("agents.create", {
       name: "main",
+      workspace: "/tmp/ws",
+    });
+    await promise;
+
+    expect(respond).toHaveBeenCalledWith(
+      false,
+      undefined,
+      expect.objectContaining({ message: expect.stringContaining("reserved") }),
+    );
+  });
+
+  it("rejects creating an agent with an explicit reserved id", async () => {
+    const { respond, promise } = makeCall("agents.create", {
+      id: "main",
+      name: "Custom Main",
       workspace: "/tmp/ws",
     });
     await promise;

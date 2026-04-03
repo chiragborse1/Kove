@@ -98,7 +98,9 @@ export type AgentsProps = {
   runtimeSessionKey: string;
   runtimeSessionMatchesSelectedAgent: boolean;
   modelCatalog: ModelCatalogEntry[];
+  agentCreatorSuccess: string | null;
   onRefresh: () => void;
+  onOpenAgentCreator: () => void;
   onSelectAgent: (agentId: string) => void;
   onSelectPanel: (panel: AgentsPanel) => void;
   onLoadFiles: (agentId: string) => void;
@@ -206,10 +208,21 @@ export function renderAgents(props: AgentsProps) {
       </section>
 
       <section class="agents-section">
-        <div class="agents-section__header">
-          <div class="card-title">Kova Team</div>
-          <div class="card-sub">Five branded employees with direct shortcuts into Chat and Activity.</div>
+        <div
+          class="agents-section__header"
+          style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap;"
+        >
+          <div>
+            <div class="card-title">Kova Team</div>
+            <div class="card-sub">Five branded employees with direct shortcuts into Chat and Activity.</div>
+          </div>
+          <button type="button" class="btn btn--sm primary" @click=${props.onOpenAgentCreator}>
+            + New Employee
+          </button>
         </div>
+        ${props.agentCreatorSuccess
+          ? html`<div class="callout success" style="margin-top: 12px;">${props.agentCreatorSuccess}</div>`
+          : nothing}
         <div class="agents-employee-grid">
           ${kovaAgents.map(({ meta, agent }) =>
             renderEmployeeCard({

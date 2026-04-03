@@ -25,6 +25,7 @@ import type { ResolvedTheme, ThemeMode, ThemeName } from "./theme.ts";
 import type {
   AgentsListResult,
   AgentsFilesListResult,
+  AgentCreatorDraft,
   AgentIdentityResult,
   AttentionItem,
   ChannelsStatusSnapshot,
@@ -227,6 +228,12 @@ export type AppViewState = {
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
   employeesFilterAgentId: KovaEmployeeId | null;
+  showAgentCreator: boolean;
+  agentCreatorStep: 1 | 2 | 3;
+  agentCreatorCreating: boolean;
+  agentCreatorDraft: AgentCreatorDraft;
+  agentCreatorSuccess: string | null;
+  agentCreatorError: string | null;
   inboxSessions: GatewaySessionRow[] | null;
   inboxLoading: boolean;
   inboxError: string | null;
@@ -385,6 +392,9 @@ export type AppViewState = {
     loadCron: () => Promise<void>;
     loadInbox: () => Promise<void>;
     setInboxFilter: (filter: InboxChannelFilter) => void;
+    openAgentCreator: () => void;
+    closeAgentCreator: () => void;
+    createEmployee: (params: AgentCreatorDraft) => Promise<void>;
     saveBriefing: () => Promise<void>;
     handleWhatsAppStart: (force: boolean) => Promise<void>;
     handleWhatsAppWait: () => Promise<void>;
