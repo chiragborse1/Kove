@@ -1,4 +1,10 @@
 import type { GatewayBrowserClient } from "../gateway.ts";
+import type { ConfigSnapshot } from "../types.ts";
+import {
+  cacheElevenLabsApiKey,
+  getCachedElevenLabsApiKey,
+  speakText as speakElevenLabsText,
+} from "../voice/elevenlabs.ts";
 
 export const CUSTOM_MODEL_OPTION = "__custom__";
 
@@ -122,6 +128,7 @@ export type ApiKeyProviderTestResult = {
 export type ApiKeysState = {
   client: GatewayBrowserClient | null;
   connected: boolean;
+  settings: { gatewayUrl: string };
   apiKeysLoading: boolean;
   apiKeysLoaded: boolean;
   apiKeysSavingProviderId: ApiKeyProviderId | null;
@@ -132,10 +139,20 @@ export type ApiKeysState = {
   apiKeysCustomModelInput: string;
   apiKeysConfigHash: string | null;
   apiKeysPageMessage: ApiKeyMessage | null;
+  apiKeysElevenLabsInput: string;
+  apiKeysElevenLabsConfigured: boolean;
+  apiKeysElevenLabsSaving: boolean;
+  apiKeysElevenLabsTesting: boolean;
+  apiKeysElevenLabsConfigHash: string | null;
+  apiKeysElevenLabsMessage: ApiKeyMessage | null;
   apiKeyProviderInputs: Record<ApiKeyProviderId, string>;
   apiKeyProviderStatuses: Record<ApiKeyProviderId, ApiKeyProviderStatus | null>;
   apiKeyProviderMessages: Record<ApiKeyProviderId, ApiKeyMessage | null>;
 };
+
+const ELEVENLABS_TEST_AGENT_ID = "kova-alex";
+const ELEVENLABS_TEST_TEXT = "Hello, I am Alex, your AI researcher.";
+const ELEVENLABS_CONFIG_PATH = ["messages", "tts", "providers", "elevenlabs", "apiKey"] as const;
 
 function createProviderRecord<T>(createValue: () => T): Record<ApiKeyProviderId, T> {
   return {
@@ -229,6 +246,61 @@ function resolveProviderTestModel(state: ApiKeysState, provider: ApiKeyProviderI
   return getProviderDefinition(provider).recommendedModel;
 }
 
+function getNestedConfigValue(
+  config: Record<string, unknown> | null | undefined,
+  path: readonly string[],
+): unknown {
+  let current: unknown = config;
+  for (const key of path) {
+    if (!current || typeof current !== "object" || Array.isArray(current)) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+function isConfiguredSecretValue(value: unknown): boolean {
+  if (typeof value === "string") {
+    return value.trim().length > 0;
+  }
+  return Boolean(value && typeof value === "object");
+}
+
+function applyElevenLabsSnapshot(state: ApiKeysState, snapshot: ConfigSnapshot) {
+  state.apiKeysElevenLabsConfigured = isConfiguredSecretValue(
+    getNestedConfigValue(snapshot.config ?? null, ELEVENLABS_CONFIG_PATH),
+  );
+  state.apiKeysElevenLabsConfigHash = snapshot.hash ?? null;
+  const cachedApiKey = getCachedElevenLabsApiKey(state.settings.gatewayUrl);
+  if (!state.apiKeysElevenLabsInput.trim() && cachedApiKey) {
+    state.apiKeysElevenLabsInput = cachedApiKey;
+  }
+}
+
+async function fetchElevenLabsSnapshot(state: ApiKeysState): Promise<ConfigSnapshot> {
+  if (!state.client) {
+    throw new Error("Gateway client is not available.");
+  }
+  return state.client.request<ConfigSnapshot>("config.get", {});
+}
+
+async function ensureElevenLabsConfigHash(state: ApiKeysState): Promise<string> {
+  if (state.apiKeysElevenLabsConfigHash) {
+    return state.apiKeysElevenLabsConfigHash;
+  }
+  const snapshot = await fetchElevenLabsSnapshot(state);
+  applyElevenLabsSnapshot(state, snapshot);
+  if (!snapshot.hash) {
+    throw new Error("Config hash is not available yet. Refresh and try again.");
+  }
+  return snapshot.hash;
+}
+
+function resolveElevenLabsApiKey(state: ApiKeysState): string {
+  return state.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(state.settings.gatewayUrl);
+}
+
 async function applyActiveModel(state: ApiKeysState, provider: ApiKeyProviderId, model: string) {
   if (!state.client || !state.connected || state.apiKeysModelSaving) {
     return;
@@ -287,10 +359,28 @@ export async function loadApiKeys(state: ApiKeysState) {
   }
   state.apiKeysLoading = true;
   state.apiKeysPageMessage = null;
+  state.apiKeysElevenLabsMessage = null;
   try {
-    const snapshot = await state.client.request<ApiKeysSnapshot>("apiKeys.providers.get", {});
-    applySnapshot(state, snapshot, { resetInputs: true });
+    const [providerResult, elevenLabsResult] = await Promise.allSettled([
+      state.client.request<ApiKeysSnapshot>("apiKeys.providers.get", {}),
+      fetchElevenLabsSnapshot(state),
+    ]);
+
+    if (providerResult.status !== "fulfilled") {
+      throw providerResult.reason;
+    }
+
+    applySnapshot(state, providerResult.value, { resetInputs: true });
     state.apiKeyProviderMessages = createApiKeyMessageRecord();
+
+    if (elevenLabsResult.status === "fulfilled") {
+      applyElevenLabsSnapshot(state, elevenLabsResult.value);
+    } else {
+      state.apiKeysElevenLabsMessage = {
+        kind: "error",
+        text: `Could not load ElevenLabs settings: ${getErrorMessage(elevenLabsResult.reason)}`,
+      };
+    }
   } catch (error) {
     state.apiKeysPageMessage = {
       kind: "error",
@@ -374,5 +464,103 @@ export async function testProviderApiKey(state: ApiKeysState, provider: ApiKeyPr
     });
   } finally {
     state.apiKeysTestingProviderId = null;
+  }
+}
+
+export function updateElevenLabsApiKeyInput(state: ApiKeysState, value: string) {
+  state.apiKeysElevenLabsInput = value;
+  state.apiKeysElevenLabsMessage = null;
+}
+
+export async function loadElevenLabsApiKey(state: ApiKeysState) {
+  if (!state.client || !state.connected || state.apiKeysLoading) {
+    return;
+  }
+  try {
+    applyElevenLabsSnapshot(state, await fetchElevenLabsSnapshot(state));
+  } catch (error) {
+    state.apiKeysElevenLabsMessage = {
+      kind: "error",
+      text: `Could not load ElevenLabs settings: ${getErrorMessage(error)}`,
+    };
+  }
+}
+
+export async function saveElevenLabsApiKey(state: ApiKeysState) {
+  if (!state.client || !state.connected || state.apiKeysElevenLabsSaving) {
+    return;
+  }
+  const apiKey = state.apiKeysElevenLabsInput.trim();
+  if (!apiKey) {
+    state.apiKeysElevenLabsMessage = {
+      kind: "error",
+      text: "Paste your ElevenLabs API key before saving.",
+    };
+    return;
+  }
+
+  state.apiKeysElevenLabsSaving = true;
+  state.apiKeysElevenLabsMessage = null;
+  try {
+    const baseHash = await ensureElevenLabsConfigHash(state);
+    await state.client.request("config.patch", {
+      baseHash,
+      raw: JSON.stringify({
+        messages: {
+          tts: {
+            providers: {
+              elevenlabs: {
+                apiKey,
+              },
+            },
+          },
+        },
+      }),
+    });
+    cacheElevenLabsApiKey(state.settings.gatewayUrl, apiKey);
+    await loadElevenLabsApiKey(state);
+    state.apiKeysElevenLabsMessage = {
+      kind: "success",
+      text: "ElevenLabs key saved. Changes take effect immediately.",
+    };
+  } catch (error) {
+    state.apiKeysElevenLabsMessage = {
+      kind: "error",
+      text: `Could not save ElevenLabs key: ${getErrorMessage(error)}`,
+    };
+  } finally {
+    state.apiKeysElevenLabsSaving = false;
+  }
+}
+
+export async function testElevenLabsApiKey(state: ApiKeysState) {
+  if (!state.connected || state.apiKeysElevenLabsTesting) {
+    return;
+  }
+  const apiKey = resolveElevenLabsApiKey(state);
+  if (!apiKey) {
+    state.apiKeysElevenLabsMessage = {
+      kind: "error",
+      text: "Paste your ElevenLabs API key before running the voice test.",
+    };
+    return;
+  }
+
+  state.apiKeysElevenLabsTesting = true;
+  state.apiKeysElevenLabsMessage = null;
+  try {
+    cacheElevenLabsApiKey(state.settings.gatewayUrl, apiKey);
+    await speakElevenLabsText(ELEVENLABS_TEST_TEXT, ELEVENLABS_TEST_AGENT_ID, apiKey);
+    state.apiKeysElevenLabsMessage = {
+      kind: "success",
+      text: "Voice test played.",
+    };
+  } catch (error) {
+    state.apiKeysElevenLabsMessage = {
+      kind: "error",
+      text: `Voice test failed: ${getErrorMessage(error)}`,
+    };
+  } finally {
+    state.apiKeysElevenLabsTesting = false;
   }
 }

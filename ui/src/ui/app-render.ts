@@ -32,12 +32,15 @@ import {
 } from "./controllers/agents.ts";
 import {
   loadApiKeys,
+  saveElevenLabsApiKey,
   saveActiveModel,
   saveProviderApiKey,
   setActiveApiKeyProvider,
+  testElevenLabsApiKey,
   testProviderApiKey,
   updateApiKeysCustomModelInput,
   updateApiKeysModelOption,
+  updateElevenLabsApiKeyInput,
   updateProviderApiKeyInput,
 } from "./controllers/api-keys.ts";
 import {
@@ -1838,6 +1841,12 @@ export function renderApp(state: AppViewState) {
               },
               agentsList: state.agentsList,
               currentAgentId: resolvedAgentId ?? "main",
+              voiceEnabled: Boolean(
+                state.settings.voiceEnabledByAgent[(resolvedAgentId ?? "main").trim()],
+              ),
+              voiceSupported: (resolvedAgentId ?? "main").startsWith("kova-"),
+              voiceSpeaking: state.voiceSpeaking,
+              voiceMessage: state.voiceMessage,
               onAgentChange: (agentId: string) => {
                 state.sessionKey = buildAgentMainSessionKey({ agentId });
                 state.chatMessages = [];
@@ -1855,6 +1864,9 @@ export function renderApp(state: AppViewState) {
                 state.agentsSelectedId = resolvedAgentId;
                 state.setTab("agents" as import("./navigation.ts").Tab);
               },
+              onToggleVoice: () => state.toggleVoiceForCurrentAgent(),
+              onStopVoice: () => state.stopVoicePlayback(),
+              onOpenApiKeys: () => state.setTab("apiKeys"),
               onSessionSelect: (key: string) => {
                 switchChatSession(state, key);
               },
@@ -1975,13 +1987,21 @@ export function renderApp(state: AppViewState) {
               modelOption: state.apiKeysModelOption,
               customModelInput: state.apiKeysCustomModelInput,
               pageMessage: state.apiKeysPageMessage,
+              elevenLabsInput: state.apiKeysElevenLabsInput,
+              elevenLabsConfigured: state.apiKeysElevenLabsConfigured,
+              elevenLabsSaving: state.apiKeysElevenLabsSaving,
+              elevenLabsTesting: state.apiKeysElevenLabsTesting,
+              elevenLabsMessage: state.apiKeysElevenLabsMessage,
               providerStatuses: state.apiKeyProviderStatuses,
               providerInputs: state.apiKeyProviderInputs,
               providerMessages: state.apiKeyProviderMessages,
               onProviderInput: (provider, value) => updateProviderApiKeyInput(state, provider, value),
+              onElevenLabsInput: (value) => updateElevenLabsApiKeyInput(state, value),
               onModelOptionChange: (value) => updateApiKeysModelOption(state, value),
               onCustomModelInput: (value) => updateApiKeysCustomModelInput(state, value),
               onRefresh: () => loadApiKeys(state),
+              onSaveElevenLabs: () => saveElevenLabsApiKey(state),
+              onTestElevenLabs: () => testElevenLabsApiKey(state),
               onSaveProvider: (provider) => saveProviderApiKey(state, provider),
               onSaveModel: () => saveActiveModel(state),
               onTestProvider: (provider) => testProviderApiKey(state, provider),

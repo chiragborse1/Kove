@@ -56,6 +56,7 @@ export type UiSettings = {
   navWidth: number; // Sidebar width when expanded (240–400px)
   navGroupsCollapsed: Record<string, boolean>; // Which nav groups are collapsed
   borderRadius: number; // Corner roundness (0–100, default 50)
+  voiceEnabledByAgent: Record<string, boolean>;
   locale?: string;
 };
 
@@ -202,6 +203,7 @@ export function loadSettings(): UiSettings {
     navWidth: 220,
     navGroupsCollapsed: {},
     borderRadius: 50,
+    voiceEnabledByAgent: {},
   };
 
   try {
@@ -265,6 +267,14 @@ export function loadSettings(): UiSettings {
         parsed.borderRadius <= 100
           ? snapBorderRadius(parsed.borderRadius)
           : defaults.borderRadius,
+      voiceEnabledByAgent:
+        typeof parsed.voiceEnabledByAgent === "object" && parsed.voiceEnabledByAgent !== null
+          ? Object.fromEntries(
+              Object.entries(parsed.voiceEnabledByAgent).filter(
+                ([agentId, enabled]) => agentId.trim() && typeof enabled === "boolean",
+              ),
+            )
+          : defaults.voiceEnabledByAgent,
       locale: isSupportedLocale(parsed.locale) ? parsed.locale : undefined,
     };
     if ("token" in parsed) {
@@ -325,6 +335,7 @@ function persistSettings(next: UiSettings) {
     navWidth: next.navWidth,
     navGroupsCollapsed: next.navGroupsCollapsed,
     borderRadius: next.borderRadius,
+    voiceEnabledByAgent: next.voiceEnabledByAgent,
     sessionsByGateway,
     ...(next.locale ? { locale: next.locale } : {}),
   };

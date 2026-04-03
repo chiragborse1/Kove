@@ -69,6 +69,7 @@ import {
   createApiKeyInputRecord,
   createApiKeyMessageRecord,
   createApiKeyStatusRecord,
+  loadElevenLabsApiKey,
   type ApiKeyMessage,
   type ApiKeyProviderId,
   type ApiKeyProviderStatus,
@@ -158,6 +159,13 @@ import {
   resolveCanvasAuthToken,
   resolveCanvasBaseUrl,
 } from "./controllers/canvas.ts";
+import {
+  getCachedElevenLabsApiKey,
+  isKovaEmployeeVoiceAgent,
+  isVoicePlaybackInterrupted,
+  speakText as speakElevenLabsText,
+  stopSpeaking as stopElevenLabsPlayback,
+} from "./voice/elevenlabs.ts";
 
 declare global {
   interface Window {
@@ -274,6 +282,34 @@ function extractAssistantTextFromMessage(message: unknown): string {
   return typeof text === "string" ? text.trim() : "";
 }
 
+function resolveLatestAssistantMessageInfo(
+  messages: readonly unknown[],
+): { signature: string; text: string } | null {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index] as Record<string, unknown> | undefined;
+    if (!message || message.role !== "assistant") {
+      continue;
+    }
+    const text = extractAssistantTextFromMessage(message);
+    if (!text) {
+      continue;
+    }
+    const id =
+      typeof message.id === "string"
+        ? message.id
+        : typeof message.messageId === "string"
+          ? message.messageId
+          : typeof message.timestamp === "number"
+            ? String(message.timestamp)
+            : `assistant-${index}`;
+    return {
+      signature: `${id}:${text}`,
+      text,
+    };
+  }
+  return null;
+}
+
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
@@ -327,6 +363,8 @@ function resolveOnboardingMode(): boolean {
 @customElement("openclaw-app")
 export class OpenClawApp extends LitElement {
   private i18nController = new I18nController(this);
+  private voiceSeenBySession = new Map<string, string>();
+  private voicePlaybackGeneration = 0;
   clientInstanceId = generateUUID();
   connectGeneration = 0;
   @state() settings: UiSettings = loadSettings();
@@ -467,6 +505,12 @@ export class OpenClawApp extends LitElement {
   @state() apiKeysCustomModelInput = "";
   @state() apiKeysConfigHash: string | null = null;
   @state() apiKeysPageMessage: ApiKeyMessage | null = null;
+  @state() apiKeysElevenLabsInput = "";
+  @state() apiKeysElevenLabsConfigured = false;
+  @state() apiKeysElevenLabsSaving = false;
+  @state() apiKeysElevenLabsTesting = false;
+  @state() apiKeysElevenLabsConfigHash: string | null = null;
+  @state() apiKeysElevenLabsMessage: ApiKeyMessage | null = null;
   @state() apiKeyProviderInputs: Record<ApiKeyProviderId, string> = createApiKeyInputRecord();
   @state() apiKeyProviderStatuses: Record<ApiKeyProviderId, ApiKeyProviderStatus | null> =
     createApiKeyStatusRecord();
@@ -533,6 +577,8 @@ export class OpenClawApp extends LitElement {
   @state() canvasStatus: import("./controllers/canvas.ts").CanvasStatus = "idle";
   @state() canvasFrameUrl: string | null = null;
   @state() canvasSelectedAgentId = "main";
+  @state() voiceSpeaking = false;
+  @state() voiceMessage: ApiKeyMessage | null = null;
   @state() routingSaving = false;
   @state() routingDirty = false;
   @state() routingAssignments: RoutingAssignments = { telegram: "main", whatsapp: "main" };
@@ -786,6 +832,7 @@ export class OpenClawApp extends LitElement {
 
   disconnectedCallback() {
     document.removeEventListener("keydown", this.globalKeydownHandler);
+    this.stopVoicePlayback({ silent: true });
     handleDisconnected(this as unknown as Parameters<typeof handleDisconnected>[0]);
     super.disconnectedCallback();
   }
@@ -794,6 +841,20 @@ export class OpenClawApp extends LitElement {
     handleUpdated(this as unknown as Parameters<typeof handleUpdated>[0], changed);
     if (this.syncOnboardingRouteState()) {
       return;
+    }
+    if (
+      (changed.has("connected") && this.connected) ||
+      (changed.has("tab") && (this.tab === "chat" || this.tab === "apiKeys"))
+    ) {
+      void loadElevenLabsApiKey(this);
+    }
+    if (changed.has("sessionKey")) {
+      this.stopVoicePlayback({ silent: true });
+      this.voiceMessage = null;
+      this.markCurrentAssistantMessageAsSeen(this.sessionKey);
+    }
+    if (changed.has("chatMessages")) {
+      void this.maybeSpeakLatestAssistantMessage();
     }
     if (
       this.tab === "briefing" &&
@@ -946,6 +1007,126 @@ export class OpenClawApp extends LitElement {
 
   setInboxFilter(next: InboxChannelFilter) {
     this.inboxChannelFilter = next;
+  }
+
+  private resolveCurrentChatAgentId(): string {
+    return resolveAgentIdFromSessionKey(this.sessionKey) || "main";
+  }
+
+  private resolveCurrentVoiceApiKey(): string {
+    return this.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(this.settings.gatewayUrl);
+  }
+
+  private isVoiceEnabledForAgent(agentId: string): boolean {
+    return Boolean(this.settings.voiceEnabledByAgent[agentId]);
+  }
+
+  private markCurrentAssistantMessageAsSeen(sessionKey: string) {
+    const latest = resolveLatestAssistantMessageInfo(this.chatMessages);
+    if (latest) {
+      this.voiceSeenBySession.set(sessionKey, latest.signature);
+    }
+  }
+
+  stopVoicePlayback(options?: { silent?: boolean }) {
+    this.voicePlaybackGeneration += 1;
+    stopElevenLabsPlayback();
+    this.voiceSpeaking = false;
+    if (!options?.silent) {
+      this.voiceMessage = null;
+    }
+  }
+
+  toggleVoiceForCurrentAgent() {
+    const agentId = this.resolveCurrentChatAgentId();
+    if (!isKovaEmployeeVoiceAgent(agentId)) {
+      this.voiceMessage = {
+        kind: "error",
+        text: "Voice mode is available for Kova employees only.",
+      };
+      return;
+    }
+    if (!this.resolveCurrentVoiceApiKey()) {
+      this.voiceMessage = {
+        kind: "error",
+        text: "Add your ElevenLabs key in API Keys settings.",
+      };
+      return;
+    }
+
+    const nextEnabled = !this.isVoiceEnabledForAgent(agentId);
+    this.applySettings({
+      ...this.settings,
+      voiceEnabledByAgent: {
+        ...this.settings.voiceEnabledByAgent,
+        [agentId]: nextEnabled,
+      },
+    });
+    if (!nextEnabled) {
+      this.stopVoicePlayback({ silent: true });
+      this.voiceMessage = null;
+      return;
+    }
+
+    this.markCurrentAssistantMessageAsSeen(this.sessionKey);
+    this.voiceMessage = {
+      kind: "success",
+      text: "Voice mode is on for this employee.",
+    };
+  }
+
+  private async maybeSpeakLatestAssistantMessage() {
+    if (this.tab !== "chat") {
+      return;
+    }
+    const agentId = this.resolveCurrentChatAgentId();
+    if (!isKovaEmployeeVoiceAgent(agentId) || !this.isVoiceEnabledForAgent(agentId)) {
+      return;
+    }
+    const latest = resolveLatestAssistantMessageInfo(this.chatMessages);
+    if (!latest) {
+      return;
+    }
+    const seenSignature = this.voiceSeenBySession.get(this.sessionKey);
+    if (!seenSignature) {
+      this.voiceSeenBySession.set(this.sessionKey, latest.signature);
+      return;
+    }
+    if (seenSignature === latest.signature) {
+      return;
+    }
+    this.voiceSeenBySession.set(this.sessionKey, latest.signature);
+
+    const apiKey = this.resolveCurrentVoiceApiKey();
+    if (!apiKey) {
+      this.voiceMessage = {
+        kind: "error",
+        text: "Add your ElevenLabs key in API Keys settings.",
+      };
+      return;
+    }
+
+    const generation = ++this.voicePlaybackGeneration;
+    this.voiceSpeaking = true;
+    this.voiceMessage = null;
+    try {
+      await speakElevenLabsText(latest.text, agentId, apiKey);
+      if (generation === this.voicePlaybackGeneration) {
+        this.voiceSpeaking = false;
+      }
+    } catch (error) {
+      if (generation !== this.voicePlaybackGeneration) {
+        return;
+      }
+      this.voiceSpeaking = false;
+      if (isVoicePlaybackInterrupted(error)) {
+        return;
+      }
+      this.voiceMessage = {
+        kind: "error",
+        text: `Could not play voice: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   }
 
   handleCanvasAgentChange(agentId: string) {

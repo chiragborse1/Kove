@@ -179,6 +179,12 @@ export type AppViewState = {
   apiKeysCustomModelInput: string;
   apiKeysConfigHash: string | null;
   apiKeysPageMessage: ApiKeyMessage | null;
+  apiKeysElevenLabsInput: string;
+  apiKeysElevenLabsConfigured: boolean;
+  apiKeysElevenLabsSaving: boolean;
+  apiKeysElevenLabsTesting: boolean;
+  apiKeysElevenLabsConfigHash: string | null;
+  apiKeysElevenLabsMessage: ApiKeyMessage | null;
   apiKeyProviderInputs: Record<ApiKeyProviderId, string>;
   apiKeyProviderStatuses: Record<ApiKeyProviderId, ApiKeyProviderStatus | null>;
   apiKeyProviderMessages: Record<ApiKeyProviderId, ApiKeyMessage | null>;
@@ -241,6 +247,8 @@ export type AppViewState = {
   canvasStatus: CanvasStatus;
   canvasFrameUrl: string | null;
   canvasSelectedAgentId: string;
+  voiceSpeaking: boolean;
+  voiceMessage: ApiKeyMessage | null;
   routingSaving: boolean;
   routingDirty: boolean;
   routingAssignments: RoutingAssignments;

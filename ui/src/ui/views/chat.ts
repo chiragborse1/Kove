@@ -32,6 +32,7 @@ import {
 import { isSttSupported, startStt, stopStt } from "../chat/speech.ts";
 import { icons } from "../icons.ts";
 import { detectTextDirection } from "../text-direction.ts";
+import type { ApiKeyMessage } from "../controllers/api-keys.ts";
 import type { GatewaySessionRow, SessionsListResult } from "../types.ts";
 import type { ChatItem, MessageGroup } from "../types/chat-types.ts";
 import type { ChatAttachment, ChatQueueItem } from "../ui-types.ts";
@@ -89,7 +90,14 @@ export type ChatProps = {
     defaultId?: string;
   } | null;
   currentAgentId: string;
+  voiceEnabled: boolean;
+  voiceSupported: boolean;
+  voiceSpeaking: boolean;
+  voiceMessage: ApiKeyMessage | null;
   onAgentChange: (agentId: string) => void;
+  onToggleVoice: () => void;
+  onStopVoice: () => void;
+  onOpenApiKeys?: () => void;
   onNavigateToAgent?: () => void;
   onSessionSelect?: (sessionKey: string) => void;
   onOpenSidebar?: (content: string) => void;
@@ -891,6 +899,55 @@ function renderSlashMenu(
   `;
 }
 
+function resolveAgentOptions(props: ChatProps) {
+  const seen = new Set<string>();
+  const options: Array<{ id: string; label: string }> = [];
+  const pushOption = (id: string, label: string) => {
+    const trimmedId = id.trim();
+    if (!trimmedId || seen.has(trimmedId)) {
+      return;
+    }
+    seen.add(trimmedId);
+    options.push({ id: trimmedId, label });
+  };
+
+  pushOption("main", "Main agent");
+  for (const agent of props.agentsList?.agents ?? []) {
+    pushOption(
+      agent.id,
+      agent.identity?.name?.trim() || agent.name?.trim() || agent.id,
+    );
+  }
+  if (!seen.has(props.currentAgentId)) {
+    pushOption(props.currentAgentId, props.assistantName || props.currentAgentId);
+  }
+  return options;
+}
+
+function renderVoiceMessage(props: ChatProps): TemplateResult | typeof nothing {
+  if (!props.voiceMessage) {
+    return nothing;
+  }
+  return html`
+    <div class="callout ${props.voiceMessage.kind === "error" ? "danger" : "success"}">
+      <div
+        style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;"
+      >
+        <span>${props.voiceMessage.text}</span>
+        ${
+          props.voiceMessage.kind === "error" && props.onOpenApiKeys
+            ? html`
+                <button class="btn btn--ghost" type="button" @click=${props.onOpenApiKeys}>
+                  API Keys
+                </button>
+              `
+            : nothing
+        }
+      </div>
+    </div>
+  `;
+}
+
 export function renderChat(props: ChatProps) {
   const canCompose = props.connected;
   const isBusy = props.sending || props.stream !== null;
@@ -925,6 +982,7 @@ export function renderChat(props: ChatProps) {
 
   const splitRatio = props.splitRatio ?? 0.6;
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
+  const agentOptions = resolveAgentOptions(props);
 
   const handleCodeBlockCopy = (e: Event) => {
     const btn = (e.target as HTMLElement).closest(".code-block-copy");
@@ -1168,8 +1226,70 @@ export function renderChat(props: ChatProps) {
       @drop=${(e: DragEvent) => handleDrop(e, props)}
       @dragover=${(e: DragEvent) => e.preventDefault()}
     >
+      <div
+        class="agent-chat__header"
+        style="display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;"
+      >
+        <div style="display: grid; gap: 4px;">
+          <div class="card-title">${props.assistantName}</div>
+          <div class="card-sub">Choose who replies here and whether that employee speaks their responses aloud.</div>
+        </div>
+        <div style="display: flex; align-items: end; gap: 12px; flex-wrap: wrap;">
+          <label class="field" style="margin: 0; min-width: 220px;">
+            <span>Employee</span>
+            <select
+              .value=${props.currentAgentId}
+              @change=${(event: Event) =>
+                props.onAgentChange((event.target as HTMLSelectElement).value)}
+            >
+              ${agentOptions.map(
+                (agent) => html`<option value=${agent.id}>${agent.label}</option>`,
+              )}
+            </select>
+          </label>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <button
+              class="btn btn--ghost ${props.voiceEnabled ? "agent-chat__input-btn--active" : ""}"
+              type="button"
+              @click=${props.onToggleVoice}
+              ?disabled=${!props.voiceSupported}
+              title=${props.voiceSupported
+                ? props.voiceEnabled
+                  ? "Disable voice mode"
+                  : "Enable voice mode"
+                : "Voice mode is available for Kova employees"}
+              aria-label=${props.voiceEnabled ? "Disable voice mode" : "Enable voice mode"}
+            >
+              ${props.voiceEnabled ? icons.volume2 : icons.volumeOff}
+            </button>
+            ${
+              props.voiceSpeaking
+                ? html`
+                    <span class="agent-chat__voice-status">
+                      <span class="agent-chat__voice-dot" aria-hidden="true"></span>
+                      Speaking
+                    </span>
+                    <button class="btn btn--ghost" type="button" @click=${props.onStopVoice}>
+                      Stop
+                    </button>
+                  `
+                : nothing
+            }
+            ${
+              props.onNavigateToAgent
+                ? html`
+                    <button class="btn btn--ghost" type="button" @click=${props.onNavigateToAgent}>
+                      Open Agent
+                    </button>
+                  `
+                : nothing
+            }
+          </div>
+        </div>
+      </div>
       ${props.disabledReason ? html`<div class="callout">${props.disabledReason}</div>` : nothing}
       ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
+      ${renderVoiceMessage(props)}
       ${
         props.focusMode
           ? html`

@@ -18,13 +18,21 @@ type ApiKeysProps = {
   modelOption: string;
   customModelInput: string;
   pageMessage: ApiKeyMessage | null;
+  elevenLabsInput: string;
+  elevenLabsConfigured: boolean;
+  elevenLabsSaving: boolean;
+  elevenLabsTesting: boolean;
+  elevenLabsMessage: ApiKeyMessage | null;
   providerStatuses: Record<ApiKeyProviderId, ApiKeyProviderStatus | null>;
   providerInputs: Record<ApiKeyProviderId, string>;
   providerMessages: Record<ApiKeyProviderId, ApiKeyMessage | null>;
   onProviderInput: (provider: ApiKeyProviderId, value: string) => void;
+  onElevenLabsInput: (value: string) => void;
   onModelOptionChange: (value: string) => void;
   onCustomModelInput: (value: string) => void;
   onRefresh: () => Promise<void> | void;
+  onSaveElevenLabs: () => Promise<void> | void;
+  onTestElevenLabs: () => Promise<void> | void;
   onSaveProvider: (provider: ApiKeyProviderId) => Promise<void> | void;
   onSaveModel: () => Promise<void> | void;
   onTestProvider: (provider: ApiKeyProviderId) => Promise<void> | void;
@@ -155,6 +163,63 @@ export function renderApiKeys(props: ApiKeysProps) {
       </div>
 
       <div style="display: grid; gap: 16px;">
+        <div class="card" style="display: grid; gap: 16px; max-width: 860px;">
+          <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div style="display: grid; gap: 4px;">
+              <div class="card-title">Voice Settings (ElevenLabs)</div>
+              <div class="card-sub">Let Kova employees speak their replies with ElevenLabs TTS.</div>
+            </div>
+            <span class="chip ${props.elevenLabsConfigured ? "chip-ok" : ""}">
+              ${props.elevenLabsConfigured ? "Configured" : "Not configured"}
+            </span>
+          </div>
+
+          <label class="field">
+            <span>ElevenLabs API key</span>
+            <input
+              type="password"
+              .value=${props.elevenLabsInput}
+              @input=${(event: Event) =>
+                props.onElevenLabsInput((event.target as HTMLInputElement).value)}
+              placeholder="sk_..."
+              autocomplete="off"
+              ?disabled=${!props.connected || props.loading || props.elevenLabsSaving || props.elevenLabsTesting}
+            />
+          </label>
+
+          <div class="muted" style="font-size: 13px;">
+            Get your key at
+            <a
+              href="https://elevenlabs.io"
+              target=${EXTERNAL_LINK_TARGET}
+              rel=${buildExternalLinkRel()}
+            >elevenlabs.io</a>
+          </div>
+
+          <div class="muted" style="font-size: 13px;">
+            Voice mode is available for Kova employees in chat. Changes take effect immediately.
+          </div>
+
+          <div class="row" style="gap: 8px; flex-wrap: wrap; align-items: center;">
+            <button
+              class="btn primary"
+              ?disabled=${!props.connected || props.loading || props.elevenLabsSaving || !props.elevenLabsInput.trim()}
+              @click=${() => props.onSaveElevenLabs()}
+            >
+              ${props.elevenLabsSaving ? "Saving..." : "Save"}
+            </button>
+            <button
+              class="btn"
+              ?disabled=${!props.connected || props.loading || props.elevenLabsSaving || props.elevenLabsTesting}
+              @click=${() => props.onTestElevenLabs()}
+            >
+              ${props.elevenLabsTesting ? "Speaking..." : "Test voice"}
+            </button>
+          </div>
+
+          ${renderCallout(props.elevenLabsMessage)}
+        </div>
+
         ${API_KEY_PROVIDER_DEFINITIONS.map((provider) => {
           const status = props.providerStatuses[provider.id];
           const configured = status?.hasKey === true;
