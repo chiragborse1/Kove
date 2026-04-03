@@ -93,15 +93,19 @@ export function resolveCanvasAuthToken(params: {
   settings: Pick<UiSettings, "token">;
   password?: string | null;
 }): string {
-  const deviceToken = params.hello?.auth?.deviceToken?.trim();
-  if (deviceToken) {
-    return deviceToken;
+  const helloSharedToken = params.hello?.auth?.sharedToken?.trim();
+  if (helloSharedToken) {
+    return helloSharedToken;
   }
   const sharedToken = params.settings.token.trim();
   if (sharedToken) {
     return sharedToken;
   }
-  return params.password?.trim() ?? "";
+  const password = params.password?.trim();
+  if (password) {
+    return password;
+  }
+  return params.hello?.auth?.deviceToken?.trim() ?? "";
 }
 
 export function buildCanvasUrl(params: {

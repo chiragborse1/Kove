@@ -104,13 +104,17 @@ function createHost() {
       token: "",
       sessionKey: "main",
       lastActiveSessionKey: "main",
-      theme: "system",
+      theme: "claw",
+      themeMode: "system",
       chatFocusMode: false,
       chatShowThinking: true,
+      chatShowToolCalls: true,
       splitRatio: 0.6,
       navCollapsed: false,
+      navWidth: 220,
       navGroupsCollapsed: {},
       borderRadius: 50,
+      voiceEnabledByAgent: {},
     },
     password: "",
     clientInstanceId: "instance-test",
@@ -119,6 +123,8 @@ function createHost() {
     hello: null,
     lastError: null,
     lastErrorCode: null,
+    theme: "claw",
+    themeMode: "system",
     eventLogBuffer: [],
     eventLog: [],
     tab: "overview",
@@ -206,6 +212,22 @@ describe("connectGateway", () => {
     expect(gatewayClientInstances).toHaveLength(3);
     expect(secondClient.stop).toHaveBeenCalledTimes(1);
     expect(host.lastError).toBeNull();
+  });
+
+  it("persists the shared gateway token from hello for later canvas auth", () => {
+    const { host, client } = connectHostGateway();
+
+    client.emitHello({
+      type: "hello-ok",
+      protocol: 3,
+      snapshot: {},
+      auth: {
+        deviceToken: "scoped-device-token",
+        sharedToken: "shared-gateway-token",
+      },
+    });
+
+    expect(host.settings.token).toBe("shared-gateway-token");
   });
 
   it("preserves approval prompts, clears stale run indicators, and resumes queued work after seq-gap reconnect", () => {

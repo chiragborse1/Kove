@@ -1059,10 +1059,31 @@ export function attachGatewayWsMessageHandler(params: {
         const canvasCapabilityExpiresAtMs = canvasCapability
           ? Date.now() + CANVAS_CAPABILITY_TTL_MS
           : undefined;
+        const sharedHelloToken =
+          role === "operator" &&
+          (isControlUi || isWebchat) &&
+          resolvedAuth.mode === "token" &&
+          resolvedAuth.token?.trim()
+            ? resolvedAuth.token.trim()
+            : undefined;
         const scopedCanvasHostUrl =
           canvasHostUrl && canvasCapability
             ? (buildCanvasScopedHostUrl(canvasHostUrl, canvasCapability) ?? canvasHostUrl)
             : canvasHostUrl;
+        const helloAuth =
+          deviceToken || sharedHelloToken
+            ? {
+                ...(deviceToken
+                  ? {
+                      deviceToken: deviceToken.token,
+                      role: deviceToken.role,
+                      scopes: deviceToken.scopes,
+                      issuedAtMs: deviceToken.rotatedAtMs ?? deviceToken.createdAtMs,
+                    }
+                  : {}),
+                ...(sharedHelloToken ? { sharedToken: sharedHelloToken } : {}),
+              }
+            : undefined;
         const helloOk = {
           type: "hello-ok",
           protocol: PROTOCOL_VERSION,
@@ -1073,14 +1094,7 @@ export function attachGatewayWsMessageHandler(params: {
           features: { methods: gatewayMethods, events },
           snapshot,
           canvasHostUrl: scopedCanvasHostUrl,
-          auth: deviceToken
-            ? {
-                deviceToken: deviceToken.token,
-                role: deviceToken.role,
-                scopes: deviceToken.scopes,
-                issuedAtMs: deviceToken.rotatedAtMs ?? deviceToken.createdAtMs,
-              }
-            : undefined,
+          auth: helloAuth,
           policy: {
             maxPayload: MAX_PAYLOAD_BYTES,
             maxBufferedBytes: MAX_BUFFERED_BYTES,

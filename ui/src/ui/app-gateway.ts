@@ -192,6 +192,17 @@ function applySessionDefaults(host: GatewayHost, defaults?: SessionDefaultsSnaps
   }
 }
 
+function persistGatewaySharedTokenFromHello(host: GatewayHost, hello: GatewayHelloOk) {
+  const sharedToken = hello.auth?.sharedToken?.trim();
+  if (!sharedToken || host.settings.token.trim() === sharedToken) {
+    return;
+  }
+  applySettings(host as unknown as Parameters<typeof applySettings>[0], {
+    ...host.settings,
+    token: sharedToken,
+  });
+}
+
 export function connectGateway(host: GatewayHost, options?: ConnectGatewayOptions) {
   const shutdownHost = host as GatewayHostWithShutdownMessage;
   const reconnectReason = options?.reason ?? "initial";
@@ -237,6 +248,7 @@ export function connectGateway(host: GatewayHost, options?: ConnectGatewayOption
       host.lastError = null;
       host.lastErrorCode = null;
       host.hello = hello;
+      persistGatewaySharedTokenFromHello(host, hello);
       applySnapshot(host, hello);
       // Reset orphaned chat run state from before disconnect.
       // Any in-flight run's final event was lost during the disconnect window.

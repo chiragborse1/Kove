@@ -108,6 +108,7 @@ export type GatewayHelloOk = {
   canvasHostUrl?: string;
   auth?: {
     deviceToken?: string;
+    sharedToken?: string;
     role?: string;
     scopes?: string[];
     issuedAtMs?: number;
