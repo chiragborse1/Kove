@@ -102,6 +102,7 @@ import {
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
+import { resolveCanvasEmployees } from "./controllers/canvas.ts";
 import { isRoutingChannelConnected, resolveRoutingEmployees } from "./controllers/routing.ts";
 import { deleteSessionsAndRefresh, loadSessions, patchSession } from "./controllers/sessions.ts";
 import {
@@ -167,6 +168,7 @@ const lazyEmployees = createLazy(() => import("./views/employees.ts"));
 const lazyInbox = createLazy(() => import("./views/inbox.ts"));
 const lazyInstances = createLazy(() => import("./views/instances.ts"));
 const lazyLogs = createLazy(() => import("./views/logs.ts"));
+const lazyCanvas = createLazy(() => import("./views/canvas.ts"));
 const lazyMeetings = createLazy(() => import("./views/meetings.ts"));
 const lazyNodes = createLazy(() => import("./views/nodes.ts"));
 const lazyRouting = createLazy(() => import("./views/routing.ts"));
@@ -1182,6 +1184,21 @@ export function renderApp(state: AppViewState) {
                 onLoadHistory: (id) => state.loadMeetingHistoryEntry(id),
                 onClearHistory: () => state.clearMeetingHistory(),
                 onSendTelegram: () => state.sendMeetingFollowUpViaTelegram(),
+              }),
+            )
+          : nothing}
+        ${state.tab === "canvas"
+          ? lazyRender(lazyCanvas, (m) =>
+              m.renderCanvas({
+                connected: state.connected,
+                loading: state.canvasRefreshing || state.agentsLoading,
+                status: state.canvasStatus,
+                frameUrl: state.canvasFrameUrl,
+                selectedAgentId: state.canvasSelectedAgentId,
+                employees: resolveCanvasEmployees(state.agentsList),
+                onAgentChange: (agentId) => state.handleCanvasAgentChange(agentId),
+                onRefresh: () => state.refreshCanvas(),
+                onOpenInNewTab: () => state.openCanvasInNewTab(),
               }),
             )
           : nothing}

@@ -14,6 +14,7 @@ import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts
 import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
+import type { CanvasStatus } from "./controllers/canvas.ts";
 import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { InboxChannelFilter } from "./controllers/inbox.ts";
 import type {
@@ -236,6 +237,10 @@ export type AppViewState = {
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
   employeesFilterAgentId: KovaEmployeeId | null;
+  canvasRefreshing: boolean;
+  canvasStatus: CanvasStatus;
+  canvasFrameUrl: string | null;
+  canvasSelectedAgentId: string;
   routingSaving: boolean;
   routingDirty: boolean;
   routingAssignments: RoutingAssignments;
@@ -413,6 +418,9 @@ export type AppViewState = {
     loadCron: () => Promise<void>;
     loadInbox: () => Promise<void>;
     setInboxFilter: (filter: InboxChannelFilter) => void;
+    handleCanvasAgentChange: (agentId: string) => void;
+    refreshCanvas: () => Promise<void>;
+    openCanvasInNewTab: () => Promise<void>;
     handleRoutingAssignmentChange: (channel: RoutingChannelId, agentId: string) => void;
     applyRoutingPreset: (agentId: string) => void;
     saveRouting: () => Promise<void>;

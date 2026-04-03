@@ -250,6 +250,9 @@ export async function refreshActiveTab(host: SettingsHost) {
       loadCron(host),
     ]);
   }
+  if (host.tab === "canvas") {
+    await loadAgents(host as unknown as OpenClawApp);
+  }
   if (host.tab === "routing") {
     await loadRoutingTab(host);
   }

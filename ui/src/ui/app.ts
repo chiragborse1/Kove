@@ -151,6 +151,13 @@ import type {
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types.ts";
 import { generateUUID } from "./uuid.ts";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
+import {
+  buildCanvasUrl,
+  ensureCanvasAuthWorker,
+  probeCanvasUrl,
+  resolveCanvasAuthToken,
+  resolveCanvasBaseUrl,
+} from "./controllers/canvas.ts";
 
 declare global {
   interface Window {
@@ -522,6 +529,10 @@ export class OpenClawApp extends LitElement {
   @state() employeesError: string | null = null;
   @state() employeesDashboard: EmployeesDashboardResult | null = null;
   @state() employeesFilterAgentId: KovaEmployeeId | null = null;
+  @state() canvasRefreshing = false;
+  @state() canvasStatus: import("./controllers/canvas.ts").CanvasStatus = "idle";
+  @state() canvasFrameUrl: string | null = null;
+  @state() canvasSelectedAgentId = "main";
   @state() routingSaving = false;
   @state() routingDirty = false;
   @state() routingAssignments: RoutingAssignments = { telegram: "main", whatsapp: "main" };
@@ -793,6 +804,12 @@ export class OpenClawApp extends LitElement {
     ) {
       this.syncBriefingFormFromState(changed.has("tab"));
     }
+    if (
+      this.tab === "canvas" &&
+      (changed.has("tab") || changed.has("connected") || changed.has("hello"))
+    ) {
+      void this.refreshCanvas();
+    }
     if ((changed.has("tab") || changed.has("configSnapshot")) && this.tab === "routing") {
       this.syncRoutingAssignmentsFromState(changed.has("tab"));
     }
@@ -929,6 +946,82 @@ export class OpenClawApp extends LitElement {
 
   setInboxFilter(next: InboxChannelFilter) {
     this.inboxChannelFilter = next;
+  }
+
+  handleCanvasAgentChange(agentId: string) {
+    this.canvasSelectedAgentId = agentId;
+    if (this.tab === "canvas") {
+      void this.refreshCanvas();
+    }
+  }
+
+  async refreshCanvas() {
+    if (this.canvasRefreshing) {
+      return;
+    }
+    const baseUrl = resolveCanvasBaseUrl({
+      hello: this.hello,
+      settings: this.settings,
+    });
+    if (!baseUrl) {
+      this.canvasStatus = "error";
+      this.canvasFrameUrl = null;
+      return;
+    }
+
+    const refreshKey = String(Date.now());
+    const canvasUrl = buildCanvasUrl({
+      baseUrl,
+      agentId: this.canvasSelectedAgentId,
+      refreshKey,
+    });
+    const token = resolveCanvasAuthToken({
+      hello: this.hello,
+      settings: this.settings,
+    });
+
+    this.canvasRefreshing = true;
+    this.canvasStatus = "checking";
+    try {
+      await ensureCanvasAuthWorker({
+        basePath: this.basePath,
+        token,
+      });
+      const probe = await probeCanvasUrl({ url: canvasUrl, token });
+      if (!probe.ok) {
+        this.canvasStatus = "error";
+        this.canvasFrameUrl = null;
+        return;
+      }
+      this.canvasFrameUrl = canvasUrl;
+      this.canvasStatus = "ready";
+    } finally {
+      this.canvasRefreshing = false;
+    }
+  }
+
+  async openCanvasInNewTab() {
+    const baseUrl = resolveCanvasBaseUrl({
+      hello: this.hello,
+      settings: this.settings,
+    });
+    if (!baseUrl) {
+      return;
+    }
+    const token = resolveCanvasAuthToken({
+      hello: this.hello,
+      settings: this.settings,
+    });
+    await ensureCanvasAuthWorker({
+      basePath: this.basePath,
+      token,
+    });
+    const canvasUrl = buildCanvasUrl({
+      baseUrl,
+      agentId: this.canvasSelectedAgentId,
+      refreshKey: null,
+    });
+    window.open(canvasUrl, "_blank", "noopener,noreferrer");
   }
 
   handleRoutingAssignmentChange(channel: RoutingChannelId, agentId: string) {

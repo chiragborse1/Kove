@@ -9,7 +9,17 @@ export const TAB_GROUPS = [
   },
   {
     label: "agent",
-    tabs: ["employees", "inbox", "briefing", "meetings", "routing", "agents", "skills", "nodes"],
+    tabs: [
+      "employees",
+      "inbox",
+      "briefing",
+      "meetings",
+      "canvas",
+      "routing",
+      "agents",
+      "skills",
+      "nodes",
+    ],
   },
   {
     label: "settings",
@@ -33,6 +43,7 @@ export type Tab =
   | "inbox"
   | "briefing"
   | "meetings"
+  | "canvas"
   | "routing"
   | "agents"
   | "overview"
@@ -60,6 +71,7 @@ const TAB_PATHS: Record<Tab, string> = {
   inbox: "/inbox",
   briefing: "/briefing",
   meetings: "/meetings",
+  canvas: "/canvas",
   routing: "/routing",
   agents: "/agents",
   overview: "/overview",
@@ -175,6 +187,8 @@ export function iconForTab(tab: Tab): IconName {
       return "sun";
     case "meetings":
       return "penLine";
+    case "canvas":
+      return "palette";
     case "routing":
       return "shuffle";
     case "agents":
@@ -233,6 +247,9 @@ export function titleForTab(tab: Tab) {
   if (tab === "meetings") {
     return "Meetings";
   }
+  if (tab === "canvas") {
+    return "Canvas";
+  }
   if (tab === "routing") {
     return "Routing";
   }
@@ -251,6 +268,9 @@ export function subtitleForTab(tab: Tab) {
   }
   if (tab === "meetings") {
     return "Upload or paste transcripts for summaries, action items, and follow-up drafts.";
+  }
+  if (tab === "canvas") {
+    return "Real-time agent workspace and visual output.";
   }
   if (tab === "routing") {
     return "Choose which Kova employee handles Telegram and WhatsApp.";

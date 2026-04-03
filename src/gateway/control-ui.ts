@@ -32,6 +32,7 @@ import {
 const ROOT_PREFIX = "/";
 const CONTROL_UI_ASSETS_MISSING_MESSAGE =
   "Control UI assets not found. Build them with `pnpm ui:build` (auto-installs UI deps), or run `pnpm ui:dev` during development.";
+const CANVAS_AUTH_WORKER_FILE = "openclaw-canvas-auth-sw.js";
 
 export type ControlUiRequestOptions = {
   basePath?: string;
@@ -222,6 +223,9 @@ export function handleControlUiAvatarRequest(
 function setStaticFileHeaders(res: ServerResponse, filePath: string) {
   const ext = path.extname(filePath).toLowerCase();
   res.setHeader("Content-Type", contentTypeForExt(ext));
+  if (path.basename(filePath) === CANVAS_AUTH_WORKER_FILE) {
+    res.setHeader("Service-Worker-Allowed", "/");
+  }
   // Static UI should never be cached aggressively while iterating; allow the
   // browser to revalidate.
   res.setHeader("Cache-Control", "no-cache");

@@ -105,6 +105,7 @@ export type GatewayHelloOk = {
   };
   features?: { methods?: string[]; events?: string[] };
   snapshot?: unknown;
+  canvasHostUrl?: string;
   auth?: {
     deviceToken?: string;
     role?: string;

@@ -29,6 +29,17 @@ export const icons = {
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
     </svg>
   `,
+  palette: html`
+    <svg viewBox="0 0 24 24">
+      <path
+        d="M12 3a9 9 0 0 0 0 18h1.4a2.6 2.6 0 0 0 0-5.2h-.54a1.36 1.36 0 0 1-1.22-1.96l.18-.37A2.6 2.6 0 0 0 9.47 9.8H7a4 4 0 0 1 0-8h5Z"
+      />
+      <circle cx="6.5" cy="11.5" r="1" />
+      <circle cx="9.5" cy="7.5" r="1" />
+      <circle cx="14.5" cy="7.5" r="1" />
+      <circle cx="17.5" cy="11.5" r="1" />
+    </svg>
+  `,
   radio: html`
     <svg viewBox="0 0 24 24">
       <circle cx="12" cy="12" r="2" />
