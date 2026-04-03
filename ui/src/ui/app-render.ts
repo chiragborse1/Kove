@@ -161,6 +161,7 @@ const lazyChannels = createLazy(() => import("./views/channels.ts"));
 const lazyCron = createLazy(() => import("./views/cron.ts"));
 const lazyDebug = createLazy(() => import("./views/debug.ts"));
 const lazyEmployees = createLazy(() => import("./views/employees.ts"));
+const lazyInbox = createLazy(() => import("./views/inbox.ts"));
 const lazyInstances = createLazy(() => import("./views/instances.ts"));
 const lazyLogs = createLazy(() => import("./views/logs.ts"));
 const lazyNodes = createLazy(() => import("./views/nodes.ts"));
@@ -1090,6 +1091,23 @@ export function renderApp(state: AppViewState) {
                   state.sessionsPage = 0;
                   state.sessionsSelectedKeys = new Set();
                   state.setTab("sessions" as import("./navigation.ts").Tab);
+                },
+              }),
+            )
+          : nothing}
+        ${state.tab === "inbox"
+          ? lazyRender(lazyInbox, (m) =>
+              m.renderInbox({
+                loading: state.inboxLoading,
+                error: state.inboxError,
+                sessions: state.inboxSessions,
+                filter: state.inboxChannelFilter,
+                basePath: state.basePath,
+                onFilterChange: (next) => state.setInboxFilter(next),
+                onRefresh: () => state.loadInbox(),
+                onNavigateToChat: (sessionKey) => {
+                  switchChatSession(state, sessionKey);
+                  state.setTab("chat" as import("./navigation.ts").Tab);
                 },
               }),
             )

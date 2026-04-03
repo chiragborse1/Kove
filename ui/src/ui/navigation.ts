@@ -7,7 +7,7 @@ export const TAB_GROUPS = [
     label: "control",
     tabs: ["overview", "channels", "instances", "sessions", "usage", "cron"],
   },
-  { label: "agent", tabs: ["employees", "briefing", "agents", "skills", "nodes"] },
+  { label: "agent", tabs: ["employees", "inbox", "briefing", "agents", "skills", "nodes"] },
   {
     label: "settings",
     tabs: [
@@ -27,6 +27,7 @@ export const TAB_GROUPS = [
 export type Tab =
   | "onboarding"
   | "employees"
+  | "inbox"
   | "briefing"
   | "agents"
   | "overview"
@@ -51,6 +52,7 @@ export type Tab =
 const TAB_PATHS: Record<Tab, string> = {
   onboarding: "/onboarding",
   employees: "/employees",
+  inbox: "/inbox",
   briefing: "/briefing",
   agents: "/agents",
   overview: "/overview",
@@ -160,6 +162,8 @@ export function iconForTab(tab: Tab): IconName {
       return "spark";
     case "employees":
       return "brain";
+    case "inbox":
+      return "inbox";
     case "briefing":
       return "sun";
     case "agents":
@@ -212,6 +216,9 @@ export function titleForTab(tab: Tab) {
   if (tab === "briefing") {
     return "Daily Briefing";
   }
+  if (tab === "inbox") {
+    return "Inbox";
+  }
   return t(`tabs.${tab}`);
 }
 
@@ -221,6 +228,9 @@ export function subtitleForTab(tab: Tab) {
   }
   if (tab === "briefing") {
     return "Schedule Kova's morning digest for Telegram or WhatsApp.";
+  }
+  if (tab === "inbox") {
+    return "All conversations across your connected channels.";
   }
   return t(`subtitles.${tab}`);
 }

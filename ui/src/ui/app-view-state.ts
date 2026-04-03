@@ -15,6 +15,7 @@ import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
 import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
+import type { InboxChannelFilter } from "./controllers/inbox.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -29,6 +30,7 @@ import type {
   ChannelsStatusSnapshot,
   ConfigSnapshot,
   ConfigUiHints,
+  GatewaySessionRow,
   HealthSummary,
   LogEntry,
   LogLevel,
@@ -225,6 +227,10 @@ export type AppViewState = {
   employeesError: string | null;
   employeesDashboard: EmployeesDashboardResult | null;
   employeesFilterAgentId: KovaEmployeeId | null;
+  inboxSessions: GatewaySessionRow[] | null;
+  inboxLoading: boolean;
+  inboxError: string | null;
+  inboxChannelFilter: InboxChannelFilter;
   sessionsLoading: boolean;
   sessionsResult: SessionsListResult | null;
   sessionsError: string | null;
@@ -377,6 +383,8 @@ export type AppViewState = {
     loadOverview: () => Promise<void>;
     loadAssistantIdentity: () => Promise<void>;
     loadCron: () => Promise<void>;
+    loadInbox: () => Promise<void>;
+    setInboxFilter: (filter: InboxChannelFilter) => void;
     saveBriefing: () => Promise<void>;
     handleWhatsAppStart: (force: boolean) => Promise<void>;
     handleWhatsAppWait: () => Promise<void>;

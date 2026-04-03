@@ -6,6 +6,8 @@ import {
   stopNodesPolling,
   startDebugPolling,
   stopDebugPolling,
+  startInboxPolling,
+  stopInboxPolling,
 } from "./app-polling.ts";
 import { observeTopbar, scheduleChatScroll, scheduleLogsScroll } from "./app-scroll.ts";
 import {
@@ -38,6 +40,7 @@ type LifecycleHost = {
   logsAutoFollow: boolean;
   logsAtBottom: boolean;
   logsEntries: unknown[];
+  inboxPollInterval: number | null;
   popStateHandler: () => void;
   topbarObserver: ResizeObserver | null;
 };
@@ -64,6 +67,9 @@ export function handleConnected(host: LifecycleHost) {
   if (host.tab === "debug") {
     startDebugPolling(host as unknown as Parameters<typeof startDebugPolling>[0]);
   }
+  if (host.tab === "inbox") {
+    startInboxPolling(host as unknown as Parameters<typeof startInboxPolling>[0]);
+  }
 }
 
 export function handleFirstUpdated(host: LifecycleHost) {
@@ -76,6 +82,7 @@ export function handleDisconnected(host: LifecycleHost) {
   stopNodesPolling(host as unknown as Parameters<typeof stopNodesPolling>[0]);
   stopLogsPolling(host as unknown as Parameters<typeof stopLogsPolling>[0]);
   stopDebugPolling(host as unknown as Parameters<typeof stopDebugPolling>[0]);
+  stopInboxPolling(host as unknown as Parameters<typeof stopInboxPolling>[0]);
   host.client?.stop();
   host.client = null;
   host.connected = false;

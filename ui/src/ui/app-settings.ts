@@ -5,6 +5,8 @@ import {
   stopLogsPolling,
   startDebugPolling,
   stopDebugPolling,
+  startInboxPolling,
+  stopInboxPolling,
 } from "./app-polling.ts";
 import { scheduleChatScroll, scheduleLogsScroll } from "./app-scroll.ts";
 import type { OpenClawApp } from "./app.ts";
@@ -20,6 +22,7 @@ import { loadDebug } from "./controllers/debug.ts";
 import { loadDevices } from "./controllers/devices.ts";
 import { loadExecApprovals } from "./controllers/exec-approvals.ts";
 import { loadEmployeesDashboard } from "./controllers/employees.ts";
+import { loadInbox } from "./controllers/inbox.ts";
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
@@ -246,6 +249,9 @@ export async function refreshActiveTab(host: SettingsHost) {
       loadCron(host),
     ]);
   }
+  if (host.tab === "inbox") {
+    await loadInbox(host as unknown as OpenClawApp);
+  }
   if (host.tab === "employees") {
     await loadEmployeesDashboard(host as unknown as OpenClawApp);
   }
@@ -469,6 +475,11 @@ function applyTabSelection(
     startDebugPolling(host as unknown as Parameters<typeof startDebugPolling>[0]);
   } else {
     stopDebugPolling(host as unknown as Parameters<typeof stopDebugPolling>[0]);
+  }
+  if (next === "inbox") {
+    startInboxPolling(host as unknown as Parameters<typeof startInboxPolling>[0]);
+  } else {
+    stopInboxPolling(host as unknown as Parameters<typeof stopInboxPolling>[0]);
   }
 
   if (options.refreshPolicy === "always" || host.connected) {

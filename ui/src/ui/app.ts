@@ -89,6 +89,10 @@ import type { DevicePairingList } from "./controllers/devices.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
 import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
+import {
+  loadInbox as loadInboxInternal,
+  type InboxChannelFilter,
+} from "./controllers/inbox.ts";
 import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
@@ -100,6 +104,7 @@ import type {
   AgentIdentityResult,
   ConfigSnapshot,
   ConfigUiHints,
+  GatewaySessionRow,
   ChatModelOverride,
   CronJob,
   CronRunLogEntry,
@@ -345,6 +350,10 @@ export class OpenClawApp extends LitElement {
   @state() employeesError: string | null = null;
   @state() employeesDashboard: EmployeesDashboardResult | null = null;
   @state() employeesFilterAgentId: KovaEmployeeId | null = null;
+  @state() inboxSessions: GatewaySessionRow[] | null = null;
+  @state() inboxLoading = false;
+  @state() inboxError: string | null = null;
+  @state() inboxChannelFilter: InboxChannelFilter = "all";
 
   @state() sessionsLoading = false;
   @state() sessionsResult: SessionsListResult | null = null;
@@ -522,6 +531,7 @@ export class OpenClawApp extends LitElement {
   private nodesPollInterval: number | null = null;
   private logsPollInterval: number | null = null;
   private debugPollInterval: number | null = null;
+  private inboxPollInterval: number | null = null;
   private logsScrollFrame: number | null = null;
   private toolStreamById = new Map<string, ToolStreamEntry>();
   private toolStreamOrder: string[] = [];
@@ -717,6 +727,14 @@ export class OpenClawApp extends LitElement {
 
   async loadCron() {
     await loadCronInternal(this as unknown as Parameters<typeof loadCronInternal>[0]);
+  }
+
+  async loadInbox() {
+    await loadInboxInternal(this);
+  }
+
+  setInboxFilter(next: InboxChannelFilter) {
+    this.inboxChannelFilter = next;
   }
 
   async saveBriefing() {

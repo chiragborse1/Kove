@@ -1,5 +1,6 @@
 import type { OpenClawApp } from "./app.ts";
 import { loadDebug } from "./controllers/debug.ts";
+import { loadInbox } from "./controllers/inbox.ts";
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 
@@ -7,6 +8,7 @@ type PollingHost = {
   nodesPollInterval: number | null;
   logsPollInterval: number | null;
   debugPollInterval: number | null;
+  inboxPollInterval: number | null;
   tab: string;
 };
 
@@ -66,4 +68,24 @@ export function stopDebugPolling(host: PollingHost) {
   }
   clearInterval(host.debugPollInterval);
   host.debugPollInterval = null;
+}
+
+export function startInboxPolling(host: PollingHost) {
+  if (host.inboxPollInterval != null) {
+    return;
+  }
+  host.inboxPollInterval = window.setInterval(() => {
+    if (host.tab !== "inbox") {
+      return;
+    }
+    void loadInbox(host as unknown as OpenClawApp);
+  }, 30_000);
+}
+
+export function stopInboxPolling(host: PollingHost) {
+  if (host.inboxPollInterval == null) {
+    return;
+  }
+  clearInterval(host.inboxPollInterval);
+  host.inboxPollInterval = null;
 }
