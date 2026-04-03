@@ -125,6 +125,7 @@ import { renderConfig } from "./views/config.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
 import { renderLoginGate } from "./views/login-gate.ts";
+import { renderOnboarding } from "./views/onboarding.ts";
 import { renderOverview } from "./views/overview.ts";
 
 // Lazy-loaded view modules - deferred so the initial bundle stays small.
@@ -328,6 +329,49 @@ export function renderApp(state: AppViewState) {
   // The gateway URL confirmation overlay is always rendered so URL-param flows still work.
   if (!state.connected) {
     return html` ${renderLoginGate(state)} ${renderGatewayUrlConfirmation(state)} `;
+  }
+
+  if (state.tab === "onboarding") {
+    return html`
+      ${renderOnboarding({
+        step: state.onboardingStep,
+        selectedProvider: state.onboardingProvider,
+        connected: state.connected,
+        savingProviderId: state.apiKeysSavingProviderId,
+        providerStatuses: state.apiKeyProviderStatuses,
+        providerInputs: state.apiKeyProviderInputs,
+        providerMessages: state.apiKeyProviderMessages,
+        snapshot: state.channelsSnapshot,
+        whatsappMessage: state.whatsappLoginMessage,
+        whatsappQrDataUrl: state.whatsappLoginQrDataUrl,
+        whatsappConnected: state.whatsappLoginConnected,
+        whatsappBusy: state.whatsappBusy,
+        telegramSetupToken: state.telegramSetupToken,
+        telegramSetupBusy: state.telegramSetupBusy,
+        telegramSetupMessage: state.telegramSetupMessage,
+        onStart: () => state.setOnboardingStep(2),
+        onSelectProvider: (provider) => state.selectOnboardingProvider(provider),
+        onProviderInput: (provider, value) => updateProviderApiKeyInput(state, provider, value),
+        onSaveProvider: async (provider) => {
+          await saveProviderApiKey(state, provider);
+          if (state.apiKeyProviderStatuses[provider]?.hasKey) {
+            await setActiveApiKeyProvider(state, provider);
+            await loadConfig(state);
+          }
+        },
+        onContinueFromProvider: () => {
+          state.setOnboardingStep(3);
+          void loadChannels(state, false);
+        },
+        onSkip: () => state.skipOnboarding(),
+        onTelegramTokenInput: (next) => updateTelegramSetupToken(state, next),
+        onTelegramConnect: () => connectTelegram(state),
+        onWhatsAppStart: () => state.handleWhatsAppStart(false),
+        onWhatsAppLogout: () => state.handleWhatsAppLogout(),
+        onFinish: () => state.completeOnboarding(),
+      })}
+      ${renderGatewayUrlConfirmation(state)}
+    `;
   }
 
   const presenceCount = state.presenceEntries.length;
@@ -729,7 +773,8 @@ export function renderApp(state: AppViewState) {
                 onTelegramDisconnect: () => disconnectTelegram(state),
                 onTelegramApprovalsRefresh: () => loadTelegramPendingApprovals(state),
                 onTelegramApprove: (code) => approveTelegramPairing(state, code),
-                onTelegramReject: (code) => rejectTelegramPairing(state, code),                onConfigPatch: (path, value) => updateConfigFormValue(state, path, value),
+                onTelegramReject: (code) => rejectTelegramPairing(state, code),
+                onConfigPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onConfigSave: () => state.handleChannelConfigSave(),
                 onConfigReload: () => state.handleChannelConfigReload(),
                 onNostrProfileEdit: (accountId, profile) =>

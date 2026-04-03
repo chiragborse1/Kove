@@ -217,6 +217,11 @@ export function setThemeMode(
 }
 
 export async function refreshActiveTab(host: SettingsHost) {
+  if (host.tab === "onboarding") {
+    await loadConfig(host as unknown as OpenClawApp);
+    await loadApiKeys(host as unknown as OpenClawApp);
+    await loadChannels(host as unknown as OpenClawApp, false);
+  }
   if (host.tab === "overview") {
     await loadOverview(host);
   }

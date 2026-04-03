@@ -2,6 +2,7 @@ import { LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { resolveAgentIdFromSessionKey } from "../../../src/routing/session-key.js";
 import { i18n, I18nController, isSupportedLocale } from "../i18n/index.ts";
+import { getSafeLocalStorage } from "../local-storage.ts";
 import {
   handleChannelConfigReload as handleChannelConfigReloadInternal,
   handleChannelConfigSave as handleChannelConfigSaveInternal,
@@ -144,6 +145,9 @@ export class OpenClawApp extends LitElement {
   @state() loginShowGatewayPassword = false;
   @state() tab: Tab = "chat";
   @state() onboarding = resolveOnboardingMode();
+  @state() onboardingStep: 1 | 2 | 3 = 1;
+  @state() onboardingProvider: ApiKeyProviderId = "openrouter";
+  @state() onboardingInteracted = false;
   @state() connected = false;
   @state() theme: ThemeName = this.settings.theme ?? "claw";
   @state() themeMode: ThemeMode = this.settings.themeMode ?? "system";
@@ -555,6 +559,9 @@ export class OpenClawApp extends LitElement {
 
   protected updated(changed: Map<PropertyKey, unknown>) {
     handleUpdated(this as unknown as Parameters<typeof handleUpdated>[0], changed);
+    if (this.syncOnboardingRouteState()) {
+      return;
+    }
     if (!changed.has("sessionKey") || this.agentsPanel !== "tools") {
       return;
     }
@@ -622,7 +629,29 @@ export class OpenClawApp extends LitElement {
 
   setTab(next: Tab) {
     setTabInternal(this as unknown as Parameters<typeof setTabInternal>[0], next);
+    this.onboarding = next === "onboarding";
     this.navDrawerOpen = false;
+  }
+
+  setOnboardingStep(next: 1 | 2 | 3) {
+    this.onboardingInteracted = true;
+    this.onboardingStep = next;
+  }
+
+  selectOnboardingProvider(provider: ApiKeyProviderId) {
+    this.onboardingInteracted = true;
+    this.onboardingProvider = provider;
+  }
+
+  completeOnboarding() {
+    this.persistOnboardingFlag();
+    this.onboardingInteracted = false;
+    this.onboardingStep = 1;
+    this.setTab("employees");
+  }
+
+  skipOnboarding() {
+    this.completeOnboarding();
   }
 
   setTheme(next: ThemeName, context?: Parameters<typeof setThemeInternal>[2]) {
@@ -807,5 +836,52 @@ export class OpenClawApp extends LitElement {
 
   render() {
     return renderApp(this as unknown as AppViewState);
+  }
+
+  private hasConfiguredProvider(): boolean {
+    const auth = (this.configSnapshot?.config as { auth?: unknown } | null)?.auth;
+    if (!auth || typeof auth !== "object" || Array.isArray(auth)) {
+      return false;
+    }
+    const profiles = (auth as { profiles?: unknown }).profiles;
+    if (!profiles || typeof profiles !== "object" || Array.isArray(profiles)) {
+      return false;
+    }
+    return Object.keys(profiles).length > 0;
+  }
+
+  private hasCompletedOnboarding(): boolean {
+    return getSafeLocalStorage()?.getItem("kova_onboarded") === "1";
+  }
+
+  private persistOnboardingFlag() {
+    getSafeLocalStorage()?.setItem("kova_onboarded", "1");
+  }
+
+  private syncOnboardingRouteState(): boolean {
+    if (this.onboarding !== (this.tab === "onboarding")) {
+      this.onboarding = this.tab === "onboarding";
+    }
+
+    if (!this.connected) {
+      return false;
+    }
+
+    if (this.tab === "onboarding") {
+      if (this.hasCompletedOnboarding() || (this.hasConfiguredProvider() && !this.onboardingInteracted)) {
+        this.setTab("employees");
+        return true;
+      }
+      return false;
+    }
+
+    if (!this.hasCompletedOnboarding() && this.configSnapshot && !this.hasConfiguredProvider()) {
+      this.onboardingStep = 1;
+      this.onboardingInteracted = false;
+      this.setTab("onboarding");
+      return true;
+    }
+
+    return false;
   }
 }

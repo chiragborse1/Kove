@@ -25,6 +25,7 @@ export const TAB_GROUPS = [
 ] as const;
 
 export type Tab =
+  | "onboarding"
   | "employees"
   | "agents"
   | "overview"
@@ -47,6 +48,7 @@ export type Tab =
   | "logs";
 
 const TAB_PATHS: Record<Tab, string> = {
+  onboarding: "/onboarding",
   employees: "/employees",
   agents: "/agents",
   overview: "/overview",
@@ -152,6 +154,8 @@ export function inferBasePathFromPathname(pathname: string): string {
 
 export function iconForTab(tab: Tab): IconName {
   switch (tab) {
+    case "onboarding":
+      return "spark";
     case "employees":
       return "brain";
     case "agents":
@@ -198,9 +202,15 @@ export function iconForTab(tab: Tab): IconName {
 }
 
 export function titleForTab(tab: Tab) {
+  if (tab === "onboarding") {
+    return "Onboarding";
+  }
   return t(`tabs.${tab}`);
 }
 
 export function subtitleForTab(tab: Tab) {
+  if (tab === "onboarding") {
+    return "Set up Kova without the terminal.";
+  }
   return t(`subtitles.${tab}`);
 }

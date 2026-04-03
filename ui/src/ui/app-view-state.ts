@@ -51,6 +51,8 @@ export type AppViewState = {
   loginShowGatewayPassword: boolean;
   tab: Tab;
   onboarding: boolean;
+  onboardingStep: 1 | 2 | 3;
+  onboardingProvider: ApiKeyProviderId;
   basePath: string;
   connected: boolean;
   theme: ThemeName;
@@ -354,6 +356,10 @@ export type AppViewState = {
     refreshSessionsAfterChat: Set<string>;
     connect: () => void;
     setTab: (tab: Tab) => void;
+    setOnboardingStep: (step: 1 | 2 | 3) => void;
+    selectOnboardingProvider: (provider: ApiKeyProviderId) => void;
+    completeOnboarding: () => void;
+    skipOnboarding: () => void;
     setTheme: (theme: ThemeName, context?: ThemeTransitionContext) => void;
     setThemeMode: (mode: ThemeMode, context?: ThemeTransitionContext) => void;
     setBorderRadius: (value: number) => void;
