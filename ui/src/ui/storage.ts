@@ -2,7 +2,6 @@ const SETTINGS_KEY_PREFIX = "openclaw.control.settings.v1:";
 const LEGACY_SETTINGS_KEY = "openclaw.control.settings.v1";
 const LEGACY_TOKEN_SESSION_KEY = "openclaw.control.token.v1";
 const TOKEN_SESSION_KEY_PREFIX = "openclaw.control.token.v1:";
-const DESKTOP_GATEWAY_TOKEN_KEY = "kova.gateway.token";
 const MAX_SCOPED_SESSION_ENTRIES = 10;
 
 function settingsKeyForGateway(gatewayUrl: string): string {
@@ -24,7 +23,6 @@ type PersistedUiSettings = Omit<UiSettings, "token" | "sessionKey" | "lastActive
 import { isSupportedLocale } from "../i18n/index.ts";
 import { getSafeLocalStorage, getSafeSessionStorage } from "../local-storage.ts";
 import { inferBasePathFromPathname, normalizeBasePath } from "./navigation.ts";
-import { isTauriDesktopEnvironment } from "./tauri-desktop.ts";
 import { parseThemeSelection, type ThemeMode, type ThemeName } from "./theme.ts";
 
 export const BORDER_RADIUS_STOPS = [0, 25, 50, 75, 100] as const;
@@ -75,12 +73,6 @@ function formatHostWithPort(hostname: string, port: string): string {
 }
 
 function deriveDefaultGatewayUrl(): { pageUrl: string; effectiveUrl: string } {
-  if (isTauriDesktopEnvironment()) {
-    return {
-      pageUrl: "ws://127.0.0.1:18789",
-      effectiveUrl: "ws://127.0.0.1:18789",
-    };
-  }
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const configured =
     typeof window !== "undefined" &&
@@ -161,12 +153,6 @@ function resolveScopedSessionSelection(
 
 function loadSessionToken(gatewayUrl: string): string {
   try {
-    if (isTauriDesktopEnvironment()) {
-      const desktopToken = getSafeLocalStorage()?.getItem(DESKTOP_GATEWAY_TOKEN_KEY) ?? "";
-      if (desktopToken.trim()) {
-        return desktopToken.trim();
-      }
-    }
     const storage = getSessionStorage();
     if (!storage) {
       return "";
@@ -181,15 +167,6 @@ function loadSessionToken(gatewayUrl: string): string {
 
 function persistSessionToken(gatewayUrl: string, token: string) {
   try {
-    if (isTauriDesktopEnvironment()) {
-      const storage = getSafeLocalStorage();
-      const normalized = token.trim();
-      if (normalized) {
-        storage?.setItem(DESKTOP_GATEWAY_TOKEN_KEY, normalized);
-      } else {
-        storage?.removeItem(DESKTOP_GATEWAY_TOKEN_KEY);
-      }
-    }
     const storage = getSessionStorage();
     if (!storage) {
       return;

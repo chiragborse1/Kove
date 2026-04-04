@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { icons } from "../icons.ts";
 import {
   ROUTING_CHANNELS,
   labelForRoutingChannel,
@@ -7,7 +8,6 @@ import {
   type RoutingEmployeeOption,
   type RoutingMessage,
 } from "../controllers/routing.ts";
-import { icons } from "../icons.ts";
 
 export type RoutingProps = {
   connected: boolean;
@@ -27,9 +27,7 @@ function renderMessage(message: RoutingMessage | null) {
   if (!message) {
     return nothing;
   }
-  return html`<div class="callout ${message.kind === "error" ? "danger" : "success"}">
-    ${message.text}
-  </div>`;
+  return html`<div class="callout ${message.kind === "error" ? "danger" : "success"}">${message.text}</div>`;
 }
 
 function resolveChannelIcon(channel: RoutingChannelId) {
@@ -47,10 +45,7 @@ function resolveOwnerLabel(agentId: string, employees: Map<string, RoutingEmploy
   return employees.get(agentId)?.name ?? agentId;
 }
 
-function resolveOwnerSubLabel(
-  agentId: string,
-  employees: Map<string, RoutingEmployeeOption>,
-): string {
+function resolveOwnerSubLabel(agentId: string, employees: Map<string, RoutingEmployeeOption>): string {
   if (agentId === "main") {
     return "Current Kova default";
   }
@@ -58,9 +53,7 @@ function resolveOwnerSubLabel(
 }
 
 export function renderRouting(props: RoutingProps) {
-  const employeesById = new Map(
-    props.employees.map((employee) => [employee.id, employee] as const),
-  );
+  const employeesById = new Map(props.employees.map((employee) => [employee.id, employee] as const));
 
   return html`
     <section class="page page--settings" style="display: grid; gap: 20px;">
@@ -72,10 +65,7 @@ export function renderRouting(props: RoutingProps) {
       </div>
 
       <section class="card" style="display: grid; gap: 14px;">
-        <div
-          class="row"
-          style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;"
-        >
+        <div class="row" style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
           <div style="display: grid; gap: 4px;">
             <div class="card-title">Quick Presets</div>
             <div class="card-sub">Pick a starting point, then fine-tune each channel below.</div>
@@ -115,8 +105,7 @@ export function renderRouting(props: RoutingProps) {
         <div style="display: grid; gap: 4px;">
           <div class="card-title">Channel Routing</div>
           <div class="card-sub">
-            Telegram and WhatsApp always stay visible here. Inactive channels show as not connected
-            until you finish setup.
+            Telegram and WhatsApp always stay visible here. Inactive channels show as not connected until you finish setup.
           </div>
         </div>
 
@@ -125,16 +114,14 @@ export function renderRouting(props: RoutingProps) {
             <thead>
               <tr>
                 <th style="text-align: left; padding: 0 0 14px; min-width: 220px;">Channel</th>
-                <th style="text-align: left; padding: 0 0 14px; min-width: 180px;">
-                  Current owner
-                </th>
+                <th style="text-align: left; padding: 0 0 14px; min-width: 180px;">Current owner</th>
                 ${props.employees.map(
                   (employee) => html`
                     <th style="text-align: center; padding: 0 8px 14px; min-width: 120px;">
                       <div style="display: grid; gap: 4px; justify-items: center;">
                         <span>${employee.name}</span>
                         <span class="muted" style="font-size: 12px;">
-                          ${employee.isCustom ? "Custom" : (employee.role ?? "Employee")}
+                          ${employee.isCustom ? "Custom" : employee.role ?? "Employee"}
                         </span>
                       </div>
                     </th>
@@ -177,9 +164,7 @@ export function renderRouting(props: RoutingProps) {
                     </td>
                     <td style="padding: 16px 8px; vertical-align: top;">
                       <div style="display: grid; gap: 4px;">
-                        <span class="chip"
-                          >${resolveOwnerLabel(assignedAgentId, employeesById)}</span
-                        >
+                        <span class="chip">${resolveOwnerLabel(assignedAgentId, employeesById)}</span>
                         <span class="muted" style="font-size: 12px;">
                           ${resolveOwnerSubLabel(assignedAgentId, employeesById)}
                         </span>
@@ -226,10 +211,7 @@ export function renderRouting(props: RoutingProps) {
       </section>
 
       <section class="card" style="display: grid; gap: 12px;">
-        <div
-          class="row"
-          style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;"
-        >
+        <div class="row" style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
           <div style="display: grid; gap: 4px;">
             <div class="card-title">Save routing</div>
             <div class="card-sub">Changes take effect immediately - no restart needed.</div>

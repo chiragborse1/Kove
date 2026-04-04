@@ -74,10 +74,7 @@ const KOVA_CATEGORY_TABS: KovaCategoryTabDef[] = [
   { id: "Social", label: "Social" },
 ];
 
-function skillMatchesStatus(
-  skill: SkillStatusEntry,
-  status: Exclude<SkillsStatusFilter, "marketplace">,
-): boolean {
+function skillMatchesStatus(skill: SkillStatusEntry, status: Exclude<SkillsStatusFilter, "marketplace">): boolean {
   switch (status) {
     case "all":
       return true;
@@ -151,16 +148,13 @@ function kova_renderMarketplace(props: SkillsProps) {
     </div>
 
     ${props.kova_marketplaceError
-      ? html`<div class="callout danger" style="margin-top: 12px;">
-          ${props.kova_marketplaceError}
-        </div>`
+      ? html`<div class="callout danger" style="margin-top: 12px;">${props.kova_marketplaceError}</div>`
       : nothing}
+
     ${filtered.length === 0
       ? html`
           <div class="muted" style="margin-top: 16px;">
-            ${props.kova_marketplaceLoading
-              ? "Loading marketplace..."
-              : "No marketplace skills found."}
+            ${props.kova_marketplaceLoading ? "Loading marketplace..." : "No marketplace skills found."}
           </div>
         `
       : html`
@@ -185,10 +179,7 @@ function kova_renderMarketplaceCard(skill: KovaMarketplaceSkill, props: SkillsPr
       style="display: grid; grid-template-columns: minmax(0, 3fr) minmax(96px, 1fr); gap: 14px; align-items: start; border: 1px solid var(--border);"
     >
       <div class="list-main" style="min-width: 0;">
-        <div
-          class="list-title"
-          style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;"
-        >
+        <div class="list-title" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <span>${skill.name}</span>
           <span class="chip">${skill.category}</span>
           ${skill.free ? html`<span class="chip chip-ok">Free</span>` : nothing}

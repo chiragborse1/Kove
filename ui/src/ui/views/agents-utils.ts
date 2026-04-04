@@ -4,7 +4,6 @@ import {
   normalizeToolName,
   resolveToolProfilePolicy,
 } from "../../../../src/agents/tool-policy-shared.js";
-import { brandDisplayName } from "../branding.ts";
 import type {
   AgentIdentityResult,
   AgentsFilesListResult,
@@ -13,6 +12,7 @@ import type {
   ToolCatalogProfile,
   ToolsCatalogResult,
 } from "../types.ts";
+import { brandDisplayName } from "../branding.ts";
 
 export type AgentToolEntry = {
   id: string;

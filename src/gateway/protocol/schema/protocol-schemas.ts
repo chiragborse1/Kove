@@ -104,6 +104,11 @@ import {
   DeviceTokenRotateParamsSchema,
 } from "./devices.js";
 import {
+  PairingApproveParamsSchema,
+  PairingListParamsSchema,
+  PairingRejectParamsSchema,
+} from "./pairing.js";
+import {
   ExecApprovalsGetParamsSchema,
   ExecApprovalsNodeGetParamsSchema,
   ExecApprovalsNodeSetParamsSchema,
@@ -151,11 +156,6 @@ import {
   NodePairVerifyParamsSchema,
   NodeRenameParamsSchema,
 } from "./nodes.js";
-import {
-  PairingApproveParamsSchema,
-  PairingListParamsSchema,
-  PairingRejectParamsSchema,
-} from "./pairing.js";
 import {
   PluginApprovalRequestParamsSchema,
   PluginApprovalResolveParamsSchema,

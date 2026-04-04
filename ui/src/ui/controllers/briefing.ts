@@ -26,10 +26,7 @@ const DEFAULT_BRIEFING_SECTIONS: BriefingSections = {
   quote: false,
 };
 
-function readChannelStatus<T>(
-  snapshot: ChannelsStatusSnapshot | null,
-  channelId: string,
-): T | null {
+function readChannelStatus<T>(snapshot: ChannelsStatusSnapshot | null, channelId: string): T | null {
   const channel = snapshot?.channels?.[channelId];
   if (!channel || typeof channel !== "object" || Array.isArray(channel)) {
     return null;
@@ -83,10 +80,7 @@ function parseSectionsFromPrompt(message: string | undefined): BriefingSections 
   const includes: BriefingSections = {
     news: normalized.includes("top 5 news") || normalized.includes("top news"),
     weather: normalized.includes("weather"),
-    markets:
-      normalized.includes("nifty50") ||
-      normalized.includes("sensex") ||
-      normalized.includes("bitcoin"),
+    markets: normalized.includes("nifty50") || normalized.includes("sensex") || normalized.includes("bitcoin"),
     tasks: normalized.includes("heartbeat.md") || normalized.includes("pending tasks"),
     quote: normalized.includes("motivational quote") || normalized.includes("quote of the day"),
   };
@@ -213,7 +207,9 @@ export function buildDailyBriefingCronExpr(time: string): string {
 }
 
 export function buildBriefingDescription(form: BriefingFormState, timezone: string): string {
-  const selectedSections = (Object.entries(form.sections) as Array<[BriefingSectionId, boolean]>)
+  const selectedSections = (
+    Object.entries(form.sections) as Array<[BriefingSectionId, boolean]>
+  )
     .filter(([, enabled]) => enabled)
     .map(([section]) => section)
     .join(",");
@@ -223,9 +219,7 @@ export function buildBriefingDescription(form: BriefingFormState, timezone: stri
 export function buildBriefingPrompt(form: BriefingFormState, timezone: string): string {
   const tasks: string[] = [];
   if (form.sections.news) {
-    tasks.push(
-      "1. Top News: Find today's top 5 news headlines relevant to the user's interests and summarize each in one line.",
-    );
+    tasks.push("1. Top News: Find today's top 5 news headlines relevant to the user's interests and summarize each in one line.");
   }
   if (form.sections.weather) {
     tasks.push(

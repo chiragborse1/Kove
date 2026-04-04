@@ -28,7 +28,10 @@ function resolveTelegramTokenSource(
 ): string | null {
   const primaryAccount = telegramAccounts[0];
   return (
-    telegram?.tokenSource ?? primaryAccount?.tokenSource ?? primaryAccount?.botTokenSource ?? null
+    telegram?.tokenSource ??
+    primaryAccount?.tokenSource ??
+    primaryAccount?.botTokenSource ??
+    null
   );
 }
 
@@ -56,10 +59,7 @@ function renderTelegramSetupSection(params: {
     <div
       style="margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; display: grid; gap: 12px;"
     >
-      <div
-        class="row"
-        style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
-      >
+      <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
         <div>
           <div style="font-weight: 600;">Quick setup</div>
           <div class="muted" style="font-size: 13px;">
@@ -90,17 +90,13 @@ function renderTelegramSetupSection(params: {
           ${busy ? "Saving..." : "Connect Telegram"}
         </button>
         ${tokenSource && tokenSource !== "config"
-          ? html`<div class="muted" style="font-size: 12px;">
-              Current token source: ${tokenSource}
-            </div>`
+          ? html`<div class="muted" style="font-size: 12px;">Current token source: ${tokenSource}</div>`
           : nothing}
       </div>
 
       ${props.telegramSetupMessage
         ? html`
-            <div
-              class="callout ${props.telegramSetupMessage.kind === "error" ? "danger" : "success"}"
-            >
+            <div class="callout ${props.telegramSetupMessage.kind === "error" ? "danger" : "success"}">
               ${props.telegramSetupMessage.text}
             </div>
           `
@@ -116,10 +112,7 @@ function renderTelegramPendingApprovals(props: ChannelsProps) {
     <div
       style="margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; display: grid; gap: 12px;"
     >
-      <div
-        class="row"
-        style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
-      >
+      <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
         <div>
           <div style="font-weight: 600;">Pending approvals</div>
           <div class="muted" style="font-size: 13px;">
@@ -128,9 +121,7 @@ function renderTelegramPendingApprovals(props: ChannelsProps) {
         </div>
         <button
           class="btn"
-          ?disabled=${props.telegramApprovalsLoading ||
-          !props.connected ||
-          Boolean(props.telegramApprovalsBusyCode)}
+          ?disabled=${props.telegramApprovalsLoading || !props.connected || Boolean(props.telegramApprovalsBusyCode)}
           @click=${() => props.onTelegramApprovalsRefresh()}
         >
           ${props.telegramApprovalsLoading ? "Refreshing..." : "Refresh"}
@@ -139,15 +130,12 @@ function renderTelegramPendingApprovals(props: ChannelsProps) {
 
       ${props.telegramApprovalsMessage
         ? html`
-            <div
-              class="callout ${props.telegramApprovalsMessage.kind === "error"
-                ? "danger"
-                : "success"}"
-            >
+            <div class="callout ${props.telegramApprovalsMessage.kind === "error" ? "danger" : "success"}">
               ${props.telegramApprovalsMessage.text}
             </div>
           `
         : nothing}
+
       ${props.telegramApprovalsLoading && approvals.length === 0
         ? html`<div class="muted" style="font-size: 13px;">Loading pending approvals...</div>`
         : approvals.length === 0
@@ -162,9 +150,7 @@ function renderTelegramPendingApprovals(props: ChannelsProps) {
                     >
                       <div style="display: grid; gap: 4px;">
                         <div style="font-weight: 600;">Telegram user ID ${approval.userId}</div>
-                        <div class="muted" style="font-size: 12px;">
-                          Pairing code ${approval.code}
-                        </div>
+                        <div class="muted" style="font-size: 12px;">Pairing code ${approval.code}</div>
                         <div class="muted" style="font-size: 12px;">
                           Requested ${formatRelativeTimestamp(approval.createdAt)}
                         </div>
@@ -216,13 +202,9 @@ function renderTelegramAccountCard(account: ChannelAccountSnapshot) {
         </div>
         <div>
           <span class="label">Last inbound</span>
-          <span
-            >${account.lastInboundAt ? formatRelativeTimestamp(account.lastInboundAt) : "n/a"}</span
-          >
+          <span>${account.lastInboundAt ? formatRelativeTimestamp(account.lastInboundAt) : "n/a"}</span>
         </div>
-        ${account.lastError
-          ? html`<div class="account-card-error">${account.lastError}</div>`
-          : nothing}
+        ${account.lastError ? html`<div class="account-card-error">${account.lastError}</div>` : nothing}
       </div>
     </div>
   `;
@@ -253,15 +235,11 @@ function renderTelegramConnectedContent(params: {
       </div>
       <div>
         <span class="label">Last start</span>
-        <span
-          >${telegram?.lastStartAt ? formatRelativeTimestamp(telegram.lastStartAt) : "n/a"}</span
-        >
+        <span>${telegram?.lastStartAt ? formatRelativeTimestamp(telegram.lastStartAt) : "n/a"}</span>
       </div>
       <div>
         <span class="label">Last probe</span>
-        <span
-          >${telegram?.lastProbeAt ? formatRelativeTimestamp(telegram.lastProbeAt) : "n/a"}</span
-        >
+        <span>${telegram?.lastProbeAt ? formatRelativeTimestamp(telegram.lastProbeAt) : "n/a"}</span>
       </div>
     </div>
   `;
@@ -282,29 +260,22 @@ export function renderTelegramCard(params: {
   if (!connected) {
     return html`
       <div class="card">
-        <div
-          class="row"
-          style="justify-content: space-between; align-items: flex-start; gap: 12px;"
-        >
+        <div class="row" style="justify-content: space-between; align-items: flex-start; gap: 12px;">
           <div>
             <div class="card-title">Telegram</div>
-            <div class="card-sub">
-              Connect a Telegram bot to start receiving and sending messages.
-            </div>
+            <div class="card-sub">Connect a Telegram bot to start receiving and sending messages.</div>
           </div>
           <span class="pill pill--sm">Not connected</span>
         </div>
-        ${accountCountLabel} ${renderTelegramSetupSection({ props, busy, tokenSource })}
+        ${accountCountLabel}
+        ${renderTelegramSetupSection({ props, busy, tokenSource })}
       </div>
     `;
   }
 
   return html`
     <div class="card">
-      <div
-        class="row"
-        style="justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;"
-      >
+      <div class="row" style="justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
         <div>
           <div class="card-title">Telegram</div>
           <div class="card-sub">Bot status, approvals, and channel configuration.</div>
@@ -312,7 +283,9 @@ export function renderTelegramCard(params: {
         <span class="pill pill--sm pill--ok">Connected</span>
       </div>
 
-      ${accountCountLabel} ${renderTelegramConnectedContent({ telegram, telegramAccounts })}
+      ${accountCountLabel}
+      ${renderTelegramConnectedContent({ telegram, telegramAccounts })}
+
       ${telegram?.lastError
         ? html`<div class="callout danger" style="margin-top: 12px;">${telegram.lastError}</div>`
         : nothing}
@@ -322,6 +295,7 @@ export function renderTelegramCard(params: {
             ${telegram.probe.error ?? ""}
           </div>`
         : nothing}
+
       ${renderTelegramPendingApprovals(props)}
       ${renderChannelConfigSection({ channelId: "telegram", props })}
 
@@ -337,13 +311,9 @@ export function renderTelegramCard(params: {
               </button>
             `
           : nothing}
-        <button class="btn" ?disabled=${props.loading} @click=${() => props.onRefresh(true)}>
-          Probe
-        </button>
+        <button class="btn" ?disabled=${props.loading} @click=${() => props.onRefresh(true)}>Probe</button>
         ${tokenSource && tokenSource !== "config"
-          ? html`<div class="muted" style="font-size: 12px;">
-              Current token source: ${tokenSource}
-            </div>`
+          ? html`<div class="muted" style="font-size: 12px;">Current token source: ${tokenSource}</div>`
           : nothing}
       </div>
 

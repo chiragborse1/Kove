@@ -25,7 +25,6 @@ type LifecycleHost = {
   basePath: string;
   client?: { stop: () => void } | null;
   connectGeneration: number;
-  desktopApp?: boolean;
   connected?: boolean;
   tab: Tab;
   assistantName: string;
@@ -44,8 +43,6 @@ type LifecycleHost = {
   inboxPollInterval: number | null;
   popStateHandler: () => void;
   topbarObserver: ResizeObserver | null;
-  beginDesktopGatewayStartup?: () => void;
-  stopDesktopGatewayStartup?: () => void;
 };
 
 export function handleConnected(host: LifecycleHost) {
@@ -59,10 +56,6 @@ export function handleConnected(host: LifecycleHost) {
   window.addEventListener("popstate", host.popStateHandler);
   void bootstrapReady.finally(() => {
     if (host.connectGeneration !== connectGeneration) {
-      return;
-    }
-    if (host.desktopApp) {
-      host.beginDesktopGatewayStartup?.();
       return;
     }
     connectGateway(host as unknown as Parameters<typeof connectGateway>[0]);
@@ -85,7 +78,6 @@ export function handleFirstUpdated(host: LifecycleHost) {
 
 export function handleDisconnected(host: LifecycleHost) {
   host.connectGeneration += 1;
-  host.stopDesktopGatewayStartup?.();
   window.removeEventListener("popstate", host.popStateHandler);
   stopNodesPolling(host as unknown as Parameters<typeof stopNodesPolling>[0]);
   stopLogsPolling(host as unknown as Parameters<typeof stopLogsPolling>[0]);

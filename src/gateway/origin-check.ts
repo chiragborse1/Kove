@@ -16,22 +16,14 @@ function parseOrigin(
   }
   try {
     const url = new URL(trimmed);
-    const normalizedOrigin =
-      url.origin.toLowerCase() === "null" && url.host
-        ? `${url.protocol}//${url.host}`.toLowerCase()
-        : url.origin.toLowerCase();
     return {
-      origin: normalizedOrigin,
+      origin: url.origin.toLowerCase(),
       host: url.host.toLowerCase(),
       hostname: url.hostname.toLowerCase(),
     };
   } catch {
     return null;
   }
-}
-
-function isLocalControlUiOriginHost(hostname: string): boolean {
-  return isLoopbackHost(hostname) || hostname === "tauri.localhost";
 }
 
 export function checkBrowserOrigin(params: {
@@ -63,7 +55,7 @@ export function checkBrowserOrigin(params: {
   }
 
   // Dev fallback only for genuinely local socket clients, not Host-header claims.
-  if (params.isLocalClient && isLocalControlUiOriginHost(parsedOrigin.hostname)) {
+  if (params.isLocalClient && isLoopbackHost(parsedOrigin.hostname)) {
     return { ok: true, matchedBy: "local-loopback" };
   }
 

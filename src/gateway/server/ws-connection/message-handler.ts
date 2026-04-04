@@ -2,7 +2,6 @@ import type { IncomingMessage } from "node:http";
 import os from "node:os";
 import type { WebSocket } from "ws";
 import { loadConfig } from "../../../config/config.js";
-import { resolveEffectiveControlUiAllowedOrigins } from "../../../config/gateway-control-ui-origins.js";
 import {
   revokeDeviceBootstrapToken,
   verifyDeviceBootstrapToken,
@@ -112,16 +111,6 @@ import { isUnauthorizedRoleError, UnauthorizedFloodGuard } from "./unauthorized-
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 
 const DEVICE_SIGNATURE_SKEW_MS = 2 * 60 * 1000;
-
-function resolveLocalControlUiAllowedOrigins(
-  configuredOrigins: string[],
-  isLocalClient: boolean,
-): string[] {
-  if (!isLocalClient) {
-    return configuredOrigins;
-  }
-  return [...new Set([...configuredOrigins, "http://tauri.localhost", "tauri://localhost"])];
-}
 
 export type WsOriginCheckMetrics = {
   hostHeaderFallbackAccepted: number;
@@ -432,14 +421,10 @@ export function attachGatewayWsMessageHandler(params: {
         if (enforceOriginCheckForAnyClient || isBrowserOperatorUi || isWebchat) {
           const hostHeaderOriginFallbackEnabled =
             configSnapshot.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback === true;
-          const allowedOrigins = resolveLocalControlUiAllowedOrigins(
-            resolveEffectiveControlUiAllowedOrigins(configSnapshot),
-            isLocalClient,
-          );
           const originCheck = checkBrowserOrigin({
             requestHost,
             origin: requestOrigin,
-            allowedOrigins,
+            allowedOrigins: configSnapshot.gateway?.controlUi?.allowedOrigins,
             allowHostHeaderOriginFallback: hostHeaderOriginFallbackEnabled,
             isLocalClient,
           });

@@ -1,13 +1,15 @@
 import { html, nothing } from "lit";
-import { type EmployeeCard, type EmployeesDashboardResult } from "../controllers/employees.ts";
 import { formatRelativeTimestamp } from "../format.ts";
+import {
+  type EmployeeCard,
+  type EmployeesDashboardResult,
+} from "../controllers/employees.ts";
 
 export type EmployeesProps = {
   loading: boolean;
   error: string | null;
   dashboard: EmployeesDashboardResult | null;
   filterAgentId: string | null;
-  ownerName: string | null;
   onClearFilter: () => void;
   onRefresh: () => void;
   onOpenChat: (agentId: string) => void;
@@ -30,26 +32,23 @@ export function renderEmployees(props: EmployeesProps) {
     <div class="employees-page">
       <section class="card employees-hero">
         <div>
-          <div class="card-title employees-hero__title">
-            ${props.ownerName?.trim() ? `${props.ownerName.trim()}'s AI Team` : "Your AI Team"}
-          </div>
+          <div class="card-title employees-hero__title">Your AI Team</div>
           <div class="card-sub">
-            ${employees.length === 1
-              ? "1 employee available"
-              : `${employees.length} employees available`}
+            ${employees.length === 1 ? "1 employee available" : `${employees.length} employees available`}
           </div>
           ${selectedEmployee
             ? html`
                 <div class="employees-hero__filter">
-                  Showing activity for
-                  <strong>${selectedEmployee.avatar} ${selectedEmployee.name}</strong>
+                  Showing activity for <strong>${selectedEmployee.avatar} ${selectedEmployee.name}</strong>
                 </div>
               `
             : nothing}
         </div>
         <div class="employees-hero__actions">
           ${selectedEmployee
-            ? html` <button class="btn btn--ghost" @click=${props.onClearFilter}>Show all</button> `
+            ? html`
+                <button class="btn btn--ghost" @click=${props.onClearFilter}>Show all</button>
+              `
             : nothing}
           <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
             ${props.loading ? "Refreshing..." : "Refresh"}
@@ -58,6 +57,7 @@ export function renderEmployees(props: EmployeesProps) {
       </section>
 
       ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
+
       ${visibleEmployees.length === 0
         ? html`
             <section class="card">
@@ -130,9 +130,7 @@ function renderEmployeeCard(employee: EmployeeCard, props: EmployeesProps) {
           <span class="employees-status__dot"></span>
           <span>${statusLabel(employee.status)}</span>
         </span>
-        <span class="employees-card__last-active"
-          >Last active: ${formatLastActive(employee.lastActiveAt)}</span
-        >
+        <span class="employees-card__last-active">Last active: ${formatLastActive(employee.lastActiveAt)}</span>
       </div>
 
       <div class="employees-card__metrics">

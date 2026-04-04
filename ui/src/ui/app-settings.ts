@@ -10,20 +10,19 @@ import {
 } from "./app-polling.ts";
 import { scheduleChatScroll, scheduleLogsScroll } from "./app-scroll.ts";
 import type { OpenClawApp } from "./app.ts";
-import { brandDisplayText } from "./branding.ts";
 import { loadAgentFiles } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
-import { loadAgentSkills } from "./controllers/agent-skills.ts";
 import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
-import { loadAgents } from "./controllers/agents.ts";
 import { loadApiKeys } from "./controllers/api-keys.ts";
+import { loadAgentSkills } from "./controllers/agent-skills.ts";
+import { loadAgents } from "./controllers/agents.ts";
 import { loadChannels, loadTelegramPendingApprovals } from "./controllers/channels.ts";
 import { loadConfig, loadConfigSchema } from "./controllers/config.ts";
 import { loadCronJobs, loadCronRuns, loadCronStatus } from "./controllers/cron.ts";
 import { loadDebug } from "./controllers/debug.ts";
 import { loadDevices } from "./controllers/devices.ts";
-import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import { loadExecApprovals } from "./controllers/exec-approvals.ts";
+import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import { loadInbox } from "./controllers/inbox.ts";
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
@@ -31,6 +30,7 @@ import { loadPresence } from "./controllers/presence.ts";
 import { loadSessions } from "./controllers/sessions.ts";
 import { loadSkills } from "./controllers/skills.ts";
 import { loadUsage } from "./controllers/usage.ts";
+import { brandDisplayText } from "./branding.ts";
 import {
   inferBasePathFromPathname,
   normalizeBasePath,
@@ -246,7 +246,10 @@ export async function refreshActiveTab(host: SettingsHost) {
     await loadCron(host);
   }
   if (host.tab === "briefing") {
-    await Promise.all([loadChannels(host as unknown as OpenClawApp, false), loadCron(host)]);
+    await Promise.all([
+      loadChannels(host as unknown as OpenClawApp, false),
+      loadCron(host),
+    ]);
   }
   if (host.tab === "canvas") {
     await loadAgents(host as unknown as OpenClawApp);

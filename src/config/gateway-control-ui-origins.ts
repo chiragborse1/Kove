@@ -35,45 +35,12 @@ export function buildDefaultControlUiAllowedOrigins(params: {
   const origins = new Set<string>([
     `http://localhost:${params.port}`,
     `http://127.0.0.1:${params.port}`,
-    "http://tauri.localhost",
-    "tauri://localhost",
   ]);
   const customBindHost = params.customBindHost?.trim();
   if (params.bind === "custom" && customBindHost) {
     origins.add(`http://${customBindHost}:${params.port}`);
   }
   return [...origins];
-}
-
-export function resolveConfiguredControlUiAllowedOrigins(allowedOrigins: unknown): string[] {
-  if (!Array.isArray(allowedOrigins)) {
-    return [];
-  }
-  return [
-    ...new Set(
-      allowedOrigins
-        .map((origin) => (typeof origin === "string" ? origin.trim() : ""))
-        .filter(Boolean),
-    ),
-  ];
-}
-
-export function resolveEffectiveControlUiAllowedOrigins(
-  config: Pick<OpenClawConfig, "gateway">,
-  opts?: { defaultPort?: number },
-): string[] {
-  const configuredOrigins = resolveConfiguredControlUiAllowedOrigins(
-    config.gateway?.controlUi?.allowedOrigins,
-  );
-  if (configuredOrigins.length > 0) {
-    return configuredOrigins;
-  }
-  const port = resolveGatewayPortWithDefault(config.gateway?.port, opts?.defaultPort);
-  return buildDefaultControlUiAllowedOrigins({
-    port,
-    bind: config.gateway?.bind,
-    customBindHost: config.gateway?.customBindHost,
-  });
 }
 
 export function ensureControlUiAllowedOriginsForNonLoopbackBind(

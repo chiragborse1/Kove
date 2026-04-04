@@ -101,11 +101,7 @@ function resolveRequestedTimeoutMs(params: unknown): number | undefined {
     : undefined;
 }
 
-function resolveChannelLoginAccountId(
-  plugin: ChannelPlugin,
-  cfg: OpenClawConfig,
-  params: unknown,
-): string {
+function resolveChannelLoginAccountId(plugin: ChannelPlugin, cfg: OpenClawConfig, params: unknown): string {
   const requestedAccountId = resolveRequestedAccountId(params)?.trim();
   return (
     requestedAccountId ||
@@ -467,3 +463,6 @@ export const channelsHandlers: GatewayRequestHandlers = {
     }
   },
 };
+
+
+

@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "../external-link.ts";
 import {
   API_KEY_PROVIDER_DEFINITIONS,
   CUSTOM_MODEL_OPTION,
@@ -6,7 +7,6 @@ import {
   type ApiKeyProviderId,
   type ApiKeyProviderStatus,
 } from "../controllers/api-keys.ts";
-import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "../external-link.ts";
 
 type ApiKeysProps = {
   loading: boolean;
@@ -67,8 +67,7 @@ function renderCurrentKey(status: ApiKeyProviderStatus | null, label: string) {
   }
   return html`
     <div class="muted" style="font-size: 13px;">
-      Current saved key:
-      <span style="font-family: var(--font-mono, monospace);">${status.maskedKey}</span>
+      Current saved key: <span style="font-family: var(--font-mono, monospace);">${status.maskedKey}</span>
     </div>
   `;
 }
@@ -81,20 +80,13 @@ export function renderApiKeys(props: ApiKeysProps) {
   return html`
     <section class="page page--settings" style="display: grid; gap: 20px;">
       <div class="card" style="display: grid; gap: 16px; max-width: 860px;">
-        <div
-          class="row"
-          style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
-        >
+        <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
           <div style="display: grid; gap: 4px;">
             <div class="card-title">API Keys</div>
-            <div class="card-sub">
-              Manage provider API keys and default models without editing config files.
-            </div>
+            <div class="card-sub">Manage provider API keys and default models without editing config files.</div>
           </div>
           <span class="chip ${activeProvider ? "chip-ok" : ""}">
-            ${activeProvider
-              ? `${activeProvider.emoji} ${activeProvider.label} active`
-              : "No active provider"}
+            ${activeProvider ? `${activeProvider.emoji} ${activeProvider.label} active` : "No active provider"}
           </span>
         </div>
 
@@ -119,9 +111,7 @@ export function renderApiKeys(props: ApiKeysProps) {
               props.onModelOptionChange((event.target as HTMLSelectElement).value)}
             ?disabled=${busy}
           >
-            ${API_KEY_PROVIDER_DEFINITIONS.filter(
-              (provider) => provider.popularModels.length > 0,
-            ).map(
+            ${API_KEY_PROVIDER_DEFINITIONS.filter((provider) => provider.popularModels.length > 0).map(
               (provider) => html`
                 <optgroup label=${provider.label}>
                   ${provider.popularModels.map(
@@ -152,18 +142,12 @@ export function renderApiKeys(props: ApiKeysProps) {
           : nothing}
 
         <div class="muted" style="font-size: 13px;">
-          Leave this on
-          <span style="font-family: var(--font-mono, monospace);">openrouter/auto</span>
-          to let OpenRouter pick the best model, or switch to Custom model... to paste any
-          provider/model ref.
+          Leave this on <span style="font-family: var(--font-mono, monospace);">openrouter/auto</span>
+          to let OpenRouter pick the best model, or switch to Custom model... to paste any provider/model ref.
         </div>
 
         <div class="row" style="gap: 8px; flex-wrap: wrap; align-items: center;">
-          <button
-            class="btn"
-            ?disabled=${!props.connected || props.loading}
-            @click=${() => props.onRefresh()}
-          >
+          <button class="btn" ?disabled=${!props.connected || props.loading} @click=${() => props.onRefresh()}>
             ${props.loading ? "Refreshing..." : "Refresh"}
           </button>
           <button
@@ -180,15 +164,10 @@ export function renderApiKeys(props: ApiKeysProps) {
 
       <div style="display: grid; gap: 16px;">
         <div class="card" style="display: grid; gap: 16px; max-width: 860px;">
-          <div
-            class="row"
-            style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
-          >
+          <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
             <div style="display: grid; gap: 4px;">
               <div class="card-title">Voice Settings (ElevenLabs)</div>
-              <div class="card-sub">
-                Let Kova employees speak their replies with ElevenLabs TTS.
-              </div>
+              <div class="card-sub">Let Kova employees speak their replies with ElevenLabs TTS.</div>
             </div>
             <span class="chip ${props.elevenLabsConfigured ? "chip-ok" : ""}">
               ${props.elevenLabsConfigured ? "Configured" : "Not configured"}
@@ -204,10 +183,7 @@ export function renderApiKeys(props: ApiKeysProps) {
                 props.onElevenLabsInput((event.target as HTMLInputElement).value)}
               placeholder="sk_..."
               autocomplete="off"
-              ?disabled=${!props.connected ||
-              props.loading ||
-              props.elevenLabsSaving ||
-              props.elevenLabsTesting}
+              ?disabled=${!props.connected || props.loading || props.elevenLabsSaving || props.elevenLabsTesting}
             />
           </label>
 
@@ -217,8 +193,7 @@ export function renderApiKeys(props: ApiKeysProps) {
               href="https://elevenlabs.io"
               target=${EXTERNAL_LINK_TARGET}
               rel=${buildExternalLinkRel()}
-              >elevenlabs.io</a
-            >
+            >elevenlabs.io</a>
           </div>
 
           <div class="muted" style="font-size: 13px;">
@@ -228,20 +203,14 @@ export function renderApiKeys(props: ApiKeysProps) {
           <div class="row" style="gap: 8px; flex-wrap: wrap; align-items: center;">
             <button
               class="btn primary"
-              ?disabled=${!props.connected ||
-              props.loading ||
-              props.elevenLabsSaving ||
-              !props.elevenLabsInput.trim()}
+              ?disabled=${!props.connected || props.loading || props.elevenLabsSaving || !props.elevenLabsInput.trim()}
               @click=${() => props.onSaveElevenLabs()}
             >
               ${props.elevenLabsSaving ? "Saving..." : "Save"}
             </button>
             <button
               class="btn"
-              ?disabled=${!props.connected ||
-              props.loading ||
-              props.elevenLabsSaving ||
-              props.elevenLabsTesting}
+              ?disabled=${!props.connected || props.loading || props.elevenLabsSaving || props.elevenLabsTesting}
               @click=${() => props.onTestElevenLabs()}
             >
               ${props.elevenLabsTesting ? "Speaking..." : "Test voice"}
@@ -258,34 +227,23 @@ export function renderApiKeys(props: ApiKeysProps) {
           const saving = props.savingProviderId === provider.id;
           const testing = props.testingProviderId === provider.id;
           const inputValue = props.providerInputs[provider.id];
-          const canSave =
-            props.connected &&
-            !props.loading &&
-            !props.modelSaving &&
-            !saving &&
-            Boolean(inputValue.trim());
+          const canSave = props.connected && !props.loading && !props.modelSaving && !saving && Boolean(inputValue.trim());
           const canTest =
             props.connected &&
             !props.loading &&
             !props.modelSaving &&
             !testing &&
             (configured || Boolean(inputValue.trim()));
-          const canSetActive =
-            props.connected && !props.loading && !props.modelSaving && configured && !isActive;
+          const canSetActive = props.connected && !props.loading && !props.modelSaving && configured && !isActive;
 
           return html`
             <div class="card" style="display: grid; gap: 16px; max-width: 860px;">
-              <div
-                class="row"
-                style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
-              >
+              <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <div style="display: grid; gap: 4px;">
                   <div class="card-title">${provider.emoji} ${provider.label}</div>
                   <div class="card-sub">
                     Recommended model:
-                    <span style="font-family: var(--font-mono, monospace);"
-                      >${provider.recommendedModel}</span
-                    >
+                    <span style="font-family: var(--font-mono, monospace);">${provider.recommendedModel}</span>
                   </div>
                 </div>
                 <div class="row" style="gap: 8px; flex-wrap: wrap; align-items: center;">
@@ -305,11 +263,7 @@ export function renderApiKeys(props: ApiKeysProps) {
                     props.onProviderInput(provider.id, (event.target as HTMLInputElement).value)}
                   placeholder=${provider.keyPlaceholder}
                   autocomplete="off"
-                  ?disabled=${!props.connected ||
-                  props.loading ||
-                  props.modelSaving ||
-                  saving ||
-                  testing}
+                  ?disabled=${!props.connected || props.loading || props.modelSaving || saving || testing}
                 />
               </label>
 
@@ -319,32 +273,19 @@ export function renderApiKeys(props: ApiKeysProps) {
                   href=${provider.keyUrl}
                   target=${EXTERNAL_LINK_TARGET}
                   rel=${buildExternalLinkRel()}
-                  >${provider.keyUrl.replace(/^https?:\/\//, "")}</a
-                >
+                >${provider.keyUrl.replace(/^https?:\/\//, "")}</a>
               </div>
 
               ${renderCurrentKey(status, provider.label)}
 
               <div class="row" style="gap: 8px; flex-wrap: wrap; align-items: center;">
-                <button
-                  class="btn primary"
-                  ?disabled=${!canSave}
-                  @click=${() => props.onSaveProvider(provider.id)}
-                >
+                <button class="btn primary" ?disabled=${!canSave} @click=${() => props.onSaveProvider(provider.id)}>
                   ${saving ? "Saving..." : "Save"}
                 </button>
-                <button
-                  class="btn"
-                  ?disabled=${!canTest}
-                  @click=${() => props.onTestProvider(provider.id)}
-                >
+                <button class="btn" ?disabled=${!canTest} @click=${() => props.onTestProvider(provider.id)}>
                   ${testing ? "Testing..." : "Test connection"}
                 </button>
-                <button
-                  class="btn"
-                  ?disabled=${!canSetActive}
-                  @click=${() => props.onSetActive(provider.id)}
-                >
+                <button class="btn" ?disabled=${!canSetActive} @click=${() => props.onSetActive(provider.id)}>
                   ${isActive ? "Active" : "Set as active"}
                 </button>
               </div>

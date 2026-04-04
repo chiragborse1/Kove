@@ -1,8 +1,0 @@
-[package]
-name = "kova-gateway"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "kova-gateway"
-path = "main.rs"

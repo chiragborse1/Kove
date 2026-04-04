@@ -31,27 +31,6 @@ function setControlUiBasePath(value: string | undefined) {
   });
 }
 
-function setDesktopEnvironment(enabled: boolean) {
-  if (typeof window === "undefined") {
-    vi.stubGlobal(
-      "window",
-      enabled
-        ? ({ __TAURI_INTERNALS__: {} } as Window & typeof globalThis)
-        : ({} as Window & typeof globalThis),
-    );
-    return;
-  }
-  if (enabled) {
-    Object.defineProperty(window, "__TAURI_INTERNALS__", {
-      value: {},
-      writable: true,
-      configurable: true,
-    });
-    return;
-  }
-  delete window.__TAURI_INTERNALS__;
-}
-
 function expectedGatewayUrl(basePath: string): string {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   return `${proto}://${location.host}${basePath}`;
@@ -66,13 +45,11 @@ describe("loadSettings default gateway URL derivation", () => {
     localStorage.clear();
     sessionStorage.clear();
     setControlUiBasePath(undefined);
-    setDesktopEnvironment(false);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     setControlUiBasePath(undefined);
-    setDesktopEnvironment(false);
     vi.unstubAllGlobals();
   });
 
@@ -349,84 +326,6 @@ describe("loadSettings default gateway URL derivation", () => {
 
     expect(loadSettings().token).toBe("");
     expect(sessionStorage.length).toBe(0);
-  });
-
-  it("persists the desktop gateway token in localStorage for Tauri startups", async () => {
-    setTestLocation({
-      protocol: "https:",
-      host: "gateway.example:8443",
-      pathname: "/",
-    });
-    setDesktopEnvironment(true);
-
-    const gwUrl = expectedGatewayUrl("");
-    const { loadSettings, saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "desktop-token",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
-
-    expect(localStorage.getItem("kova.gateway.token")).toBe("desktop-token");
-    sessionStorage.clear();
-    expect(loadSettings().token).toBe("desktop-token");
-  });
-
-  it("clears the desktop gateway token when the saved token is emptied", async () => {
-    setTestLocation({
-      protocol: "https:",
-      host: "gateway.example:8443",
-      pathname: "/",
-    });
-    setDesktopEnvironment(true);
-
-    const gwUrl = expectedGatewayUrl("");
-    const { saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "desktop-token",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
-
-    expect(localStorage.getItem("kova.gateway.token")).toBeNull();
   });
 
   it("persists themeMode and navWidth alongside the selected theme", async () => {

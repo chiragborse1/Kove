@@ -20,13 +20,13 @@ import type { OpenClawApp } from "./app.ts";
 import { shouldReloadHistoryForFinalEvent } from "./chat-event-reload.ts";
 import { formatConnectError } from "./connect-error.ts";
 import { loadAgents } from "./controllers/agents.ts";
-import { loadApiKeys } from "./controllers/api-keys.ts";
 import { loadAssistantIdentity } from "./controllers/assistant-identity.ts";
 import { loadChatHistory } from "./controllers/chat.ts";
+import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import { handleChatEvent, type ChatEventPayload } from "./controllers/chat.ts";
+import { loadApiKeys } from "./controllers/api-keys.ts";
 import { loadConfig } from "./controllers/config.ts";
 import { loadDevices } from "./controllers/devices.ts";
-import { loadEmployeesDashboard } from "./controllers/employees.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import {
   addExecApproval,

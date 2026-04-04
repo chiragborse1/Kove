@@ -6,11 +6,11 @@ import {
   resolveDefaultAgentId,
 } from "../../agents/agent-scope.js";
 import { loadAuthProfileStoreForRuntime } from "../../agents/auth-profiles.js";
-import { updateAuthProfileStoreWithLock } from "../../agents/auth-profiles/store.js";
-import type { AuthProfileCredential } from "../../agents/auth-profiles/types.js";
 import { describeFailoverError } from "../../agents/failover-error.js";
 import { parseModelRef } from "../../agents/model-selection.js";
 import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
+import { updateAuthProfileStoreWithLock } from "../../agents/auth-profiles/store.js";
+import type { AuthProfileCredential } from "../../agents/auth-profiles/types.js";
 import { resolveDefaultAgentWorkspaceDir } from "../../agents/workspace.js";
 import {
   readConfigFileSnapshot,
@@ -25,10 +25,7 @@ import {
   resolveSessionTranscriptsDirForAgent,
 } from "../../config/sessions/paths.js";
 import { applyDefaultModel } from "../../plugins/provider-auth-choice-helpers.js";
-import {
-  applyAuthProfileConfig,
-  buildApiKeyCredential,
-} from "../../plugins/provider-auth-helpers.js";
+import { applyAuthProfileConfig, buildApiKeyCredential } from "../../plugins/provider-auth-helpers.js";
 import { maskApiKey } from "../../utils/mask-api-key.js";
 import {
   ErrorCodes,
@@ -206,7 +203,8 @@ async function loadApiKeysContext(): Promise<{
   const cfg = snapshot.runtimeConfig ?? snapshot.config;
   const agentId = resolveDefaultAgentId(cfg);
   const agentDir = resolveAgentDir(cfg, agentId);
-  const workspaceDir = resolveAgentWorkspaceDir(cfg, agentId) ?? resolveDefaultAgentWorkspaceDir();
+  const workspaceDir =
+    resolveAgentWorkspaceDir(cfg, agentId) ?? resolveDefaultAgentWorkspaceDir();
   const store = loadAuthProfileStoreForRuntime(agentDir, {
     readOnly: true,
     allowKeychainPrompt: false,
@@ -465,25 +463,16 @@ export const apiKeysHandlers: GatewayRequestHandlers = {
       }
 
       const nextConfig = applyProviderSelection(cfg, request.provider, status.profileId);
-      await replaceValidatedConfig(
-        nextConfig,
-        request.baseHash,
-        `${getProviderLabel(request.provider)} settings`,
-      );
+      await replaceValidatedConfig(nextConfig, request.baseHash, `${getProviderLabel(request.provider)} settings`);
       const reloaded = await loadApiKeysContext();
-      context.logGateway.info(
-        `apiKeys.provider.set provider=${request.provider} profile=${status.profileId}`,
-      );
+      context.logGateway.info(`apiKeys.provider.set provider=${request.provider} profile=${status.profileId}`);
       respond(true, reloaded.snapshot, undefined);
     } catch (error) {
       if (error instanceof ConfigMutationConflictError) {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            "Config changed since last load; reload and retry.",
-          ),
+          errorShape(ErrorCodes.INVALID_REQUEST, "Config changed since last load; reload and retry."),
         );
         return;
       }
@@ -595,34 +584,21 @@ export const apiKeysHandlers: GatewayRequestHandlers = {
         return;
       }
 
-      const nextModel = resolveProviderModel(
-        request.provider,
-        request.model,
-        status.recommendedModel,
-      );
+      const nextModel = resolveProviderModel(request.provider, request.model, status.recommendedModel);
       const nextConfig = applyDefaultModel(
         applyProviderSelection(cfg, request.provider, status.profileId),
         nextModel,
       );
-      await replaceValidatedConfig(
-        nextConfig,
-        request.baseHash,
-        `${getProviderLabel(request.provider)} model settings`,
-      );
+      await replaceValidatedConfig(nextConfig, request.baseHash, `${getProviderLabel(request.provider)} model settings`);
       const reloaded = await loadApiKeysContext();
-      context.logGateway.info(
-        `apiKeys.activeModel.set provider=${request.provider} model=${nextModel}`,
-      );
+      context.logGateway.info(`apiKeys.activeModel.set provider=${request.provider} model=${nextModel}`);
       respond(true, reloaded.snapshot, undefined);
     } catch (error) {
       if (error instanceof ConfigMutationConflictError) {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            "Config changed since last load; reload and retry.",
-          ),
+          errorShape(ErrorCodes.INVALID_REQUEST, "Config changed since last load; reload and retry."),
         );
         return;
       }
@@ -704,10 +680,7 @@ export const apiKeysHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(
-            ErrorCodes.INVALID_REQUEST,
-            "Config changed since last load; reload and retry.",
-          ),
+          errorShape(ErrorCodes.INVALID_REQUEST, "Config changed since last load; reload and retry."),
         );
         return;
       }
