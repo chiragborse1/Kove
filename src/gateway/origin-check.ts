@@ -16,8 +16,12 @@ function parseOrigin(
   }
   try {
     const url = new URL(trimmed);
+    const normalizedOrigin =
+      url.origin.toLowerCase() === "null" && url.host
+        ? `${url.protocol}//${url.host}`.toLowerCase()
+        : url.origin.toLowerCase();
     return {
-      origin: url.origin.toLowerCase(),
+      origin: normalizedOrigin,
       host: url.host.toLowerCase(),
       hostname: url.hostname.toLowerCase(),
     };

@@ -221,6 +221,11 @@ fn runtime_root_for_sidecar(app: &AppHandle) -> Result<PathBuf, String> {
 
 #[cfg(desktop)]
 fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
+  if cfg!(target_os = "windows") {
+    // Windows currently relies on an externally running gateway instead of the bundled sidecar.
+    return Ok(());
+  }
+
   let state_dir = app.path().app_data_dir().map_err(|err| err.to_string())?;
   std::fs::create_dir_all(&state_dir).map_err(|err| err.to_string())?;
 

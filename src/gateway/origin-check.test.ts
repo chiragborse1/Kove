@@ -39,6 +39,24 @@ describe("checkBrowserOrigin", () => {
       expected: { ok: false as const, reason: "origin not allowed" },
     },
     {
+      name: "accepts tauri localhost when explicitly allowlisted",
+      input: {
+        requestHost: "127.0.0.1:18789",
+        origin: "tauri://localhost",
+        allowedOrigins: ["tauri://localhost"],
+      },
+      expected: { ok: true as const, matchedBy: "allowlist" as const },
+    },
+    {
+      name: "accepts tauri localhost for local clients",
+      input: {
+        requestHost: "127.0.0.1:18789",
+        origin: "tauri://localhost",
+        isLocalClient: true,
+      },
+      expected: { ok: true as const, matchedBy: "local-loopback" as const },
+    },
+    {
       name: "accepts trimmed lowercase-normalized allowlist matches",
       input: {
         requestHost: "gateway.example.com:18789",
