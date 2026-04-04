@@ -28,7 +28,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "externalBin": ["binaries/kova-gateway"],
     "resources": [
       "binaries/kova-gateway-x86_64-pc-windows-msvc.bat",
       "binaries/kova-gateway-x86_64-pc-windows-msvc.ps1"

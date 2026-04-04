@@ -87,12 +87,6 @@ jobs:
           mkdir -p dist-runtime
           mkdir -p dist/control-ui
 
-      - name: Create Windows sidecar placeholder
-        if: matrix.platform.os == 'windows-latest'
-        shell: bash
-        run: |
-          cp src-tauri/binaries/kova-gateway src-tauri/binaries/kova-gateway-x86_64-pc-windows-msvc.exe
-
       - name: Build Tauri app
         shell: bash
         run: |

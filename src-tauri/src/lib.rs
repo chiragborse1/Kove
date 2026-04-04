@@ -8,6 +8,8 @@ use std::fs;
 #[cfg(desktop)]
 use std::path::PathBuf;
 #[cfg(desktop)]
+use std::process::{Child, Command, Stdio};
+#[cfg(desktop)]
 use std::sync::Mutex;
 #[cfg(desktop)]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -19,8 +21,6 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{AppHandle, Manager, WindowEvent};
 #[cfg(desktop)]
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
-#[cfg(desktop)]
-use tauri_plugin_shell::ShellExt;
 use tauri_plugin_store::StoreExt;
 
 const SETUP_STORE_PATH: &str = "kova-store.json";
@@ -28,13 +28,9 @@ const SETUP_STORE_KEY: &str = "setup";
 const TRAY_EVENT_NAME: &str = "kova:navigate";
 
 #[cfg(desktop)]
-enum GatewayChildHandle {
-    Shell(tauri_plugin_shell::process::CommandChild),
-}
-
-#[cfg(desktop)]
 struct KovaRuntimeState {
-    gateway_child: Mutex<Option<GatewayChildHandle>>,
+    gateway_child: Mutex<Option<Child>>,
+    gateway_launch_error: Mutex<Option<String>>,
 }
 
 #[cfg(desktop)]
@@ -42,6 +38,7 @@ impl Default for KovaRuntimeState {
     fn default() -> Self {
         Self {
             gateway_child: Mutex::new(None),
+            gateway_launch_error: Mutex::new(None),
         }
     }
 }
@@ -77,6 +74,20 @@ fn read_gateway_token(app: tauri::AppHandle) -> Result<String, String> {
     #[cfg(desktop)]
     {
         return read_gateway_token_from_disk(&app);
+    }
+
+    #[cfg(not(desktop))]
+    {
+        let _ = app;
+        Ok(String::new())
+    }
+}
+
+#[tauri::command]
+fn read_gateway_launch_error(app: tauri::AppHandle) -> Result<String, String> {
+    #[cfg(desktop)]
+    {
+        return Ok(read_gateway_launch_error_from_state(&app));
     }
 
     #[cfg(not(desktop))]
@@ -142,11 +153,8 @@ fn kill_gateway_child(app: &AppHandle) {
         }
     };
     if let Some(child) = child {
-        match child {
-            GatewayChildHandle::Shell(child) => {
-                let _ = child.kill();
-            }
-        }
+        let mut child = child;
+        let _ = child.kill();
     }
 }
 
@@ -232,7 +240,7 @@ fn setup_shortcut(app: &AppHandle) -> Result<(), tauri::Error> {
 }
 
 #[cfg(desktop)]
-fn runtime_root_for_sidecar(app: &AppHandle) -> Result<PathBuf, String> {
+fn runtime_root_for_gateway(app: &AppHandle) -> Result<PathBuf, String> {
     let bundled = app
         .path()
         .resolve("runtime", BaseDirectory::Resource)
@@ -247,11 +255,31 @@ fn runtime_root_for_sidecar(app: &AppHandle) -> Result<PathBuf, String> {
         .ok_or_else(|| "could not resolve source runtime root".to_string())
 }
 
-fn store_gateway_child(app: &AppHandle, child: GatewayChildHandle) {
+#[cfg(desktop)]
+fn store_gateway_child(app: &AppHandle, child: Child) {
     let state = app.state::<KovaRuntimeState>();
     let lock = state.gateway_child.lock();
     if let Ok(mut guard) = lock {
         *guard = Some(child);
+    }
+}
+
+#[cfg(desktop)]
+fn set_gateway_launch_error(app: &AppHandle, error: Option<String>) {
+    let state = app.state::<KovaRuntimeState>();
+    let lock = state.gateway_launch_error.lock();
+    if let Ok(mut guard) = lock {
+        *guard = error;
+    }
+}
+
+#[cfg(desktop)]
+fn read_gateway_launch_error_from_state(app: &AppHandle) -> String {
+    let state = app.state::<KovaRuntimeState>();
+    let lock = state.gateway_launch_error.lock();
+    match lock {
+        Ok(guard) => guard.clone().unwrap_or_default(),
+        Err(_) => String::new(),
     }
 }
 
@@ -287,32 +315,122 @@ fn gateway_state_dir(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 #[cfg(desktop)]
-fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
+fn configure_gateway_command(command: &mut Command, app: &AppHandle) -> Result<(), String> {
     let state_dir = gateway_state_dir(app)?;
-    let runtime_root = runtime_root_for_sidecar(app)?;
-    let sidecar = app
-        .shell()
-        .sidecar("kova-gateway")
-        .map_err(|err| err.to_string())?;
+    command.env("KOVA_STATE_DIR", &state_dir);
 
-    #[cfg(target_os = "windows")]
-    let sidecar = sidecar.args([runtime_root.to_string_lossy().to_string()]);
+    let has_openclaw_state_dir = env::var_os("OPENCLAW_STATE_DIR")
+        .map(|value| !value.is_empty())
+        .unwrap_or(false);
+    if !has_openclaw_state_dir {
+        command.env("OPENCLAW_STATE_DIR", &state_dir);
+    }
 
-    #[cfg(not(target_os = "windows"))]
-    let sidecar = {
-        let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .parent()
-            .map(std::path::Path::to_path_buf)
-            .ok_or_else(|| "could not resolve source root".to_string())?;
-        sidecar.args([
-            state_dir.to_string_lossy().to_string(),
-            runtime_root.to_string_lossy().to_string(),
-            source_root.to_string_lossy().to_string(),
+    let has_openclaw_config_path = env::var_os("OPENCLAW_CONFIG_PATH")
+        .map(|value| !value.is_empty())
+        .unwrap_or(false);
+    if !has_openclaw_config_path {
+        command.env("OPENCLAW_CONFIG_PATH", state_dir.join("openclaw.json"));
+    }
+
+    Ok(())
+}
+
+#[cfg(desktop)]
+fn resolve_available_command<'a>(candidates: &'a [&'a str]) -> Option<&'a str> {
+    for candidate in candidates {
+        let status = Command::new(candidate)
+            .arg("--version")
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+        if matches!(status, Ok(status) if status.success()) {
+            return Some(candidate);
+        }
+    }
+    None
+}
+
+#[cfg(all(desktop, target_os = "windows"))]
+fn verify_openclaw_cli_available() -> Result<(), String> {
+    let status = Command::new("npx")
+        .args(["--no-install", "openclaw", "--version"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+
+    match status {
+        Ok(status) if status.success() => Ok(()),
+        Ok(_) => Err(
+            "Kova could not find the global `openclaw` CLI. Install Node.js 22.12+ and run `npm install -g openclaw`, then reopen Kova.".to_string(),
+        ),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Err(
+            "Kova could not find `npx` on PATH. Install Node.js 22.12+ and run `npm install -g openclaw`, then reopen Kova.".to_string(),
+        ),
+        Err(err) => Err(format!("Kova could not start `npx`: {err}")),
+    }
+}
+
+#[cfg(all(desktop, target_os = "windows"))]
+fn spawn_gateway_process(app: &AppHandle) -> Result<Child, String> {
+    verify_openclaw_cli_available()?;
+
+    let mut command = Command::new("npx");
+    command
+        .args([
+            "--no-install",
+            "openclaw",
+            "gateway",
+            "--bind",
+            "loopback",
+            "--port",
+            "18789",
+            "--force",
         ])
-    };
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    configure_gateway_command(&mut command, app)?;
+    command.spawn().map_err(|err| {
+        format!("Kova could not launch the local gateway with `npx openclaw gateway`: {err}")
+    })
+}
 
-    let (_rx, child) = sidecar.spawn().map_err(|err| err.to_string())?;
-    store_gateway_child(app, GatewayChildHandle::Shell(child));
+#[cfg(all(desktop, not(target_os = "windows")))]
+fn spawn_gateway_process(app: &AppHandle) -> Result<Child, String> {
+    let runtime_root = runtime_root_for_gateway(app)?;
+    let gateway_entry = runtime_root.join("openclaw.mjs");
+    if !gateway_entry.exists() {
+        return Err("could not locate bundled OpenClaw runtime".to_string());
+    }
+
+    let node_bin = resolve_available_command(&["node", "nodejs"]).ok_or_else(|| {
+        "Kova requires Node.js 22.12+ on PATH to launch the local gateway.".to_string()
+    })?;
+
+    let mut command = Command::new(node_bin);
+    command
+        .arg(&gateway_entry)
+        .args([
+            "gateway", "run", "--bind", "loopback", "--port", "18789", "--force",
+        ])
+        .current_dir(&runtime_root)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    configure_gateway_command(&mut command, app)?;
+    command.spawn().map_err(|err| {
+        format!("Kova could not launch the bundled gateway runtime with `{node_bin}`: {err}")
+    })
+}
+
+#[cfg(desktop)]
+fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
+    let child = spawn_gateway_process(app)?;
+    store_gateway_child(app, child);
+    set_gateway_launch_error(app, None);
     Ok(())
 }
 
@@ -397,7 +515,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_setup_state,
             set_setup_state,
-            read_gateway_token
+            read_gateway_token,
+            read_gateway_launch_error
         ]);
 
     #[cfg(desktop)]
@@ -420,7 +539,8 @@ pub fn run() {
                 setup_shortcut(&app.handle())?;
                 setup_tray(&app.handle())?;
                 if let Err(err) = launch_gateway_sidecar(&app.handle()) {
-                    return Err(Box::new(std::io::Error::other(err)));
+                    log::error!("failed to launch local gateway: {err}");
+                    set_gateway_launch_error(&app.handle(), Some(err));
                 }
             }
 

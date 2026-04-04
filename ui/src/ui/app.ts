@@ -141,6 +141,7 @@ import { loadSettings, type UiSettings } from "./storage.ts";
 import {
   isTauriDesktopEnvironment,
   listenForDesktopNavigation,
+  readDesktopGatewayLaunchError,
   loadDesktopSetupState,
   readDesktopGatewayToken,
   saveDesktopSetupState,
@@ -2057,6 +2058,22 @@ export class OpenClawApp extends LitElement {
     this.desktopGatewayStatus = "Starting your AI team...";
     this.lastError = null;
     this.lastErrorCode = null;
+
+    try {
+      const launchError = (await readDesktopGatewayLaunchError()).trim();
+      if (this.desktopGatewayBootRun !== run || this.connected) {
+        return;
+      }
+      if (launchError) {
+        this.desktopGatewayPhase = "manual";
+        this.desktopGatewayStatus = "We couldn't start your local gateway.";
+        this.lastError = launchError;
+        this.lastErrorCode = null;
+        return;
+      }
+    } catch {
+      // Ignore native launch-state read errors and continue probing as before.
+    }
 
     const startedAt = Date.now();
     while (this.desktopGatewayBootRun === run && !this.connected) {

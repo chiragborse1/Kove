@@ -46,6 +46,14 @@ export async function readDesktopGatewayToken(): Promise<string> {
   return invoke<string>("read_gateway_token");
 }
 
+export async function readDesktopGatewayLaunchError(): Promise<string> {
+  if (!isTauriDesktopEnvironment()) {
+    return "";
+  }
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<string>("read_gateway_launch_error");
+}
+
 export async function listenForDesktopNavigation(
   handler: (payload: DesktopNavigatePayload) => void,
 ): Promise<() => void> {
