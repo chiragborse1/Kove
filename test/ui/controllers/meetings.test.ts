@@ -22,19 +22,21 @@ describe("buildMeetingAnalysisPrompt", () => {
 
 describe("parseMeetingAnalysisResponse", () => {
   it("splits markdown sections by exact ## headers", () => {
-    const parsed = parseMeetingAnalysisResponse([
-      "## Summary",
-      "Short recap",
-      "",
-      "## Action Items",
-      "1. Alex - ship it",
-      "",
-      "## Key Decisions",
-      "Use the new API",
-      "",
-      "## Follow-up Email",
-      "Thanks everyone",
-    ].join("\n"));
+    const parsed = parseMeetingAnalysisResponse(
+      [
+        "## Summary",
+        "Short recap",
+        "",
+        "## Action Items",
+        "1. Alex - ship it",
+        "",
+        "## Key Decisions",
+        "Use the new API",
+        "",
+        "## Follow-up Email",
+        "Thanks everyone",
+      ].join("\n"),
+    );
 
     expect(parsed.summary).toBe("Short recap");
     expect(parsed.actionItems).toBe("1. Alex - ship it");
@@ -43,13 +45,9 @@ describe("parseMeetingAnalysisResponse", () => {
   });
 
   it("fills missing sections with the empty-section marker", () => {
-    const parsed = parseMeetingAnalysisResponse([
-      "## Summary",
-      "Short recap",
-      "",
-      "## Follow-up Email",
-      "Thanks everyone",
-    ].join("\n"));
+    const parsed = parseMeetingAnalysisResponse(
+      ["## Summary", "Short recap", "", "## Follow-up Email", "Thanks everyone"].join("\n"),
+    );
 
     expect(parsed.summary).toBe("Short recap");
     expect(parsed.actionItems).toBe(MEETING_EMPTY_SECTION_TEXT);

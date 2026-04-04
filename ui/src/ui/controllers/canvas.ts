@@ -25,7 +25,9 @@ function deriveEmployeeName(agentId: string): string {
     .join(" ");
 }
 
-export function resolveCanvasEmployees(agentsList: AgentsListResult | null): CanvasEmployeeOption[] {
+export function resolveCanvasEmployees(
+  agentsList: AgentsListResult | null,
+): CanvasEmployeeOption[] {
   const knownIds = new Set<string>();
   const options: CanvasEmployeeOption[] = [
     { id: "main", name: "Main", role: "Kova Core Agent" },
@@ -162,7 +164,10 @@ export async function ensureCanvasAuthWorker(params: {
       readyRegistration.waiting,
       registration.installing,
       readyRegistration.installing,
-    ].filter((target, index, list): target is ServiceWorker => Boolean(target) && list.indexOf(target) === index);
+    ].filter(
+      (target, index, list): target is ServiceWorker =>
+        Boolean(target) && list.indexOf(target) === index,
+    );
 
     for (const target of targets) {
       if (await postCanvasAuthToken(target, message)) {
@@ -191,10 +196,14 @@ async function postCanvasAuthToken(
   return await new Promise<boolean>((resolve) => {
     const channel = new MessageChannel();
     const timeoutId = window.setTimeout(() => resolve(false), CANVAS_AUTH_ACK_TIMEOUT_MS);
-    channel.port1.onmessage = () => {
-      clearTimeout(timeoutId);
-      resolve(true);
-    };
+    channel.port1.addEventListener(
+      "message",
+      () => {
+        clearTimeout(timeoutId);
+        resolve(true);
+      },
+      { once: true },
+    );
     try {
       target.postMessage(message, [channel.port2]);
     } catch {

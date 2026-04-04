@@ -119,7 +119,10 @@ export function renderBriefing(props: BriefingViewProps) {
   return html`
     <section class="page page--settings" style="display: grid; gap: 20px;">
       <div class="card" style="display: grid; gap: 16px; max-width: 920px;">
-        <div class="row" style="justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+        <div
+          class="row"
+          style="justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;"
+        >
           <div style="display: grid; gap: 6px;">
             <div class="card-title">Daily Briefing</div>
             <div class="card-sub">
@@ -137,7 +140,8 @@ export function renderBriefing(props: BriefingViewProps) {
           </label>
         </div>
         <div class="muted" style="font-size: 13px;">
-          Kova saves this as one cron job and delivers the finished digest to your connected channel.
+          Kova saves this as one cron job and delivers the finished digest to your connected
+          channel.
         </div>
         ${renderMessage(props.message)}
       </div>
@@ -161,13 +165,15 @@ export function renderBriefing(props: BriefingViewProps) {
                     ?disabled=${props.saving}
                   >
                     ${Array.from({ length: 13 }, (_, index) => {
-                      const totalMinutes = (5 * 60) + index * 30;
+                      const totalMinutes = 5 * 60 + index * 30;
                       const hour = Math.floor(totalMinutes / 60);
                       const minute = totalMinutes % 60;
                       const value = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
                       const hour12 = hour % 12 || 12;
                       const meridiem = hour < 12 ? "AM" : "PM";
-                      return html`<option value=${value}>${hour12}:${String(minute).padStart(2, "0")} ${meridiem}</option>`;
+                      return html`<option value=${value}>
+                        ${hour12}:${String(minute).padStart(2, "0")} ${meridiem}
+                      </option>`;
                     })}
                   </select>
                 </label>
@@ -184,12 +190,16 @@ export function renderBriefing(props: BriefingViewProps) {
                   >
                     ${props.availableChannels.map(
                       (channel) =>
-                        html`<option value=${channel}>${formatBriefingChannelLabel(channel)}</option>`,
+                        html`<option value=${channel}>
+                          ${formatBriefingChannelLabel(channel)}
+                        </option>`,
                     )}
                   </select>
                 </label>
               </div>
-              <div class="muted" style="font-size: 12px;">Times are in your local timezone: ${props.timezone}</div>
+              <div class="muted" style="font-size: 12px;">
+                Times are in your local timezone: ${props.timezone}
+              </div>
             `
           : renderNoChannelsState(props)}
       </div>
@@ -202,7 +212,10 @@ export function renderBriefing(props: BriefingViewProps) {
         <div class="chip-row">
           ${SECTION_DEFINITIONS.map(
             (section) => html`
-              <label class="chip" style="display: grid; gap: 4px; min-width: 220px; align-items: start;">
+              <label
+                class="chip"
+                style="display: grid; gap: 4px; min-width: 220px; align-items: start;"
+              >
                 <span style="display: inline-flex; align-items: center; gap: 8px;">
                   <input
                     type="checkbox"
@@ -212,7 +225,9 @@ export function renderBriefing(props: BriefingViewProps) {
                   />
                   <span style="color: var(--text-strong);">${section.title}</span>
                 </span>
-                <span class="muted" style="font-size: 12px; line-height: 1.45;">${section.description}</span>
+                <span class="muted" style="font-size: 12px; line-height: 1.45;"
+                  >${section.description}</span
+                >
               </label>
             `,
           )}
@@ -223,7 +238,8 @@ export function renderBriefing(props: BriefingViewProps) {
         <div style="display: grid; gap: 4px;">
           <div class="card-title">Preview</div>
           <div class="card-sub">
-            This is the style your briefing will use in ${formatBriefingChannelLabel(props.form.channel)}.
+            This is the style your briefing will use in
+            ${formatBriefingChannelLabel(props.form.channel)}.
           </div>
         </div>
         ${renderPreview(props)}
@@ -234,7 +250,9 @@ export function renderBriefing(props: BriefingViewProps) {
           ${props.saving ? "Saving..." : "Save Daily Briefing"}
         </button>
         <span class="muted" style="font-size: 12px;">
-          ${props.form.enabled ? "Kova will keep the job enabled." : "Saving will keep the job disabled."}
+          ${props.form.enabled
+            ? "Kova will keep the job enabled."
+            : "Saving will keep the job disabled."}
         </span>
       </div>
     </section>

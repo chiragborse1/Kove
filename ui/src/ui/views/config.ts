@@ -650,7 +650,9 @@ function renderAppearanceSection(props: ConfigProps) {
             ? html`
                 <div class="settings-info-row">
                   <span class="settings-info-row__label">Assistant</span>
-                  <span class="settings-info-row__value">${brandDisplayName(props.assistantName)}</span>
+                  <span class="settings-info-row__value"
+                    >${brandDisplayName(props.assistantName)}</span
+                  >
                 </div>
               `
             : nothing}

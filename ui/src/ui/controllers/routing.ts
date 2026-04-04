@@ -18,14 +18,19 @@ export type RoutingEmployeeOption = {
   isCustom: boolean;
 };
 
-export const ROUTING_CHANNELS = ["telegram", "whatsapp"] as const satisfies readonly RoutingChannelId[];
+export const ROUTING_CHANNELS = [
+  "telegram",
+  "whatsapp",
+] as const satisfies readonly RoutingChannelId[];
 
 const DEFAULT_ASSIGNMENTS: RoutingAssignments = {
   telegram: "main",
   whatsapp: "main",
 };
 
-const BUILTIN_EMPLOYEE_META = new Map(KOVA_EMPLOYEES.map((employee) => [employee.id, employee] as const));
+const BUILTIN_EMPLOYEE_META = new Map(
+  KOVA_EMPLOYEES.map((employee) => [employee.id, employee] as const),
+);
 
 function normalizeRoutingChannel(value: unknown): RoutingChannelId | null {
   if (value === "telegram" || value === "whatsapp") {
@@ -88,10 +93,14 @@ function isManagedRoutingBinding(binding: unknown): binding is {
   return true;
 }
 
-export function resolveRoutingEmployees(agentsList: AgentsListResult | null): RoutingEmployeeOption[] {
+export function resolveRoutingEmployees(
+  agentsList: AgentsListResult | null,
+): RoutingEmployeeOption[] {
   const agents = Array.isArray(agentsList?.agents) ? agentsList.agents : [];
   const agentNameById = new Map(
-    agents.map((agent) => [agent.id, typeof agent.name === "string" ? agent.name.trim() : ""] as const),
+    agents.map(
+      (agent) => [agent.id, typeof agent.name === "string" ? agent.name.trim() : ""] as const,
+    ),
   );
 
   const builtins = KOVA_EMPLOYEES.map((employee) => ({
@@ -106,8 +115,7 @@ export function resolveRoutingEmployees(agentsList: AgentsListResult | null): Ro
     .filter((agent) => !BUILTIN_EMPLOYEE_META.has(agent.id))
     .map((agent) => ({
       id: agent.id,
-      name:
-        (typeof agent.name === "string" && agent.name.trim()) || deriveEmployeeName(agent.id),
+      name: (typeof agent.name === "string" && agent.name.trim()) || deriveEmployeeName(agent.id),
       role: "Custom Kova employee",
       isCustom: true,
     }))
@@ -118,7 +126,7 @@ export function resolveRoutingEmployees(agentsList: AgentsListResult | null): Ro
 
 function resolveBindings(snapshot: ConfigSnapshot | null): unknown[] {
   const config = snapshot?.config;
-  const bindings = config && typeof config === "object" ? (config as Record<string, unknown>).bindings : null;
+  const bindings = config && typeof config === "object" ? config.bindings : null;
   return Array.isArray(bindings) ? bindings : [];
 }
 
@@ -143,7 +151,7 @@ export function serializeRoutingConfig(
   snapshot: ConfigSnapshot | null,
   assignments: RoutingAssignments,
 ): string {
-  const nextConfig = cloneConfigObject((snapshot?.config ?? {}) as Record<string, unknown>);
+  const nextConfig = cloneConfigObject(snapshot?.config ?? {});
   const currentBindings = resolveBindings(snapshot);
   const preservedBindings = currentBindings.filter((binding) => !isManagedRoutingBinding(binding));
   const managedBindings = ROUTING_CHANNELS.flatMap((channel) => {
@@ -169,7 +177,10 @@ export function serializeRoutingConfig(
   return serializeConfigForm(nextConfig);
 }
 
-function readChannelStatus<T>(snapshot: ChannelsStatusSnapshot | null, channelId: string): T | null {
+function readChannelStatus<T>(
+  snapshot: ChannelsStatusSnapshot | null,
+  channelId: string,
+): T | null {
   const channel = snapshot?.channels?.[channelId];
   if (!channel || typeof channel !== "object" || Array.isArray(channel)) {
     return null;

@@ -120,12 +120,14 @@ function kova_normalizeMarketplaceSkill(entry: unknown): KovaMarketplaceSkill | 
     name,
     description: typeof candidate.description === "string" ? candidate.description.trim() : "",
     version: typeof candidate.version === "string" ? candidate.version.trim() : "",
-    author: typeof candidate.author === "string" && candidate.author.trim()
-      ? candidate.author.trim()
-      : "Unknown author",
-    category: typeof candidate.category === "string" && candidate.category.trim()
-      ? candidate.category.trim()
-      : "Other",
+    author:
+      typeof candidate.author === "string" && candidate.author.trim()
+        ? candidate.author.trim()
+        : "Unknown author",
+    category:
+      typeof candidate.category === "string" && candidate.category.trim()
+        ? candidate.category.trim()
+        : "Other",
     tags: Array.isArray(candidate.tags)
       ? candidate.tags
           .filter((tag): tag is string => typeof tag === "string")
@@ -152,7 +154,7 @@ function kova_parseMarketplaceRegistry(payload: unknown): KovaMarketplaceSkill[]
   return skills
     .map((entry) => kova_normalizeMarketplaceSkill(entry))
     .filter((entry): entry is KovaMarketplaceSkill => entry !== null)
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .toSorted((left, right) => left.name.localeCompare(right.name));
 }
 
 async function kova_loadMarketplaceRegistry(state: SkillsState) {
@@ -186,7 +188,7 @@ function kova_extractInstalledSkillIds(result: AgentsFilesListResult): string[] 
       ids.add(match[1]);
     }
   }
-  return Array.from(ids).sort((left, right) => left.localeCompare(right));
+  return Array.from(ids).toSorted((left, right) => left.localeCompare(right));
 }
 
 async function kova_requestInstalledFilesList(state: SkillsState): Promise<AgentsFilesListResult> {
@@ -230,7 +232,9 @@ async function kova_requestInstalledFilesList(state: SkillsState): Promise<Agent
       },
       onClose: ({ reason, error }) => {
         kova_finish(() =>
-          reject(new Error((error?.message ?? reason) || "Marketplace install check disconnected.")),
+          reject(
+            new Error((error?.message ?? reason) || "Marketplace install check disconnected."),
+          ),
         );
       },
     });
@@ -423,7 +427,7 @@ export async function kova_installMarketplaceSkill(
 
     state.kova_installedSkillIds = Array.from(
       new Set([...state.kova_installedSkillIds, skillId]),
-    ).sort((left, right) => left.localeCompare(right));
+    ).toSorted((left, right) => left.localeCompare(right));
 
     await Promise.allSettled([kova_loadInstalledSkills(state), kova_loadSkillsStatus(state)]);
   } catch (err) {

@@ -1,8 +1,5 @@
 import { html, nothing } from "lit";
-import {
-  KOVA_EMPLOYEES,
-  type EmployeeAutonomy,
-} from "../controllers/employees.ts";
+import { KOVA_EMPLOYEES, type EmployeeAutonomy } from "../controllers/employees.ts";
 import type {
   AgentIdentityResult,
   AgentsFilesListResult,
@@ -217,7 +214,9 @@ export function renderAgents(props: AgentsProps) {
           </button>
         </div>
         ${props.agentCreatorSuccess
-          ? html`<div class="callout success" style="margin-top: 12px;">${props.agentCreatorSuccess}</div>`
+          ? html`<div class="callout success" style="margin-top: 12px;">
+              ${props.agentCreatorSuccess}
+            </div>`
           : nothing}
         ${kovaAgents.length === 0
           ? html`<div class="card" style="margin-top: 12px;">
@@ -251,7 +250,9 @@ export function renderAgents(props: AgentsProps) {
             })
           : html`
               <div class="card agents-system-card agents-system-card--empty">
-                <div class="card-sub">The <code>main</code> agent is not available in the current list.</div>
+                <div class="card-sub">
+                  The <code>main</code> agent is not available in the current list.
+                </div>
               </div>
             `}
       </section>
@@ -444,7 +445,9 @@ function renderEmployeeCard(args: {
           <div class="agents-employee-card__name-row">
             <div class="agents-employee-card__name">${meta.name}</div>
             ${isDefault ? html`<span class="agents-chip">Default</span>` : nothing}
-            ${isSelected ? html`<span class="agents-chip agents-chip--selected">Selected</span>` : nothing}
+            ${isSelected
+              ? html`<span class="agents-chip agents-chip--selected">Selected</span>`
+              : nothing}
           </div>
           <div class="agents-employee-card__role">${meta.role}</div>
         </div>
@@ -526,7 +529,11 @@ function renderOtherAgentCard(args: {
         </div>
         <div class="agents-other-card__sub">${agent.id}</div>
       </div>
-      <button type="button" class="btn btn--sm btn--ghost" @click=${() => args.onSelectAgent(agent.id)}>
+      <button
+        type="button"
+        class="btn btn--sm btn--ghost"
+        @click=${() => args.onSelectAgent(agent.id)}
+      >
         Inspect
       </button>
     </article>
@@ -557,7 +564,9 @@ function buildKovaAgents(
   identityById: Record<string, AgentIdentityResult>,
   soulContentById: Record<string, string | null>,
 ) {
-  const builtInOrder = new Map(KOVA_EMPLOYEES.map((employee, index) => [employee.id, index] as const));
+  const builtInOrder = new Map(
+    KOVA_EMPLOYEES.map((employee, index) => [employee.id, index] as const),
+  );
   return agents
     .filter((agent) => agent.id !== "main" && isKovaAgent(agent.id, soulContentById[agent.id]))
     .map((agent) => {

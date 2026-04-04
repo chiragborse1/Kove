@@ -44,7 +44,10 @@ function renderMessage(kind: "danger" | "success", message: string | null) {
 function renderResultCard(props: ResultCardProps) {
   return html`
     <article class="card" style="display: grid; gap: 14px;">
-      <div class="row" style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <div
+        class="row"
+        style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;"
+      >
         <div class="card-title">${props.title}</div>
         <button type="button" class="btn btn--sm" @click=${props.onCopy}>
           <span aria-hidden="true">${icons.copy}</span>
@@ -81,7 +84,9 @@ function renderHistoryItem(entry: MeetingAnalysisResult, onLoad: (id: string) =>
         <span class="chip">${formatRelativeTimestamp(entry.createdAt)}</span>
       </div>
       <div class="muted" style="font-size: 13px; line-height: 1.5;">
-        ${preview ? `${preview.slice(0, 180)}${preview.length > 180 ? "..." : ""}` : "Tap to reload this meeting analysis."}
+        ${preview
+          ? `${preview.slice(0, 180)}${preview.length > 180 ? "..." : ""}`
+          : "Tap to reload this meeting analysis."}
       </div>
     </button>
   `;
@@ -110,7 +115,9 @@ export function renderMeetings(props: MeetingsProps) {
           <section class="card" style="display: grid; gap: 16px;">
             <div style="display: grid; gap: 4px;">
               <div class="card-title">Upload Transcript</div>
-              <div class="card-sub">Accepts '.txt', '.md', and '.pdf' files, or paste the transcript below.</div>
+              <div class="card-sub">
+                Accepts '.txt', '.md', and '.pdf' files, or paste the transcript below.
+              </div>
             </div>
 
             <label
@@ -166,11 +173,17 @@ export function renderMeetings(props: MeetingsProps) {
             </label>
 
             <div class="row" style="gap: 10px; flex-wrap: wrap; align-items: center;">
-              <button type="button" class="btn primary" ?disabled=${!canAnalyze} @click=${props.onAnalyze}>
+              <button
+                type="button"
+                class="btn primary"
+                ?disabled=${!canAnalyze}
+                @click=${props.onAnalyze}
+              >
                 ${props.analyzing ? "Analysing..." : "Analyse Meeting"}
               </button>
               <span class="muted" style="font-size: 12px;">
-                Morgan uses the transcript to generate a summary, actions, decisions, and a follow-up email.
+                Morgan uses the transcript to generate a summary, actions, decisions, and a
+                follow-up email.
               </span>
             </div>
           </section>
@@ -188,15 +201,18 @@ export function renderMeetings(props: MeetingsProps) {
                 </section>
               `
             : nothing}
-
           ${props.result
             ? html`
                 <section style="display: grid; gap: 16px;">
-                  <div class="row" style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;">
+                  <div
+                    class="row"
+                    style="justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap;"
+                  >
                     <div style="display: grid; gap: 4px;">
                       <div class="card-title">Results</div>
                       <div class="card-sub">
-                        ${props.result.title.trim() || "Untitled meeting"} · generated ${formatRelativeTimestamp(props.result.createdAt)}
+                        ${props.result.title.trim() || "Untitled meeting"} · generated
+                        ${formatRelativeTimestamp(props.result.createdAt)}
                       </div>
                     </div>
                     <button type="button" class="btn" @click=${props.onSave}>
@@ -242,7 +258,9 @@ export function renderMeetings(props: MeetingsProps) {
                             @click=${props.onSendTelegram}
                           >
                             <span aria-hidden="true">${icons.send}</span>
-                            <span>${props.sendingTelegram ? "Sending..." : "Send via Telegram"}</span>
+                            <span
+                              >${props.sendingTelegram ? "Sending..." : "Send via Telegram"}</span
+                            >
                           </button>
                         </div>
                       `,
@@ -261,7 +279,9 @@ export function renderMeetings(props: MeetingsProps) {
             </div>
 
             ${props.history.length === 0
-              ? html`<div class="muted" style="font-size: 13px;">Save a meeting result to keep it here.</div>`
+              ? html`<div class="muted" style="font-size: 13px;">
+                  Save a meeting result to keep it here.
+                </div>`
               : html`<div style="display: grid; gap: 12px;">
                   ${props.history.map((entry) => renderHistoryItem(entry, props.onLoadHistory))}
                 </div>`}

@@ -48,7 +48,9 @@ function hasIdentity(value: AgentCreatorDraft): boolean {
 function renderIdentityStep(props: AgentCreatorProps) {
   return html`
     <div style="display: grid; gap: 16px;">
-      <div style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+      <div
+        style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));"
+      >
         <label class="field">
           <span>Name</span>
           <input
@@ -97,7 +99,9 @@ function renderIdentityStep(props: AgentCreatorProps) {
         <select
           .value=${props.value.autonomy}
           @change=${(event: Event) =>
-            props.onChange({ autonomy: (event.target as HTMLSelectElement).value as AgentCreatorDraft["autonomy"] })}
+            props.onChange({
+              autonomy: (event.target as HTMLSelectElement).value as AgentCreatorDraft["autonomy"],
+            })}
         >
           <option value="Supervised">Supervised</option>
           <option value="Act + Notify">Act + Notify</option>
@@ -127,7 +131,8 @@ function renderPersonalityStep(props: AgentCreatorProps) {
         <textarea
           rows="4"
           .value=${props.value.focus}
-          @input=${(event: Event) => props.onChange({ focus: (event.target as HTMLTextAreaElement).value })}
+          @input=${(event: Event) =>
+            props.onChange({ focus: (event.target as HTMLTextAreaElement).value })}
           placeholder="Owns customer research, synthesizes findings, and flags product risks early."
         ></textarea>
       </label>
@@ -149,7 +154,10 @@ function renderPersonalityStep(props: AgentCreatorProps) {
 function renderReviewStep(props: AgentCreatorProps) {
   return html`
     <div style="display: grid; gap: 16px;">
-      <div class="card" style="border: 1px solid var(--border); background: var(--surface-elevated);">
+      <div
+        class="card"
+        style="border: 1px solid var(--border); background: var(--surface-elevated);"
+      >
         <div style="display: flex; align-items: flex-start; gap: 16px;">
           <div
             style="width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 34px; background: var(--surface); border: 1px solid var(--border);"
@@ -158,7 +166,9 @@ function renderReviewStep(props: AgentCreatorProps) {
           </div>
           <div style="display: grid; gap: 8px; min-width: 0;">
             <div>
-              <div class="card-title" style="font-size: 20px;">${props.value.name || "New employee"}</div>
+              <div class="card-title" style="font-size: 20px;">
+                ${props.value.name || "New employee"}
+              </div>
               <div class="card-sub">${props.value.role || "Role coming next"}</div>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -169,10 +179,14 @@ function renderReviewStep(props: AgentCreatorProps) {
         </div>
       </div>
 
-      <div style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+      <div
+        style="display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));"
+      >
         <div class="card" style="border: 1px solid var(--border);">
           <div class="card-title" style="font-size: 14px;">Communication</div>
-          <div class="card-sub">${props.value.personality || "No communication guidance added yet."}</div>
+          <div class="card-sub">
+            ${props.value.personality || "No communication guidance added yet."}
+          </div>
         </div>
         <div class="card" style="border: 1px solid var(--border);">
           <div class="card-title" style="font-size: 14px;">Focus</div>
@@ -231,7 +245,6 @@ export function renderAgentCreator(props: AgentCreatorProps) {
           </div>
 
           ${props.error ? html`<div class="callout danger">${props.error}</div>` : nothing}
-
           ${props.step === 1
             ? renderIdentityStep(props)
             : props.step === 2
@@ -248,7 +261,12 @@ export function renderAgentCreator(props: AgentCreatorProps) {
             </div>
             <div style="display: flex; gap: 8px; margin-left: auto;">
               ${props.step === 1
-                ? html`<button type="button" class="btn" ?disabled=${props.creating} @click=${props.onClose}>
+                ? html`<button
+                    type="button"
+                    class="btn"
+                    ?disabled=${props.creating}
+                    @click=${props.onClose}
+                  >
                     Cancel
                   </button>`
                 : html`<button

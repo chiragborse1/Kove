@@ -80,10 +80,7 @@ function normalizeMeetingHeaderKey(header: string): SectionKey | null {
   );
 }
 
-export function buildMeetingAnalysisPrompt(params: {
-  title: string;
-  transcript: string;
-}): string {
+export function buildMeetingAnalysisPrompt(params: { title: string; transcript: string }): string {
   const title = trimStoredText(params.title);
   const transcript = normalizeLineEndings(params.transcript).trim();
   const titleLine = title ? `Meeting title: ${title}` : "Meeting title: Untitled meeting";
@@ -106,7 +103,9 @@ export function buildMeetingAnalysisPrompt(params: {
   ].join("\n");
 }
 
-export function parseMeetingAnalysisResponse(response: string): Pick<
+export function parseMeetingAnalysisResponse(
+  response: string,
+): Pick<
   MeetingAnalysisResult,
   "summary" | "actionItems" | "decisions" | "followUpEmail" | "rawResponse"
 > {
@@ -184,8 +183,10 @@ export function resolveLatestMeetingTelegramTarget(
 ): { sessionKey: string; chatId: string; label: string } | null {
   const session = [...sessions]
     .filter((entry) => isMeetingTelegramSession(entry))
-    .sort((left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0))
-    .find((entry) => typeof entry.lastTo === "string" && normalizeMeetingTelegramChatId(entry.lastTo));
+    .toSorted((left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0))
+    .find(
+      (entry) => typeof entry.lastTo === "string" && normalizeMeetingTelegramChatId(entry.lastTo),
+    );
 
   if (!session || typeof session.lastTo !== "string") {
     return null;
@@ -271,17 +272,19 @@ export function loadMeetingHistoryFromStorage(): MeetingAnalysisResult[] {
     }
     return parsed
       .filter(isMeetingAnalysisResult)
-      .sort((left, right) => right.createdAt - left.createdAt)
+      .toSorted((left, right) => right.createdAt - left.createdAt)
       .slice(0, MAX_MEETING_HISTORY);
   } catch {
     return [];
   }
 }
 
-export function saveMeetingHistoryToStorage(history: MeetingAnalysisResult[]): MeetingAnalysisResult[] {
+export function saveMeetingHistoryToStorage(
+  history: MeetingAnalysisResult[],
+): MeetingAnalysisResult[] {
   const normalized = history
     .filter(isMeetingAnalysisResult)
-    .sort((left, right) => right.createdAt - left.createdAt)
+    .toSorted((left, right) => right.createdAt - left.createdAt)
     .slice(0, MAX_MEETING_HISTORY);
   try {
     getSafeLocalStorage()?.setItem(MEETING_HISTORY_STORAGE_KEY, JSON.stringify(normalized));

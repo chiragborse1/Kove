@@ -53,10 +53,7 @@ export const API_KEY_PROVIDER_DEFINITIONS = [
     keyUrl: "https://console.anthropic.com",
     keyPlaceholder: "sk-ant-...",
     recommendedModel: "anthropic/claude-sonnet-4-5",
-    popularModels: [
-      "anthropic/claude-sonnet-4-5",
-      "anthropic/claude-opus-4",
-    ],
+    popularModels: ["anthropic/claude-sonnet-4-5", "anthropic/claude-opus-4"],
   },
   {
     id: "openai",
@@ -218,7 +215,11 @@ function syncModelDraft(state: ApiKeysState, currentModel: string) {
   state.apiKeysCustomModelInput = currentModel;
 }
 
-function applySnapshot(state: ApiKeysState, snapshot: ApiKeysSnapshot, options?: { resetInputs?: boolean }) {
+function applySnapshot(
+  state: ApiKeysState,
+  snapshot: ApiKeysSnapshot,
+  options?: { resetInputs?: boolean },
+) {
   const nextStatuses = createApiKeyStatusRecord();
   for (const status of snapshot.providers) {
     nextStatuses[status.provider] = status;
@@ -298,7 +299,9 @@ async function ensureElevenLabsConfigHash(state: ApiKeysState): Promise<string> 
 }
 
 function resolveElevenLabsApiKey(state: ApiKeysState): string {
-  return state.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(state.settings.gatewayUrl);
+  return (
+    state.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(state.settings.gatewayUrl)
+  );
 }
 
 async function applyActiveModel(state: ApiKeysState, provider: ApiKeyProviderId, model: string) {

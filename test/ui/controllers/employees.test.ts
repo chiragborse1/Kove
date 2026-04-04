@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { loadEmployeesDashboard, type EmployeesState } from "../../../ui/src/ui/controllers/employees.ts";
+import {
+  loadEmployeesDashboard,
+  type EmployeesState,
+} from "../../../ui/src/ui/controllers/employees.ts";
 
 describe("loadEmployeesDashboard", () => {
   it("loads dynamic kova-* employees from agents.list", async () => {

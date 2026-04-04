@@ -49,7 +49,6 @@ export function renderWhatsAppCard(params: {
       </div>
 
       ${accountCountLabel}
-
       ${connected
         ? html`
             <div class="status-list" style="margin-top: 16px;">
@@ -76,7 +75,9 @@ export function renderWhatsAppCard(params: {
               <div>
                 <span class="label">Last message</span>
                 <span>
-                  ${whatsapp?.lastMessageAt ? formatRelativeTimestamp(whatsapp.lastMessageAt) : "n/a"}
+                  ${whatsapp?.lastMessageAt
+                    ? formatRelativeTimestamp(whatsapp.lastMessageAt)
+                    : "n/a"}
                 </span>
               </div>
             </div>
@@ -114,53 +115,63 @@ export function renderWhatsAppCard(params: {
                 </div>
               </div>
             `
-        : html`
-            <div class="callout" style="margin-top: 14px;">
-              Open WhatsApp -> Linked Devices -> Scan QR.
-            </div>
-            ${setupMessage
-              ? html`<div class="callout" style="margin-top: 12px;">${setupMessage}</div>`
-              : nothing}
-            ${hasQr
-              ? html`
-                  <div class="qr-wrap">
-                    <img src=${props.whatsappQrDataUrl ?? ""} alt="WhatsApp QR" />
-                  </div>
-                  <div class="muted" style="margin-top: 8px;">
-                    QR refreshes automatically every 30 seconds until WhatsApp connects.
-                  </div>
-                `
-              : html`
-                  <div class="muted" style="margin-top: 12px;">
-                    Start a WhatsApp login to generate a QR code.
-                  </div>
-                `}
-          `}
-
+          : html`
+              <div class="callout" style="margin-top: 14px;">
+                Open WhatsApp -> Linked Devices -> Scan QR.
+              </div>
+              ${setupMessage
+                ? html`<div class="callout" style="margin-top: 12px;">${setupMessage}</div>`
+                : nothing}
+              ${hasQr
+                ? html`
+                    <div class="qr-wrap">
+                      <img src=${props.whatsappQrDataUrl ?? ""} alt="WhatsApp QR" />
+                    </div>
+                    <div class="muted" style="margin-top: 8px;">
+                      QR refreshes automatically every 30 seconds until WhatsApp connects.
+                    </div>
+                  `
+                : html`
+                    <div class="muted" style="margin-top: 12px;">
+                      Start a WhatsApp login to generate a QR code.
+                    </div>
+                  `}
+            `}
       ${whatsapp?.lastError
         ? html`<div class="callout danger" style="margin-top: 12px;">${whatsapp.lastError}</div>`
         : nothing}
-
       ${renderChannelConfigSection({ channelId: "whatsapp", props })}
 
       <div class="row" style="margin-top: 14px; flex-wrap: wrap;">
         ${showClearRelink
           ? html`
-              <button class="btn danger" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppRelink()}>
+              <button
+                class="btn danger"
+                ?disabled=${props.whatsappBusy}
+                @click=${() => props.onWhatsAppRelink()}
+              >
                 ${props.whatsappBusy ? "Working..." : "Clear & Relink"}
               </button>
             `
           : nothing}
         ${showRelink
           ? html`
-              <button class="btn primary" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppRelink()}>
+              <button
+                class="btn primary"
+                ?disabled=${props.whatsappBusy}
+                @click=${() => props.onWhatsAppRelink()}
+              >
                 ${props.whatsappBusy ? "Working..." : "Relink"}
               </button>
             `
           : nothing}
         ${connected
           ? html`
-              <button class="btn danger" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppLogout()}>
+              <button
+                class="btn danger"
+                ?disabled=${props.whatsappBusy}
+                @click=${() => props.onWhatsAppLogout()}
+              >
                 ${props.whatsappBusy ? "Working..." : "Disconnect"}
               </button>
             `
@@ -175,7 +186,11 @@ export function renderWhatsAppCard(params: {
                 </button>
               `
             : nothing}
-        <button class="btn" ?disabled=${props.loading || props.whatsappBusy} @click=${() => props.onRefresh(true)}>
+        <button
+          class="btn"
+          ?disabled=${props.loading || props.whatsappBusy}
+          @click=${() => props.onRefresh(true)}
+        >
           Refresh
         </button>
       </div>

@@ -1,7 +1,4 @@
 import { html, nothing } from "lit";
-import { formatRelativeTimestamp } from "../format.ts";
-import { pathForTab } from "../navigation.ts";
-import type { GatewaySessionRow } from "../types.ts";
 import {
   filterByChannel,
   formatLastMessage,
@@ -10,6 +7,9 @@ import {
   hasEmployeeReply,
   type InboxChannelFilter,
 } from "../controllers/inbox.ts";
+import { formatRelativeTimestamp } from "../format.ts";
+import { pathForTab } from "../navigation.ts";
+import type { GatewaySessionRow } from "../types.ts";
 
 export type InboxProps = {
   loading: boolean;
@@ -31,20 +31,31 @@ const FILTER_TABS: Array<{ id: InboxChannelFilter; label: string }> = [
 
 function renderSkeletonRows() {
   return html`
-    ${Array.from({ length: 3 }, (_, index) => html`
-      <div class="card" style="display: grid; gap: 14px; opacity: 0.7;" data-skeleton=${index}>
-        <div class="row" style="justify-content: space-between; gap: 16px; align-items: center;">
-          <div style="display: flex; gap: 12px; align-items: center; min-width: 0;">
-            <div style="width: 36px; height: 36px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);"></div>
-            <div style="display: grid; gap: 8px; min-width: 0;">
-              <div style="width: 140px; height: 10px; border-radius: 999px; background: var(--surface);"></div>
-              <div style="width: 220px; height: 10px; border-radius: 999px; background: var(--surface);"></div>
+    ${Array.from(
+      { length: 3 },
+      (_, index) => html`
+        <div class="card" style="display: grid; gap: 14px; opacity: 0.7;" data-skeleton=${index}>
+          <div class="row" style="justify-content: space-between; gap: 16px; align-items: center;">
+            <div style="display: flex; gap: 12px; align-items: center; min-width: 0;">
+              <div
+                style="width: 36px; height: 36px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);"
+              ></div>
+              <div style="display: grid; gap: 8px; min-width: 0;">
+                <div
+                  style="width: 140px; height: 10px; border-radius: 999px; background: var(--surface);"
+                ></div>
+                <div
+                  style="width: 220px; height: 10px; border-radius: 999px; background: var(--surface);"
+                ></div>
+              </div>
             </div>
+            <div
+              style="width: 52px; height: 10px; border-radius: 999px; background: var(--surface);"
+            ></div>
           </div>
-          <div style="width: 52px; height: 10px; border-radius: 999px; background: var(--surface);"></div>
         </div>
-      </div>
-    `)}
+      `,
+    )}
   `;
 }
 
@@ -82,10 +93,7 @@ function renderChannelBadge(session: GatewaySessionRow) {
   return html`<span class="chip">Conversation</span>`;
 }
 
-function renderInboxRow(
-  session: GatewaySessionRow,
-  props: InboxProps,
-) {
+function renderInboxRow(session: GatewaySessionRow, props: InboxProps) {
   const channel = getChannelFromSession(session);
   const href = `${pathForTab("chat", props.basePath)}?session=${encodeURIComponent(session.key)}`;
   const title =
@@ -136,9 +144,7 @@ function renderInboxRow(
             <div class="muted" style="font-size: 13px; line-height: 1.45;">
               ${formatLastMessage(session)}
             </div>
-            <div class="muted" style="font-size: 12px;">
-              ${responder}
-            </div>
+            <div class="muted" style="font-size: 12px;">${responder}</div>
           </div>
         </div>
         <div style="display: grid; gap: 8px; justify-items: end; flex: 0 0 auto;">
@@ -164,7 +170,10 @@ export function renderInbox(props: InboxProps) {
   return html`
     <section class="page page--settings" style="display: grid; gap: 20px;">
       <div class="card" style="display: grid; gap: 16px; max-width: 920px;">
-        <div class="row" style="justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap;">
+        <div
+          class="row"
+          style="justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap;"
+        >
           <div style="display: grid; gap: 4px;">
             <div class="card-title">Inbox</div>
             <div class="card-sub">All conversations across your connected channels.</div>

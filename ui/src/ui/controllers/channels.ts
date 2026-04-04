@@ -1,4 +1,9 @@
 import type { ChannelsStatusSnapshot } from "../types.ts";
+import type {
+  ChannelsState,
+  TelegramPendingApproval,
+  TelegramSetupMessage,
+} from "./channels.types.ts";
 import { loadConfig } from "./config.ts";
 import {
   cloneConfigObject,
@@ -6,11 +11,6 @@ import {
   serializeConfigForm,
   setPathValue,
 } from "./config/form-utils.ts";
-import type {
-  ChannelsState,
-  TelegramPendingApproval,
-  TelegramSetupMessage,
-} from "./channels.types.ts";
 import {
   formatMissingOperatorReadScopeMessage,
   isMissingOperatorReadScopeError,
@@ -34,11 +34,15 @@ function getErrorMessage(err: unknown): string {
   return String(err);
 }
 
-function syncWhatsAppStateFromSnapshot(state: ChannelsState, snapshot: ChannelsStatusSnapshot | null) {
+function syncWhatsAppStateFromSnapshot(
+  state: ChannelsState,
+  snapshot: ChannelsStatusSnapshot | null,
+) {
   const channels = snapshot?.channels as Record<string, unknown> | null;
-  const whatsapp = (channels?.whatsapp ?? null) as
-    | { connected?: unknown; self?: { e164?: unknown; jid?: unknown } | null }
-    | null;
+  const whatsapp = (channels?.whatsapp ?? null) as {
+    connected?: unknown;
+    self?: { e164?: unknown; jid?: unknown } | null;
+  } | null;
   const connected = whatsapp?.connected === true;
   const e164 = typeof whatsapp?.self?.e164 === "string" ? whatsapp.self.e164.trim() : "";
   const jid = typeof whatsapp?.self?.jid === "string" ? whatsapp.self.jid.trim() : "";
@@ -54,10 +58,7 @@ function syncWhatsAppStateFromSnapshot(state: ChannelsState, snapshot: ChannelsS
   }
 }
 
-function setTelegramSetupMessage(
-  state: ChannelsState,
-  message: TelegramSetupMessage | null,
-): void {
+function setTelegramSetupMessage(state: ChannelsState, message: TelegramSetupMessage | null): void {
   state.telegramSetupMessage = message;
 }
 
@@ -68,7 +69,9 @@ function setTelegramApprovalsMessage(
   state.telegramApprovalsMessage = message;
 }
 
-function normalizeTelegramPendingApprovals(response: PairingListResponse): TelegramPendingApproval[] {
+function normalizeTelegramPendingApprovals(
+  response: PairingListResponse,
+): TelegramPendingApproval[] {
   const requests = Array.isArray(response.requests) ? response.requests : [];
   return requests
     .map((entry) => {
@@ -356,5 +359,3 @@ export async function logoutWhatsApp(state: ChannelsState) {
     state.whatsappBusy = false;
   }
 }
-
-
