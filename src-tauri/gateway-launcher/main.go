@@ -1,16 +1,21 @@
+//go:build windows
+// +build windows
+
 package main
 
 import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 )
 
 func findNode() string {
 	nodePaths := []string{
-		"node",
 		`C:\Program Files\nodejs\node.exe`,
 		`C:\Program Files (x86)\nodejs\node.exe`,
+		"node.exe",
+		"node",
 	}
 
 	for _, candidate := range nodePaths {
@@ -62,6 +67,7 @@ func main() {
 		os.Stderr.WriteString("Failed to create state directory: " + err.Error() + "\n")
 		os.Exit(1)
 	}
+	configPath := filepath.Join(stateDir, "openclaw.json")
 
 	cmd := exec.Command(
 		nodePath,
@@ -78,7 +84,12 @@ func main() {
 	cmd.Env = append(os.Environ(),
 		"OPENCLAW_STATE_DIR="+stateDir,
 		"KOVA_STATE_DIR="+stateDir,
+		"OPENCLAW_CONFIG_PATH="+configPath,
 	)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		HideWindow:    true,
+		CreationFlags: 0x08000000, // CREATE_NO_WINDOW
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
