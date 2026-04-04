@@ -9,8 +9,6 @@ use std::fs;
 use std::path::PathBuf;
 #[cfg(desktop)]
 use std::sync::Mutex;
-#[cfg(all(desktop, target_os = "windows"))]
-use std::{io, process::Child, process::Command};
 #[cfg(desktop)]
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 #[cfg(desktop)]
@@ -32,8 +30,6 @@ const TRAY_EVENT_NAME: &str = "kova:navigate";
 #[cfg(desktop)]
 enum GatewayChildHandle {
     Shell(tauri_plugin_shell::process::CommandChild),
-    #[cfg(target_os = "windows")]
-    Process(Child),
 }
 
 #[cfg(desktop)]
@@ -150,10 +146,6 @@ fn kill_gateway_child(app: &AppHandle) {
             GatewayChildHandle::Shell(child) => {
                 let _ = child.kill();
             }
-            #[cfg(target_os = "windows")]
-            GatewayChildHandle::Process(mut child) => {
-                let _ = child.kill();
-            }
         }
     }
 }
@@ -255,7 +247,6 @@ fn runtime_root_for_sidecar(app: &AppHandle) -> Result<PathBuf, String> {
         .ok_or_else(|| "could not resolve source runtime root".to_string())
 }
 
-#[cfg(all(desktop, target_os = "windows"))]
 fn store_gateway_child(app: &AppHandle, child: GatewayChildHandle) {
     let state = app.state::<KovaRuntimeState>();
     let lock = state.gateway_child.lock();
@@ -295,169 +286,33 @@ fn gateway_state_dir(app: &AppHandle) -> Result<PathBuf, String> {
     default_gateway_state_dir(app)
 }
 
-#[cfg(all(desktop, target_os = "windows"))]
-fn configure_gateway_env(command: &mut Command, state_dir: &std::path::Path) {
-    let state_dir_string = state_dir.to_string_lossy().to_string();
-    let config_path = state_dir.join("openclaw.json");
-    command.env("KOVA_STATE_DIR", &state_dir_string);
-    command.env("OPENCLAW_STATE_DIR", &state_dir_string);
-    command.env("OPENCLAW_CONFIG_PATH", config_path);
-}
-
-#[cfg(all(desktop, target_os = "windows"))]
-fn resolve_windows_bundled_path(app: &AppHandle, file_name: &str) -> Result<PathBuf, String> {
-    let bundled = app
-        .path()
-        .resolve(format!("binaries/{file_name}"), BaseDirectory::Resource)
-        .map_err(|err| err.to_string())?;
-    if bundled.exists() {
-        return Ok(bundled);
-    }
-    Ok(PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("binaries")
-        .join(file_name))
-}
-
-#[cfg(all(desktop, target_os = "windows"))]
-fn spawn_windows_gateway_from_launcher(app: &AppHandle) -> Result<Option<Child>, String> {
-    let runtime_root = match runtime_root_for_sidecar(app) {
-        Ok(root) => root,
-        Err(_) => return Ok(None),
-    };
-    let runtime_entry = runtime_root.join("openclaw.mjs");
-    if !runtime_entry.exists() {
-        return Ok(None);
-    }
-
-    let state_dir = gateway_state_dir(app)?;
-    let batch_launcher =
-        resolve_windows_bundled_path(app, "kova-gateway-x86_64-pc-windows-msvc.bat")?;
-    if batch_launcher.exists() {
-        let mut command = Command::new("cmd");
-        command
-            .args(["/d", "/s", "/c"])
-            .arg(&batch_launcher)
-            .arg(&runtime_root);
-        configure_gateway_env(&mut command, &state_dir);
-        return command
-            .spawn()
-            .map(Some)
-            .map_err(|err| format!("failed to launch Windows gateway batch wrapper: {err}"));
-    }
-
-    let powershell_launcher =
-        resolve_windows_bundled_path(app, "kova-gateway-x86_64-pc-windows-msvc.ps1")?;
-    if powershell_launcher.exists() {
-        let mut command = Command::new("powershell");
-        command
-            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-File"])
-            .arg(&powershell_launcher)
-            .arg(&runtime_root);
-        configure_gateway_env(&mut command, &state_dir);
-        return command
-            .spawn()
-            .map(Some)
-            .map_err(|err| format!("failed to launch Windows gateway PowerShell wrapper: {err}"));
-    }
-
-    Ok(None)
-}
-
-#[cfg(all(desktop, target_os = "windows"))]
-fn spawn_windows_gateway_from_runtime(app: &AppHandle) -> Result<Option<Child>, String> {
-    let runtime_root = match runtime_root_for_sidecar(app) {
-        Ok(root) => root,
-        Err(_) => return Ok(None),
-    };
-    let runtime_entry = runtime_root.join("openclaw.mjs");
-    if !runtime_entry.exists() {
-        return Ok(None);
-    }
-
-    let state_dir = gateway_state_dir(app)?;
-    let mut last_err: Option<io::Error> = None;
-    for candidate in ["node", "nodejs"] {
-        let mut command = Command::new(candidate);
-        command
-            .arg(&runtime_entry)
-            .args([
-                "gateway", "run", "--bind", "loopback", "--port", "18789", "--force",
-            ])
-            .current_dir(&runtime_root);
-        configure_gateway_env(&mut command, &state_dir);
-        match command.spawn() {
-            Ok(child) => return Ok(Some(child)),
-            Err(err) if err.kind() == io::ErrorKind::NotFound => {
-                last_err = Some(err);
-            }
-            Err(err) => {
-                return Err(format!("failed to launch bundled gateway runtime: {err}"));
-            }
-        }
-    }
-
-    let _ = last_err;
-    Ok(None)
-}
-
-#[cfg(all(desktop, target_os = "windows"))]
-fn spawn_windows_gateway_from_path(app: &AppHandle) -> Result<Child, String> {
-    let state_dir = gateway_state_dir(app)?;
-    let mut command = Command::new("openclaw");
-    command.args([
-        "gateway", "run", "--bind", "loopback", "--port", "18789", "--force",
-    ]);
-    configure_gateway_env(&mut command, &state_dir);
-    command
-        .spawn()
-        .map_err(|err| format!("failed to launch OpenClaw gateway from PATH: {err}"))
-}
-
 #[cfg(desktop)]
 fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
-        if let Some(child) = spawn_windows_gateway_from_launcher(app)? {
-            store_gateway_child(app, GatewayChildHandle::Process(child));
-            return Ok(());
-        }
-        if let Some(child) = spawn_windows_gateway_from_runtime(app)? {
-            store_gateway_child(app, GatewayChildHandle::Process(child));
-            return Ok(());
-        }
-        match spawn_windows_gateway_from_path(app) {
-            Ok(child) => store_gateway_child(app, GatewayChildHandle::Process(child)),
-            Err(err) => eprintln!("kova: could not auto-start the local gateway on Windows: {err}"),
-        }
-        return Ok(());
-    }
-
     let state_dir = gateway_state_dir(app)?;
-
     let runtime_root = runtime_root_for_sidecar(app)?;
-    let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .map(std::path::Path::to_path_buf)
-        .ok_or_else(|| "could not resolve source root".to_string())?;
-
     let sidecar = app
         .shell()
         .sidecar("kova-gateway")
-        .map_err(|err| err.to_string())?
-        .args([
+        .map_err(|err| err.to_string())?;
+
+    #[cfg(target_os = "windows")]
+    let sidecar = sidecar.args([runtime_root.to_string_lossy().to_string()]);
+
+    #[cfg(not(target_os = "windows"))]
+    let sidecar = {
+        let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .map(std::path::Path::to_path_buf)
+            .ok_or_else(|| "could not resolve source root".to_string())?;
+        sidecar.args([
             state_dir.to_string_lossy().to_string(),
             runtime_root.to_string_lossy().to_string(),
             source_root.to_string_lossy().to_string(),
-        ]);
+        ])
+    };
 
     let (_rx, child) = sidecar.spawn().map_err(|err| err.to_string())?;
-    {
-        let state = app.state::<KovaRuntimeState>();
-        let lock = state.gateway_child.lock();
-        if let Ok(mut guard) = lock {
-            *guard = Some(GatewayChildHandle::Shell(child));
-        }
-    }
+    store_gateway_child(app, GatewayChildHandle::Shell(child));
     Ok(())
 }
 
