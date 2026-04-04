@@ -38,6 +38,14 @@ export async function saveDesktopSetupState(state: DesktopSetupState): Promise<v
   await invoke("set_setup_state", { state });
 }
 
+export async function readDesktopGatewayToken(): Promise<string> {
+  if (!isTauriDesktopEnvironment()) {
+    return "";
+  }
+  const { invoke } = await import("@tauri-apps/api/core");
+  return invoke<string>("read_gateway_token");
+}
+
 export async function listenForDesktopNavigation(
   handler: (payload: DesktopNavigatePayload) => void,
 ): Promise<() => void> {

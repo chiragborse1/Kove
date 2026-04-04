@@ -8,12 +8,30 @@ use std::os::unix::fs::PermissionsExt;
 fn main() {
   let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("missing manifest dir"));
   let target = env::var("TARGET").expect("missing cargo target triple");
-  let source = manifest_dir.join("binaries").join("kova-gateway");
+  let default_source = manifest_dir.join("binaries").join("kova-gateway");
+  let windows_source = manifest_dir
+    .join("binaries")
+    .join(format!("kova-gateway-{target}.bat"));
+  let source = if target.contains("windows") && windows_source.exists() {
+    windows_source
+  } else {
+    default_source
+  };
   let destination = manifest_dir
     .join("binaries")
     .join(format!("kova-gateway-{target}"));
 
-  println!("cargo:rerun-if-changed={}", source.display());
+  println!(
+    "cargo:rerun-if-changed={}",
+    manifest_dir.join("binaries").join("kova-gateway").display()
+  );
+  println!(
+    "cargo:rerun-if-changed={}",
+    manifest_dir
+      .join("binaries")
+      .join(format!("kova-gateway-{target}.bat"))
+      .display()
+  );
 
   if !source.exists() {
     panic!("missing sidecar wrapper at {}", source.display());

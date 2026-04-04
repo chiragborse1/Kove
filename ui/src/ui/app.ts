@@ -142,6 +142,7 @@ import {
   isTauriDesktopEnvironment,
   listenForDesktopNavigation,
   loadDesktopSetupState,
+  readDesktopGatewayToken,
   saveDesktopSetupState,
   type DesktopNavigatePayload,
 } from "./tauri-desktop.ts";
@@ -2065,6 +2066,21 @@ export class OpenClawApp extends LitElement {
       }
       if (ready) {
         this.desktopGatewayPhase = "connecting";
+        this.desktopGatewayStatus = "Gateway is ready. Reading your local access token...";
+        try {
+          const gatewayToken = (await readDesktopGatewayToken()).trim();
+          if (this.desktopGatewayBootRun !== run || this.connected) {
+            return;
+          }
+          if (gatewayToken && gatewayToken !== this.settings.token.trim()) {
+            applySettingsInternal(this as unknown as Parameters<typeof applySettingsInternal>[0], {
+              ...this.settings,
+              token: gatewayToken,
+            });
+          }
+        } catch {
+          // Keep the existing desktop token flow if the native token lookup fails.
+        }
         this.desktopGatewayStatus = "Gateway is ready. Connecting to your workspace...";
         this.connect();
         return;

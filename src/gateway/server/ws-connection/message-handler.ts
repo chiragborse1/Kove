@@ -113,6 +113,16 @@ type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 
 const DEVICE_SIGNATURE_SKEW_MS = 2 * 60 * 1000;
 
+function resolveLocalControlUiAllowedOrigins(
+  configuredOrigins: string[],
+  isLocalClient: boolean,
+): string[] {
+  if (!isLocalClient) {
+    return configuredOrigins;
+  }
+  return [...new Set([...configuredOrigins, "http://tauri.localhost", "tauri://localhost"])];
+}
+
 export type WsOriginCheckMetrics = {
   hostHeaderFallbackAccepted: number;
 };
@@ -422,10 +432,14 @@ export function attachGatewayWsMessageHandler(params: {
         if (enforceOriginCheckForAnyClient || isBrowserOperatorUi || isWebchat) {
           const hostHeaderOriginFallbackEnabled =
             configSnapshot.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback === true;
+          const allowedOrigins = resolveLocalControlUiAllowedOrigins(
+            resolveEffectiveControlUiAllowedOrigins(configSnapshot),
+            isLocalClient,
+          );
           const originCheck = checkBrowserOrigin({
             requestHost,
             origin: requestOrigin,
-            allowedOrigins: resolveEffectiveControlUiAllowedOrigins(configSnapshot),
+            allowedOrigins,
             allowHostHeaderOriginFallback: hostHeaderOriginFallbackEnabled,
             isLocalClient,
           });

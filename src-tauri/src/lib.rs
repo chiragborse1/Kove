@@ -2,6 +2,10 @@ use serde::{Deserialize, Serialize};
 use tauri::Emitter;
 
 #[cfg(desktop)]
+use std::env;
+#[cfg(desktop)]
+use std::fs;
+#[cfg(desktop)]
 use std::path::PathBuf;
 #[cfg(desktop)]
 use std::sync::Mutex;
@@ -70,6 +74,20 @@ fn get_setup_state(app: tauri::AppHandle) -> Result<DesktopSetupState, String> {
 #[tauri::command]
 fn set_setup_state(app: tauri::AppHandle, state: DesktopSetupState) -> Result<(), String> {
     write_setup_state(&app, state)
+}
+
+#[tauri::command]
+fn read_gateway_token(app: tauri::AppHandle) -> Result<String, String> {
+    #[cfg(desktop)]
+    {
+        return read_gateway_token_from_disk(&app);
+    }
+
+    #[cfg(not(desktop))]
+    {
+        let _ = app;
+        Ok(String::new())
+    }
 }
 
 fn read_setup_state(app: &tauri::AppHandle) -> Result<DesktopSetupState, String> {
@@ -246,11 +264,35 @@ fn store_gateway_child(app: &AppHandle, child: GatewayChildHandle) {
     }
 }
 
-#[cfg(all(desktop, target_os = "windows"))]
-fn gateway_state_dir(app: &AppHandle) -> Result<PathBuf, String> {
+#[cfg(desktop)]
+fn default_gateway_state_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let state_dir = app.path().app_data_dir().map_err(|err| err.to_string())?;
     std::fs::create_dir_all(&state_dir).map_err(|err| err.to_string())?;
     Ok(state_dir)
+}
+
+#[cfg(all(desktop, target_os = "windows"))]
+fn gateway_state_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let state_dir = if let Some(path) = env::var_os("KOVA_STATE_DIR")
+        .map(PathBuf::from)
+        .filter(|path| !path.as_os_str().is_empty())
+    {
+        path
+    } else if let Some(path) = env::var_os("APPDATA")
+        .map(PathBuf::from)
+        .map(|path| path.join("Kova"))
+    {
+        path
+    } else {
+        default_gateway_state_dir(app)?
+    };
+    fs::create_dir_all(&state_dir).map_err(|err| err.to_string())?;
+    Ok(state_dir)
+}
+
+#[cfg(all(desktop, not(target_os = "windows")))]
+fn gateway_state_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    default_gateway_state_dir(app)
 }
 
 #[cfg(all(desktop, target_os = "windows"))]
@@ -260,6 +302,65 @@ fn configure_gateway_env(command: &mut Command, state_dir: &std::path::Path) {
     command.env("KOVA_STATE_DIR", &state_dir_string);
     command.env("OPENCLAW_STATE_DIR", &state_dir_string);
     command.env("OPENCLAW_CONFIG_PATH", config_path);
+}
+
+#[cfg(all(desktop, target_os = "windows"))]
+fn resolve_windows_bundled_path(app: &AppHandle, file_name: &str) -> Result<PathBuf, String> {
+    let bundled = app
+        .path()
+        .resolve(format!("binaries/{file_name}"), BaseDirectory::Resource)
+        .map_err(|err| err.to_string())?;
+    if bundled.exists() {
+        return Ok(bundled);
+    }
+    Ok(PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("binaries")
+        .join(file_name))
+}
+
+#[cfg(all(desktop, target_os = "windows"))]
+fn spawn_windows_gateway_from_launcher(app: &AppHandle) -> Result<Option<Child>, String> {
+    let runtime_root = match runtime_root_for_sidecar(app) {
+        Ok(root) => root,
+        Err(_) => return Ok(None),
+    };
+    let runtime_entry = runtime_root.join("openclaw.mjs");
+    if !runtime_entry.exists() {
+        return Ok(None);
+    }
+
+    let state_dir = gateway_state_dir(app)?;
+    let batch_launcher =
+        resolve_windows_bundled_path(app, "kova-gateway-x86_64-pc-windows-msvc.bat")?;
+    if batch_launcher.exists() {
+        let mut command = Command::new("cmd");
+        command
+            .args(["/d", "/s", "/c"])
+            .arg(&batch_launcher)
+            .arg(&runtime_root);
+        configure_gateway_env(&mut command, &state_dir);
+        return command
+            .spawn()
+            .map(Some)
+            .map_err(|err| format!("failed to launch Windows gateway batch wrapper: {err}"));
+    }
+
+    let powershell_launcher =
+        resolve_windows_bundled_path(app, "kova-gateway-x86_64-pc-windows-msvc.ps1")?;
+    if powershell_launcher.exists() {
+        let mut command = Command::new("powershell");
+        command
+            .args(["-NoProfile", "-ExecutionPolicy", "Bypass", "-File"])
+            .arg(&powershell_launcher)
+            .arg(&runtime_root);
+        configure_gateway_env(&mut command, &state_dir);
+        return command
+            .spawn()
+            .map(Some)
+            .map_err(|err| format!("failed to launch Windows gateway PowerShell wrapper: {err}"));
+    }
+
+    Ok(None)
 }
 
 #[cfg(all(desktop, target_os = "windows"))]
@@ -316,6 +417,10 @@ fn spawn_windows_gateway_from_path(app: &AppHandle) -> Result<Child, String> {
 fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
+        if let Some(child) = spawn_windows_gateway_from_launcher(app)? {
+            store_gateway_child(app, GatewayChildHandle::Process(child));
+            return Ok(());
+        }
         if let Some(child) = spawn_windows_gateway_from_runtime(app)? {
             store_gateway_child(app, GatewayChildHandle::Process(child));
             return Ok(());
@@ -327,8 +432,7 @@ fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
         return Ok(());
     }
 
-    let state_dir = app.path().app_data_dir().map_err(|err| err.to_string())?;
-    std::fs::create_dir_all(&state_dir).map_err(|err| err.to_string())?;
+    let state_dir = gateway_state_dir(app)?;
 
     let runtime_root = runtime_root_for_sidecar(app)?;
     let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -357,12 +461,89 @@ fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(desktop)]
+fn push_config_path(paths: &mut Vec<PathBuf>, next: PathBuf) {
+    if !paths.iter().any(|existing| existing == &next) {
+        paths.push(next);
+    }
+}
+
+#[cfg(desktop)]
+fn gateway_config_candidates(app: &AppHandle) -> Result<Vec<PathBuf>, String> {
+    let mut paths = Vec::new();
+
+    if let Some(config_path) = env::var_os("OPENCLAW_CONFIG_PATH")
+        .map(PathBuf::from)
+        .filter(|path| !path.as_os_str().is_empty())
+    {
+        push_config_path(&mut paths, config_path);
+    }
+
+    let state_dir = gateway_state_dir(app)?;
+    push_config_path(&mut paths, state_dir.join("openclaw.json"));
+    push_config_path(&mut paths, state_dir.join("config.json"));
+
+    if let Some(home) = app.path().home_dir().ok().or_else(|| {
+        env::var_os("HOME")
+            .map(PathBuf::from)
+            .filter(|path| !path.as_os_str().is_empty())
+    }) {
+        let openclaw_home = home.join(".openclaw");
+        push_config_path(&mut paths, openclaw_home.join("openclaw.json"));
+        push_config_path(&mut paths, openclaw_home.join("config.json"));
+    }
+
+    Ok(paths)
+}
+
+#[cfg(desktop)]
+fn extract_gateway_token(config: &serde_json::Value) -> Option<String> {
+    config
+        .get("gateway")
+        .and_then(|gateway| gateway.get("auth"))
+        .and_then(|auth| auth.get("token"))
+        .and_then(serde_json::Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToOwned::to_owned)
+        .or_else(|| {
+            config
+                .get("gatewayToken")
+                .and_then(serde_json::Value::as_str)
+                .map(str::trim)
+                .filter(|value| !value.is_empty())
+                .map(ToOwned::to_owned)
+        })
+}
+
+#[cfg(desktop)]
+fn read_gateway_token_from_disk(app: &AppHandle) -> Result<String, String> {
+    for config_path in gateway_config_candidates(app)? {
+        let contents = match fs::read_to_string(&config_path) {
+            Ok(contents) => contents,
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => continue,
+            Err(err) => return Err(format!("failed to read {}: {err}", config_path.display())),
+        };
+        let parsed: serde_json::Value = serde_json::from_str(&contents)
+            .map_err(|err| format!("failed to parse {}: {err}", config_path.display()))?;
+        if let Some(token) = extract_gateway_token(&parsed) {
+            return Ok(token);
+        }
+    }
+
+    Ok(String::new())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![get_setup_state, set_setup_state]);
+        .invoke_handler(tauri::generate_handler![
+            get_setup_state,
+            set_setup_state,
+            read_gateway_token
+        ]);
 
     #[cfg(desktop)]
     {
