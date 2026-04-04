@@ -2,6 +2,7 @@ import type { IncomingMessage } from "node:http";
 import os from "node:os";
 import type { WebSocket } from "ws";
 import { loadConfig } from "../../../config/config.js";
+import { resolveEffectiveControlUiAllowedOrigins } from "../../../config/gateway-control-ui-origins.js";
 import {
   revokeDeviceBootstrapToken,
   verifyDeviceBootstrapToken,
@@ -424,7 +425,7 @@ export function attachGatewayWsMessageHandler(params: {
           const originCheck = checkBrowserOrigin({
             requestHost,
             origin: requestOrigin,
-            allowedOrigins: configSnapshot.gateway?.controlUi?.allowedOrigins,
+            allowedOrigins: resolveEffectiveControlUiAllowedOrigins(configSnapshot),
             allowHostHeaderOriginFallback: hostHeaderOriginFallbackEnabled,
             isLocalClient,
           });

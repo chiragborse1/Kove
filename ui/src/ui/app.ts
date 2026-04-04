@@ -337,6 +337,46 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+const DESKTOP_GATEWAY_BOOT_TIMEOUT_MS = 30_000;
+const DESKTOP_GATEWAY_PROBE_INTERVAL_MS = 1_000;
+const DESKTOP_GATEWAY_PROBE_TIMEOUT_MS = 1_500;
+
+async function probeGatewaySocket(
+  url: string,
+  timeoutMs = DESKTOP_GATEWAY_PROBE_TIMEOUT_MS,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    let settled = false;
+    let socket: WebSocket | null = null;
+
+    const finish = (ok: boolean) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      window.clearTimeout(timer);
+      try {
+        socket?.close();
+      } catch {
+        // best-effort cleanup
+      }
+      resolve(ok);
+    };
+
+    const timer = window.setTimeout(() => finish(false), timeoutMs);
+    try {
+      socket = new WebSocket(url);
+    } catch {
+      finish(false);
+      return;
+    }
+
+    socket.addEventListener("open", () => finish(true), { once: true });
+    socket.addEventListener("close", () => finish(false), { once: true });
+    socket.addEventListener("error", () => finish(false), { once: true });
+  });
+}
+
 function resolveMeetingHistoryEntry(
   history: MeetingAnalysisResult[],
   id: string,
@@ -413,6 +453,10 @@ export class OpenClawApp extends LitElement {
   @state() loginShowGatewayToken = false;
   @state() loginShowGatewayPassword = false;
   @state() desktopApp = isTauriDesktopEnvironment();
+  @state() desktopGatewayPhase: "starting" | "connecting" | "manual" = this.desktopApp
+    ? "starting"
+    : "manual";
+  @state() desktopGatewayStatus = "Starting your AI team...";
   @state() setupStateLoading = this.desktopApp;
   @state() setupComplete = resolveInitialSetupComplete();
   @state() setupName = resolveInitialSetupName();
@@ -826,6 +870,7 @@ export class OpenClawApp extends LitElement {
   private logsPollInterval: number | null = null;
   private debugPollInterval: number | null = null;
   private inboxPollInterval: number | null = null;
+  private desktopGatewayBootRun = 0;
   private logsScrollFrame: number | null = null;
   private toolStreamById = new Map<string, ToolStreamEntry>();
   private toolStreamOrder: string[] = [];
@@ -909,6 +954,18 @@ export class OpenClawApp extends LitElement {
     ) {
       void loadElevenLabsApiKey(this);
     }
+    if (
+      this.desktopApp &&
+      !this.connected &&
+      this.desktopGatewayPhase === "connecting" &&
+      changed.has("lastError") &&
+      this.lastError
+    ) {
+      this.desktopGatewayPhase = "manual";
+      this.desktopGatewayStatus = "We couldn't connect automatically.";
+      this.client?.stop();
+      this.client = null;
+    }
     if (changed.has("sessionKey")) {
       this.stopVoicePlayback({ silent: true });
       this.voiceMessage = null;
@@ -954,7 +1011,25 @@ export class OpenClawApp extends LitElement {
   }
 
   connect() {
+    if (this.desktopApp) {
+      this.desktopGatewayPhase = "connecting";
+      this.desktopGatewayStatus = "Connecting to your local gateway...";
+      this.lastError = null;
+      this.lastErrorCode = null;
+    }
     connectGatewayInternal(this as unknown as Parameters<typeof connectGatewayInternal>[0]);
+  }
+
+  beginDesktopGatewayStartup() {
+    if (!this.desktopApp) {
+      return;
+    }
+    const run = ++this.desktopGatewayBootRun;
+    void this.runDesktopGatewayStartup(run);
+  }
+
+  stopDesktopGatewayStartup() {
+    this.desktopGatewayBootRun += 1;
   }
 
   handleChatScroll(event: Event) {
@@ -1974,6 +2049,46 @@ export class OpenClawApp extends LitElement {
 
   private hasSavedProviderKey(): boolean {
     return Object.values(this.apiKeyProviderStatuses).some((status) => status?.hasKey === true);
+  }
+
+  private async runDesktopGatewayStartup(run: number) {
+    this.desktopGatewayPhase = "starting";
+    this.desktopGatewayStatus = "Starting your AI team...";
+    this.lastError = null;
+    this.lastErrorCode = null;
+
+    const startedAt = Date.now();
+    while (this.desktopGatewayBootRun === run && !this.connected) {
+      const ready = await probeGatewaySocket(this.settings.gatewayUrl);
+      if (this.desktopGatewayBootRun !== run || this.connected) {
+        return;
+      }
+      if (ready) {
+        this.desktopGatewayPhase = "connecting";
+        this.desktopGatewayStatus = "Gateway is ready. Connecting to your workspace...";
+        this.connect();
+        return;
+      }
+
+      const elapsedMs = Date.now() - startedAt;
+      const remainingMs = DESKTOP_GATEWAY_BOOT_TIMEOUT_MS - elapsedMs;
+      if (remainingMs <= 0) {
+        break;
+      }
+
+      const remainingSeconds = Math.ceil(remainingMs / 1000);
+      this.desktopGatewayStatus = `Waiting for your local gateway to start... ${remainingSeconds}s`;
+      await wait(DESKTOP_GATEWAY_PROBE_INTERVAL_MS);
+    }
+
+    if (this.desktopGatewayBootRun !== run || this.connected) {
+      return;
+    }
+
+    this.desktopGatewayPhase = "manual";
+    this.desktopGatewayStatus = "We couldn't reach your local gateway.";
+    this.lastError = `Could not reach your local gateway at ${this.settings.gatewayUrl} after 30 seconds.`;
+    this.lastErrorCode = null;
   }
 
   private hasCompletedSetup(): boolean {

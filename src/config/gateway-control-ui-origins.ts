@@ -45,6 +45,37 @@ export function buildDefaultControlUiAllowedOrigins(params: {
   return [...origins];
 }
 
+export function resolveConfiguredControlUiAllowedOrigins(allowedOrigins: unknown): string[] {
+  if (!Array.isArray(allowedOrigins)) {
+    return [];
+  }
+  return [
+    ...new Set(
+      allowedOrigins
+        .map((origin) => (typeof origin === "string" ? origin.trim() : ""))
+        .filter(Boolean),
+    ),
+  ];
+}
+
+export function resolveEffectiveControlUiAllowedOrigins(
+  config: Pick<OpenClawConfig, "gateway">,
+  opts?: { defaultPort?: number },
+): string[] {
+  const configuredOrigins = resolveConfiguredControlUiAllowedOrigins(
+    config.gateway?.controlUi?.allowedOrigins,
+  );
+  if (configuredOrigins.length > 0) {
+    return configuredOrigins;
+  }
+  const port = resolveGatewayPortWithDefault(config.gateway?.port, opts?.defaultPort);
+  return buildDefaultControlUiAllowedOrigins({
+    port,
+    bind: config.gateway?.bind,
+    customBindHost: config.gateway?.customBindHost,
+  });
+}
+
 export function ensureControlUiAllowedOriginsForNonLoopbackBind(
   config: OpenClawConfig,
   opts?: { defaultPort?: number; requireControlUiEnabled?: boolean },

@@ -8,6 +8,7 @@ import {
   resolveDefaultModelForAgent,
 } from "../agents/model-selection.js";
 import { loadConfig } from "../config/config.js";
+import { resolveEffectiveControlUiAllowedOrigins } from "../config/gateway-control-ui-origins.js";
 import { buildAgentMainSessionKey, normalizeAgentId } from "../routing/session-key.js";
 import { normalizeMessageChannel } from "../utils/message-channel.js";
 import type { AuthRateLimiter } from "./auth-rate-limit.js";
@@ -56,7 +57,7 @@ export function resolveHttpBrowserOriginPolicy(
   return {
     requestHost: getHeader(req, "host"),
     origin: getHeader(req, "origin"),
-    allowedOrigins: cfg.gateway?.controlUi?.allowedOrigins,
+    allowedOrigins: resolveEffectiveControlUiAllowedOrigins(cfg),
     allowHostHeaderOriginFallback:
       cfg.gateway?.controlUi?.dangerouslyAllowHostHeaderOriginFallback === true,
   };

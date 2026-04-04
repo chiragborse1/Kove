@@ -135,6 +135,7 @@ import { renderCommandPalette } from "./views/command-palette.ts";
 import { renderConfig } from "./views/config.ts";
 import { renderExecApprovalPrompt } from "./views/exec-approval.ts";
 import { renderGatewayUrlConfirmation } from "./views/gateway-url-confirmation.ts";
+import { renderLoading } from "./views/loading.ts";
 import { renderLoginGate } from "./views/login-gate.ts";
 import { renderOnboarding } from "./views/onboarding.ts";
 import { renderOverview } from "./views/overview.ts";
@@ -431,14 +432,9 @@ export function renderApp(state: AppViewState) {
   // Gate: require successful gateway connection before showing the dashboard.
   // The gateway URL confirmation overlay is always rendered so URL-param flows still work.
   if (!state.connected) {
-    if (state.desktopApp && !state.lastError) {
+    if (state.desktopApp && state.desktopGatewayPhase !== "manual") {
       return html`
-        ${lazyRender(lazySetup, (m) =>
-          m.renderSetupSplash({
-            title: "Starting Kova",
-            message: "Launching your local gateway and preparing the desktop app.",
-          }),
-        )}
+        ${renderLoading({ statusMessage: state.desktopGatewayStatus })}
         ${renderGatewayUrlConfirmation(state)}
       `;
     }
@@ -447,12 +443,9 @@ export function renderApp(state: AppViewState) {
 
   if (state.desktopApp && state.setupStateLoading) {
     return html`
-      ${lazyRender(lazySetup, (m) =>
-        m.renderSetupSplash({
-          title: "Loading Kova",
-          message: "Checking your desktop setup and syncing your local workspace.",
-        }),
-      )}
+      ${renderLoading({
+        statusMessage: "Checking your desktop setup and syncing your local workspace.",
+      })}
       ${renderGatewayUrlConfirmation(state)}
     `;
   }

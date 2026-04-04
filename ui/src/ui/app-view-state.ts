@@ -68,6 +68,8 @@ export type AppViewState = {
   loginShowGatewayToken: boolean;
   loginShowGatewayPassword: boolean;
   desktopApp: boolean;
+  desktopGatewayPhase: "starting" | "connecting" | "manual";
+  desktopGatewayStatus: string;
   setupStateLoading: boolean;
   setupComplete: boolean;
   setupName: string;

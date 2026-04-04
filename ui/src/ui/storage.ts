@@ -2,6 +2,7 @@ const SETTINGS_KEY_PREFIX = "openclaw.control.settings.v1:";
 const LEGACY_SETTINGS_KEY = "openclaw.control.settings.v1";
 const LEGACY_TOKEN_SESSION_KEY = "openclaw.control.token.v1";
 const TOKEN_SESSION_KEY_PREFIX = "openclaw.control.token.v1:";
+const DESKTOP_GATEWAY_TOKEN_KEY = "kova.gateway.token";
 const MAX_SCOPED_SESSION_ENTRIES = 10;
 
 function settingsKeyForGateway(gatewayUrl: string): string {
@@ -160,6 +161,12 @@ function resolveScopedSessionSelection(
 
 function loadSessionToken(gatewayUrl: string): string {
   try {
+    if (isTauriDesktopEnvironment()) {
+      const desktopToken = getSafeLocalStorage()?.getItem(DESKTOP_GATEWAY_TOKEN_KEY) ?? "";
+      if (desktopToken.trim()) {
+        return desktopToken.trim();
+      }
+    }
     const storage = getSessionStorage();
     if (!storage) {
       return "";
@@ -174,6 +181,15 @@ function loadSessionToken(gatewayUrl: string): string {
 
 function persistSessionToken(gatewayUrl: string, token: string) {
   try {
+    if (isTauriDesktopEnvironment()) {
+      const storage = getSafeLocalStorage();
+      const normalized = token.trim();
+      if (normalized) {
+        storage?.setItem(DESKTOP_GATEWAY_TOKEN_KEY, normalized);
+      } else {
+        storage?.removeItem(DESKTOP_GATEWAY_TOKEN_KEY);
+      }
+    }
     const storage = getSessionStorage();
     if (!storage) {
       return;

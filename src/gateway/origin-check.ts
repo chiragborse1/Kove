@@ -30,6 +30,10 @@ function parseOrigin(
   }
 }
 
+function isLocalControlUiOriginHost(hostname: string): boolean {
+  return isLoopbackHost(hostname) || hostname === "tauri.localhost";
+}
+
 export function checkBrowserOrigin(params: {
   requestHost?: string;
   origin?: string;
@@ -59,7 +63,7 @@ export function checkBrowserOrigin(params: {
   }
 
   // Dev fallback only for genuinely local socket clients, not Host-header claims.
-  if (params.isLocalClient && isLoopbackHost(parsedOrigin.hostname)) {
+  if (params.isLocalClient && isLocalControlUiOriginHost(parsedOrigin.hostname)) {
     return { ok: true, matchedBy: "local-loopback" };
   }
 
