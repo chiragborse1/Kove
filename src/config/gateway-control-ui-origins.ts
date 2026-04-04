@@ -35,6 +35,7 @@ export function buildDefaultControlUiAllowedOrigins(params: {
   const origins = new Set<string>([
     `http://localhost:${params.port}`,
     `http://127.0.0.1:${params.port}`,
+    "http://tauri.localhost",
     "tauri://localhost",
   ]);
   const customBindHost = params.customBindHost?.trim();
