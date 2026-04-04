@@ -28,10 +28,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "binaries/kova-gateway-x86_64-pc-windows-msvc.bat",
-      "binaries/kova-gateway-x86_64-pc-windows-msvc.ps1"
-    ],
+    "resources": {
+      "../dist": "dist",
+      "../openclaw.mjs": "openclaw.mjs",
+      "binaries/kova-gateway-x86_64-pc-windows-msvc.bat": "binaries/kova-gateway-x86_64-pc-windows-msvc.bat",
+      "binaries/kova-gateway-x86_64-pc-windows-msvc.ps1": "binaries/kova-gateway-x86_64-pc-windows-msvc.ps1"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

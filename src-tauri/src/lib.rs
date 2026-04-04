@@ -26,6 +26,8 @@ use tauri_plugin_store::StoreExt;
 const SETUP_STORE_PATH: &str = "kova-store.json";
 const SETUP_STORE_KEY: &str = "setup";
 const TRAY_EVENT_NAME: &str = "kova:navigate";
+#[cfg(all(desktop, target_os = "windows"))]
+const WINDOWS_NODE_PATH: &str = r"C:\Program Files\nodejs\node.exe";
 
 #[cfg(desktop)]
 struct KovaRuntimeState {
@@ -240,19 +242,79 @@ fn setup_shortcut(app: &AppHandle) -> Result<(), tauri::Error> {
 }
 
 #[cfg(desktop)]
-fn runtime_root_for_gateway(app: &AppHandle) -> Result<PathBuf, String> {
-    let bundled = app
+fn push_candidate_path(paths: &mut Vec<PathBuf>, next: PathBuf) {
+    if !paths.iter().any(|existing| existing == &next) {
+        paths.push(next);
+    }
+}
+
+#[cfg(desktop)]
+fn gateway_entry_candidates(app: &AppHandle) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+
+    if let Ok(path) = app.path().resolve("openclaw.mjs", BaseDirectory::Resource) {
+        push_candidate_path(&mut paths, path);
+    }
+    if let Ok(path) = app
         .path()
-        .resolve("runtime", BaseDirectory::Resource)
-        .map_err(|err| err.to_string())?;
-    if bundled.join("openclaw.mjs").exists() {
-        return Ok(bundled);
+        .resolve("runtime/openclaw.mjs", BaseDirectory::Resource)
+    {
+        push_candidate_path(&mut paths, path);
     }
 
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    #[cfg(target_os = "windows")]
+    if let Some(exe_dir) = env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(std::path::Path::to_path_buf))
+    {
+        push_candidate_path(&mut paths, exe_dir.join("openclaw.mjs"));
+        push_candidate_path(&mut paths, exe_dir.join("resources").join("openclaw.mjs"));
+        push_candidate_path(&mut paths, exe_dir.join("runtime").join("openclaw.mjs"));
+        push_candidate_path(
+            &mut paths,
+            exe_dir
+                .join("resources")
+                .join("runtime")
+                .join("openclaw.mjs"),
+        );
+    }
+
+    if let Some(source_root) = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .map(std::path::Path::to_path_buf)
-        .ok_or_else(|| "could not resolve source runtime root".to_string())
+    {
+        push_candidate_path(&mut paths, source_root.join("openclaw.mjs"));
+    }
+
+    paths
+}
+
+#[cfg(desktop)]
+fn gateway_entry_for_runtime(app: &AppHandle) -> Result<PathBuf, String> {
+    let candidates = gateway_entry_candidates(app);
+    for candidate in &candidates {
+        if candidate.exists() {
+            return Ok(candidate.clone());
+        }
+    }
+
+    let tried = candidates
+        .iter()
+        .map(|path| path.display().to_string())
+        .collect::<Vec<_>>()
+        .join(", ");
+    Err(format!(
+        "could not locate bundled OpenClaw runtime (looked for openclaw.mjs in: {tried})"
+    ))
+}
+
+#[cfg(desktop)]
+fn runtime_root_for_gateway(app: &AppHandle) -> Result<PathBuf, String> {
+    let gateway_entry = gateway_entry_for_runtime(app)?;
+    gateway_entry
+        .parent()
+        .map(std::path::Path::to_path_buf)
+        .ok_or_else(|| "could not resolve gateway runtime root".to_string())
 }
 
 #[cfg(desktop)]
@@ -353,48 +415,40 @@ fn resolve_available_command<'a>(candidates: &'a [&'a str]) -> Option<&'a str> {
 }
 
 #[cfg(all(desktop, target_os = "windows"))]
-fn verify_openclaw_cli_available() -> Result<(), String> {
-    let status = Command::new("npx")
-        .args(["--no-install", "openclaw", "--version"])
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status();
-
-    match status {
-        Ok(status) if status.success() => Ok(()),
-        Ok(_) => Err(
-            "Kova could not find the global `openclaw` CLI. Install Node.js 22.12+ and run `npm install -g openclaw`, then reopen Kova.".to_string(),
-        ),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => Err(
-            "Kova could not find `npx` on PATH. Install Node.js 22.12+ and run `npm install -g openclaw`, then reopen Kova.".to_string(),
-        ),
-        Err(err) => Err(format!("Kova could not start `npx`: {err}")),
+fn windows_node_path() -> Result<PathBuf, String> {
+    let node_path = PathBuf::from(WINDOWS_NODE_PATH);
+    if node_path.exists() {
+        return Ok(node_path);
     }
+
+    Err(format!(
+        "Kova could not find Node.js at `{WINDOWS_NODE_PATH}`. Install Node.js 22.12+ so that path exists, then reopen Kova."
+    ))
 }
 
 #[cfg(all(desktop, target_os = "windows"))]
 fn spawn_gateway_process(app: &AppHandle) -> Result<Child, String> {
-    verify_openclaw_cli_available()?;
+    let node_path = windows_node_path()?;
+    let gateway_entry = gateway_entry_for_runtime(app)?;
+    let runtime_root = runtime_root_for_gateway(app)?;
 
-    let mut command = Command::new("npx");
+    let mut command = Command::new(&node_path);
     command
+        .arg(&gateway_entry)
         .args([
-            "--no-install",
-            "openclaw",
-            "gateway",
-            "--bind",
-            "loopback",
-            "--port",
-            "18789",
-            "--force",
+            "gateway", "--bind", "loopback", "--port", "18789", "--force",
         ])
+        .current_dir(&runtime_root)
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null());
     configure_gateway_command(&mut command, app)?;
     command.spawn().map_err(|err| {
-        format!("Kova could not launch the local gateway with `npx openclaw gateway`: {err}")
+        format!(
+            "Kova could not launch the bundled gateway runtime with `{}` and `{}`: {err}",
+            node_path.display(),
+            gateway_entry.display()
+        )
     })
 }
 
