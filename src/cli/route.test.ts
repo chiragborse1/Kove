@@ -133,4 +133,20 @@ describe("tryRouteCli", () => {
     });
     expect(ensurePluginRegistryLoadedMock).toHaveBeenCalledWith({ scope: "channels" });
   });
+
+  it("maps kova status to the gateway status fast path", async () => {
+    findRoutedCommandMock.mockReturnValue({
+      run: runRouteMock,
+    });
+
+    await expect(tryRouteCli(["node", "kova", "status", "--json"])).resolves.toBe(true);
+
+    expect(findRoutedCommandMock).toHaveBeenCalledWith(["gateway", "status"]);
+    expect(ensureConfigReadyMock).toHaveBeenCalledWith({
+      runtime: expect.any(Object),
+      commandPath: ["gateway", "status"],
+      suppressDoctorStdout: true,
+    });
+    expect(ensurePluginRegistryLoadedMock).not.toHaveBeenCalled();
+  });
 });

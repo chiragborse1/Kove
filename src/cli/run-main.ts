@@ -18,6 +18,7 @@ import {
   isRootHelpInvocation,
 } from "./argv.js";
 import { maybeRunCliInContainer, parseCliContainerArgs } from "./container-target.js";
+import { isKovaCli, resolveEffectiveCliCommandPath } from "./kova-aliases.js";
 import { applyCliProfileEnv, parseCliProfileArgs } from "./profile.js";
 import { tryRouteCli } from "./route.js";
 import { normalizeWindowsArgv } from "./windows-argv.js";
@@ -54,6 +55,9 @@ export function shouldSkipPluginCommandRegistration(params: {
   primary: string | null;
   hasBuiltinPrimary: boolean;
 }): boolean {
+  if (params.primary === "api-key" && isKovaCli(params.argv)) {
+    return false;
+  }
   if (params.hasBuiltinPrimary) {
     return true;
   }
@@ -67,7 +71,10 @@ export function shouldEnsureCliPath(argv: string[]): boolean {
   if (hasHelpOrVersion(argv)) {
     return false;
   }
-  const [primary, secondary] = getCommandPathWithRootOptions(argv, 2);
+  const [primary, secondary] = resolveEffectiveCliCommandPath(
+    getCommandPathWithRootOptions(argv, 2),
+    argv,
+  );
   if (!primary) {
     return true;
   }

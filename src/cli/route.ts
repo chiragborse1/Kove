@@ -2,6 +2,7 @@ import { isTruthyEnvValue } from "../infra/env.js";
 import { loggingState } from "../logging/state.js";
 import { defaultRuntime } from "../runtime.js";
 import { getCommandPathWithRootOptions, hasFlag, hasHelpOrVersion } from "./argv.js";
+import { resolveEffectiveCliCommandPath } from "./kova-aliases.js";
 import { findRoutedCommand } from "./program/routes.js";
 
 async function prepareRoutedCommand(params: {
@@ -55,7 +56,7 @@ export async function tryRouteCli(argv: string[]): Promise<boolean> {
     return false;
   }
 
-  const path = getCommandPathWithRootOptions(argv, 2);
+  const path = resolveEffectiveCliCommandPath(getCommandPathWithRootOptions(argv, 2), argv);
   if (!path[0]) {
     return false;
   }

@@ -105,6 +105,16 @@ describe("shouldSkipPluginCommandRegistration", () => {
       }),
     ).toBe(false);
   });
+
+  it("keeps plugin registration for the kova api-key alias", () => {
+    expect(
+      shouldSkipPluginCommandRegistration({
+        argv: ["node", "kova", "api-key", "list"],
+        primary: "api-key",
+        hasBuiltinPrimary: true,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("shouldEnsureCliPath", () => {
@@ -126,6 +136,10 @@ describe("shouldEnsureCliPath", () => {
     expect(shouldEnsureCliPath(["node", "openclaw", "message", "send"])).toBe(true);
     expect(shouldEnsureCliPath(["node", "openclaw", "voicecall", "status"])).toBe(true);
     expect(shouldEnsureCliPath(["node", "openclaw", "acp", "-v"])).toBe(true);
+  });
+
+  it("treats kova status like gateway status for path bootstrap", () => {
+    expect(shouldEnsureCliPath(["node", "kova", "status"])).toBe(true);
   });
 });
 

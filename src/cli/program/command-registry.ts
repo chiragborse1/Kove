@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import { getPrimaryCommand, hasHelpOrVersion } from "../argv.js";
+import { isKovaCli } from "../kova-aliases.js";
 import { removeCommandByName } from "./command-tree.js";
 import type { ProgramContext } from "./context.js";
 import {
@@ -223,6 +224,98 @@ const coreEntries: CoreCliEntry[] = [
   },
 ];
 
+const kovaOnlyEntries: CoreCliEntry[] = [
+  {
+    commands: [
+      {
+        name: "stop",
+        description: "Stop the Kova gateway service",
+        hasSubcommands: false,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("./register.kova-stop.js");
+      mod.registerKovaStopCommand(program);
+    },
+  },
+  {
+    commands: [
+      {
+        name: "logs",
+        description: "Print the last 50 lines from the latest Kova gateway log",
+        hasSubcommands: false,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("./register.kova-logs.js");
+      mod.registerKovaLogsCommand(program);
+    },
+  },
+  {
+    commands: [
+      {
+        name: "update",
+        description: "Update Kova via your global package manager",
+        hasSubcommands: false,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("./register.kova-update.js");
+      mod.registerKovaUpdateCommand(program);
+    },
+  },
+  {
+    commands: [
+      {
+        name: "api-key",
+        description: "Manage Kova API keys",
+        hasSubcommands: false,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("./register.kova-api-key.js");
+      mod.registerKovaApiKeyCommand(program);
+    },
+  },
+];
+
+function getActiveCoreEntries(): CoreCliEntry[] {
+  if (!isKovaCli()) {
+    return coreEntries;
+  }
+
+  const statusGroup = coreEntries.find((entry) =>
+    entry.commands.some((command) => command.name === "status"),
+  );
+  const baseEntries = coreEntries.filter((entry) => entry !== statusGroup);
+
+  const kovaStatusEntry: CoreCliEntry = {
+    commands: [
+      {
+        name: "status",
+        description: "Show Kova gateway status + probe reachability",
+        hasSubcommands: false,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("./register.kova-status.js");
+      mod.registerKovaStatusCommand(program);
+    },
+  };
+
+  const kovaHealthSessionsEntry: CoreCliEntry[] =
+    statusGroup === undefined
+      ? []
+      : [
+          {
+            commands: statusGroup.commands.filter((command) => command.name !== "status"),
+            register: statusGroup.register,
+          },
+        ];
+
+  return [...baseEntries, ...kovaHealthSessionsEntry, kovaStatusEntry, ...kovaOnlyEntries];
+}
+
 export function getCoreCliCommandNames(): string[] {
   return getCoreCliCommandDescriptors().map((command) => command.name);
 }
@@ -258,7 +351,7 @@ export async function registerCoreCliByName(
   name: string,
   argv: string[] = process.argv,
 ): Promise<boolean> {
-  const entry = coreEntries.find((candidate) =>
+  const entry = getActiveCoreEntries().find((candidate) =>
     candidate.commands.some((cmd) => cmd.name === name),
   );
   if (!entry) {
@@ -271,9 +364,10 @@ export async function registerCoreCliByName(
 }
 
 export function registerCoreCliCommands(program: Command, ctx: ProgramContext, argv: string[]) {
+  const entries = getActiveCoreEntries();
   const primary = getPrimaryCommand(argv);
   if (primary && shouldRegisterCorePrimaryOnly(argv)) {
-    const entry = coreEntries.find((candidate) =>
+    const entry = entries.find((candidate) =>
       candidate.commands.some((cmd) => cmd.name === primary),
     );
     if (entry) {
@@ -285,7 +379,7 @@ export function registerCoreCliCommands(program: Command, ctx: ProgramContext, a
     }
   }
 
-  for (const entry of coreEntries) {
+  for (const entry of entries) {
     for (const cmd of entry.commands) {
       registerLazyCoreCommand(program, ctx, entry, cmd);
     }

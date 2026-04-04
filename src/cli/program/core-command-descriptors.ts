@@ -1,3 +1,5 @@
+import { isKovaCli } from "../kova-aliases.js";
+
 export type CoreCliCommandDescriptor = {
   name: string;
   description: string;
@@ -93,8 +95,50 @@ export const CORE_CLI_COMMAND_DESCRIPTORS = [
   },
 ] as const satisfies ReadonlyArray<CoreCliCommandDescriptor>;
 
+const KOVA_DESCRIPTOR_OVERRIDES = new Map<string, CoreCliCommandDescriptor>([
+  [
+    "status",
+    {
+      name: "status",
+      description: "Show Kova gateway status + probe reachability",
+      hasSubcommands: false,
+    },
+  ],
+]);
+
+const KOVA_EXTRA_DESCRIPTORS = [
+  {
+    name: "stop",
+    description: "Stop the Kova gateway service",
+    hasSubcommands: false,
+  },
+  {
+    name: "logs",
+    description: "Print the last 50 lines from the latest Kova gateway log",
+    hasSubcommands: false,
+  },
+  {
+    name: "update",
+    description: "Update Kova via your global package manager",
+    hasSubcommands: false,
+  },
+  {
+    name: "api-key",
+    description: "Manage Kova API keys",
+    hasSubcommands: false,
+  },
+] as const satisfies ReadonlyArray<CoreCliCommandDescriptor>;
+
 export function getCoreCliCommandDescriptors(): ReadonlyArray<CoreCliCommandDescriptor> {
-  return CORE_CLI_COMMAND_DESCRIPTORS;
+  if (!isKovaCli()) {
+    return CORE_CLI_COMMAND_DESCRIPTORS;
+  }
+  return [
+    ...CORE_CLI_COMMAND_DESCRIPTORS.map(
+      (command) => KOVA_DESCRIPTOR_OVERRIDES.get(command.name) ?? command,
+    ),
+    ...KOVA_EXTRA_DESCRIPTORS,
+  ];
 }
 
 export function getCoreCliCommandsWithSubcommands(): string[] {

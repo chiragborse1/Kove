@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import type { OpenClawConfig } from "../../config/config.js";
 import { isTruthyEnvValue } from "../../infra/env.js";
 import { getPrimaryCommand, hasHelpOrVersion } from "../argv.js";
+import { isKovaCli } from "../kova-aliases.js";
 import { removeCommandByName } from "./command-tree.js";
 import { registerLazyCommand as registerLazyCommandPlaceholder } from "./register-lazy-command.js";
 import {
@@ -317,8 +318,14 @@ export function getSubCliEntries(): ReadonlyArray<SubCliDescriptor> {
   return getSubCliEntryDescriptors();
 }
 
+function getActiveEntries(): SubCliEntry[] {
+  return isKovaCli()
+    ? entries.filter((entry) => entry.name !== "logs" && entry.name !== "update")
+    : entries;
+}
+
 export async function registerSubCliByName(program: Command, name: string): Promise<boolean> {
-  const entry = entries.find((candidate) => candidate.name === name);
+  const entry = getActiveEntries().find((candidate) => candidate.name === name);
   if (!entry) {
     return false;
   }
@@ -339,21 +346,22 @@ function registerLazyCommand(program: Command, entry: SubCliEntry) {
 }
 
 export function registerSubCliCommands(program: Command, argv: string[] = process.argv) {
+  const activeEntries = getActiveEntries();
   if (shouldEagerRegisterSubcommands(argv)) {
-    for (const entry of entries) {
+    for (const entry of activeEntries) {
       void entry.register(program);
     }
     return;
   }
   const primary = getPrimaryCommand(argv);
   if (primary && shouldRegisterPrimaryOnly(argv)) {
-    const entry = entries.find((candidate) => candidate.name === primary);
+    const entry = activeEntries.find((candidate) => candidate.name === primary);
     if (entry) {
       registerLazyCommand(program, entry);
       return;
     }
   }
-  for (const candidate of entries) {
+  for (const candidate of activeEntries) {
     registerLazyCommand(program, candidate);
   }
 }

@@ -1,3 +1,5 @@
+import { isKovaCli } from "../kova-aliases.js";
+
 export type SubCliDescriptor = {
   name: string;
   description: string;
@@ -136,7 +138,10 @@ export const SUB_CLI_DESCRIPTORS = [
 ] as const satisfies ReadonlyArray<SubCliDescriptor>;
 
 export function getSubCliEntries(): ReadonlyArray<SubCliDescriptor> {
-  return SUB_CLI_DESCRIPTORS;
+  if (!isKovaCli()) {
+    return SUB_CLI_DESCRIPTORS;
+  }
+  return SUB_CLI_DESCRIPTORS.filter((entry) => entry.name !== "logs" && entry.name !== "update");
 }
 
 export function getSubCliCommandsWithSubcommands(): string[] {

@@ -8,6 +8,7 @@ import { defaultRuntime } from "../../runtime.js";
 import { getCommandPathWithRootOptions, getVerboseFlag, hasHelpOrVersion } from "../argv.js";
 import { emitCliBanner } from "../banner.js";
 import { resolveCliName } from "../cli-name.js";
+import { resolveEffectiveCliCommandPath } from "../kova-aliases.js";
 import {
   resolvePluginInstallInvalidConfigPolicy,
   resolvePluginInstallPreactionRequest,
@@ -122,7 +123,10 @@ export function registerPreActionHooks(program: Command, programVersion: string)
     if (hasHelpOrVersion(argv)) {
       return;
     }
-    const commandPath = getCommandPathWithRootOptions(argv, 2);
+    const commandPath = resolveEffectiveCliCommandPath(
+      getCommandPathWithRootOptions(argv, 2),
+      argv,
+    );
     const jsonOutputMode = isCommandJsonOutputMode(actionCommand, argv);
     if (jsonOutputMode) {
       routeLogsToStderr();

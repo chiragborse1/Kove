@@ -90,6 +90,14 @@ describe("registerSubCliCommands", () => {
     expect(registerAcpCli).not.toHaveBeenCalled();
   });
 
+  it("skips logs and update subcli placeholders for kova", () => {
+    const program = createRegisteredProgram(["node", "kova"]);
+
+    const names = program.commands.map((cmd) => cmd.name());
+    expect(names).not.toContain("logs");
+    expect(names).not.toContain("update");
+  });
+
   it("returns null for plugin registration when the config snapshot is invalid", async () => {
     configModule.readConfigFileSnapshot.mockResolvedValueOnce({
       valid: false,

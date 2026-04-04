@@ -33,6 +33,36 @@ vi.mock("./register.start.js", () => ({
   },
 }));
 
+vi.mock("./register.kova-status.js", () => ({
+  registerKovaStatusCommand: (program: Command) => {
+    program.command("status");
+  },
+}));
+
+vi.mock("./register.kova-stop.js", () => ({
+  registerKovaStopCommand: (program: Command) => {
+    program.command("stop");
+  },
+}));
+
+vi.mock("./register.kova-logs.js", () => ({
+  registerKovaLogsCommand: (program: Command) => {
+    program.command("logs");
+  },
+}));
+
+vi.mock("./register.kova-update.js", () => ({
+  registerKovaUpdateCommand: (program: Command) => {
+    program.command("update");
+  },
+}));
+
+vi.mock("./register.kova-api-key.js", () => ({
+  registerKovaApiKeyCommand: (program: Command) => {
+    program.command("api-key");
+  },
+}));
+
 vi.mock("./register.status-health-sessions.js", () => ({
   registerStatusHealthSessionsCommands: (program: Command) => {
     program.command("status");
@@ -95,6 +125,16 @@ describe("command-registry", () => {
     expect(names).toContain("start");
   });
 
+  it("adds kova-only aliases to core CLI command names", async () => {
+    await withProcessArgv(["node", "kova"], async () => {
+      const names = getCoreCliCommandNames();
+      expect(names).toContain("stop");
+      expect(names).toContain("logs");
+      expect(names).toContain("update");
+      expect(names).toContain("api-key");
+    });
+  });
+
   it("registerCoreCliByName resolves agents to the agent entry", async () => {
     const program = createProgram();
     const found = await registerCoreCliByName(program, testProgramContext, "agents");
@@ -117,6 +157,13 @@ describe("command-registry", () => {
     registerCoreCliCommands(program, testProgramContext, ["node", "openclaw", "doctor"]);
 
     expect(namesOf(program)).toEqual(["doctor"]);
+  });
+
+  it("registers only the kova status placeholder for kova status primary", () => {
+    const program = createProgram();
+    registerCoreCliCommands(program, testProgramContext, ["node", "kova", "status"]);
+
+    expect(namesOf(program)).toEqual(["status"]);
   });
 
   it("does not narrow to the primary command when help is requested", () => {
