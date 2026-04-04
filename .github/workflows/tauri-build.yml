@@ -82,6 +82,7 @@ jobs:
         run: pnpm ui:build
 
       - name: Prepare runtime resources
+        shell: bash
         run: |
           mkdir -p dist-runtime
           mkdir -p dist/control-ui
