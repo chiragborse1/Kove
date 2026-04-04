@@ -1,11 +1,17 @@
 import { html, nothing } from "lit";
-import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "../external-link.ts";
 import type {
   ApiKeyMessage,
   ApiKeyProviderId,
   ApiKeyProviderStatus,
 } from "../controllers/api-keys.ts";
 import type { TelegramSetupMessage } from "../controllers/channels.types.ts";
+import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "../external-link.ts";
+import {
+  detectPlatform,
+  DOWNLOAD_VERSION,
+  getDownloadUrl,
+  type DownloadPlatform,
+} from "../lib/download-urls.ts";
 import type {
   ChannelAccountSnapshot,
   ChannelsStatusSnapshot,
@@ -142,16 +148,38 @@ function renderStepIndicator(step: 1 | 2 | 3) {
         const active = step === index + 1;
         const done = step > index + 1;
         return html`
-          <span class="chip ${active || done ? "chip-ok" : ""}">
-            ${index + 1}. ${label}
-          </span>
+          <span class="chip ${active || done ? "chip-ok" : ""}"> ${index + 1}. ${label} </span>
         `;
       })}
     </div>
   `;
 }
 
+const DOWNLOAD_PLATFORMS: Array<{ id: DownloadPlatform; label: string }> = [
+  { id: "windows", label: "Windows" },
+  { id: "mac", label: "macOS" },
+  { id: "linux", label: "Linux" },
+];
+
+function labelForPlatform(platform: DownloadPlatform): string {
+  switch (platform) {
+    case "mac":
+      return "macOS";
+    case "linux":
+      return "Linux";
+    default:
+      return "Windows";
+  }
+}
+
+function startPlatformDownload(platform: DownloadPlatform) {
+  window.location.href = getDownloadUrl(platform);
+}
+
 function renderWelcomeScreen(props: OnboardingProps) {
+  const detectedPlatform = detectPlatform();
+  const primaryLabel = labelForPlatform(detectedPlatform);
+
   return html`
     <div style="display: grid; gap: 20px; text-align: center;">
       <div
@@ -174,7 +202,12 @@ function renderWelcomeScreen(props: OnboardingProps) {
         K
       </div>
       <div style="display: grid; gap: 8px;">
-        <div style="font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);">
+        <div class="row" style="justify-content: center;">
+          <span class="chip chip-ok">v${DOWNLOAD_VERSION}</span>
+        </div>
+        <div
+          style="font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);"
+        >
           Kova
         </div>
         <h1 style="margin: 0; font-size: clamp(32px, 6vw, 52px); line-height: 1.04;">
@@ -184,8 +217,36 @@ function renderWelcomeScreen(props: OnboardingProps) {
           Set up Kova in 2 minutes. No terminal needed.
         </p>
       </div>
+      <div style="display: grid; gap: 12px; justify-items: center;">
+        <button
+          class="btn primary"
+          style="min-width: 260px;"
+          @click=${() => startPlatformDownload(detectedPlatform)}
+        >
+          Download for ${primaryLabel}
+        </button>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            width: min(520px, 100%);
+          "
+        >
+          ${DOWNLOAD_PLATFORMS.map(
+            (platform) => html`
+              <a class="btn" href=${getDownloadUrl(platform.id)} style="text-align: center;"
+                >${platform.label}</a
+              >
+            `,
+          )}
+        </div>
+        <div class="muted" style="font-size: 13px;">
+          Downloads come from the latest GitHub release.
+        </div>
+      </div>
       <div class="row" style="justify-content: center;">
-        <button class="btn primary" style="min-width: 220px;" @click=${() => props.onStart()}>
+        <button class="btn" style="min-width: 220px;" @click=${() => props.onStart()}>
           Get Started ->
         </button>
       </div>
@@ -212,7 +273,9 @@ function renderProviderScreen(props: OnboardingProps) {
         </p>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;"
+      >
         ${ONBOARDING_PROVIDERS.map(
           (entry) => html`
             <button
@@ -223,8 +286,12 @@ function renderProviderScreen(props: OnboardingProps) {
                 gap: 10px;
                 cursor: pointer;
                 border-width: 2px;
-                border-color: ${entry.id === provider.id ? "var(--accent, #1976d2)" : "var(--border)"};
-                box-shadow: ${entry.id === provider.id ? "0 0 0 2px rgba(25,118,210,0.12)" : "none"};
+                border-color: ${entry.id === provider.id
+                ? "var(--accent, #1976d2)"
+                : "var(--border)"};
+                box-shadow: ${entry.id === provider.id
+                ? "0 0 0 2px rgba(25,118,210,0.12)"
+                : "none"};
               "
               @click=${() => props.onSelectProvider(entry.id)}
             >
@@ -242,7 +309,10 @@ function renderProviderScreen(props: OnboardingProps) {
       </div>
 
       <div class="card" style="display: grid; gap: 14px;">
-        <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div
+          class="row"
+          style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
+        >
           <div style="display: grid; gap: 4px;">
             <div class="card-title">${provider.emoji} ${provider.label}</div>
             <div class="card-sub">${provider.description}</div>
@@ -263,7 +333,10 @@ function renderProviderScreen(props: OnboardingProps) {
           />
         </label>
 
-        <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div
+          class="row"
+          style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
+        >
           <a
             href=${provider.keyUrl}
             target=${EXTERNAL_LINK_TARGET}
@@ -332,7 +405,9 @@ function renderChannelScreen(props: OnboardingProps) {
         </p>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;"
+      >
         <div class="card" style="display: grid; gap: 14px;">
           <div class="row" style="justify-content: space-between; align-items: center; gap: 12px;">
             <div style="display: grid; gap: 4px;">
@@ -392,7 +467,6 @@ function renderChannelScreen(props: OnboardingProps) {
                   Open WhatsApp, go to Linked Devices, then scan the QR code here.
                 </div>
               `}
-
           ${props.whatsappQrDataUrl
             ? html`
                 <div class="qr-wrap" style="margin: 0; justify-self: start;">
@@ -429,7 +503,10 @@ function renderChannelScreen(props: OnboardingProps) {
         </div>
       </div>
 
-      <div class="row" style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div
+        class="row"
+        style="justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;"
+      >
         <button
           class="btn-link"
           style="padding: 0; border: 0; background: none; color: var(--muted);"
