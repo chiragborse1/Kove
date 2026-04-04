@@ -103,13 +103,13 @@ export function resolveMissingBrowserCommandMessage(config?: OpenClawConfig): st
       : [];
   if (allow.length > 0 && !allow.includes("browser")) {
     return (
-      'The `openclaw browser` command is unavailable because `plugins.allow` excludes "browser". ' +
+      'The `kova browser` command is unavailable because `plugins.allow` excludes "browser". ' +
       'Add "browser" to `plugins.allow` if you want the bundled browser CLI and tool.'
     );
   }
   if (config?.plugins?.entries?.browser?.enabled === false) {
     return (
-      "The `openclaw browser` command is unavailable because `plugins.entries.browser.enabled=false`. " +
+      "The `kova browser` command is unavailable because `plugins.entries.browser.enabled=false`. " +
       "Re-enable that entry if you want the bundled browser CLI and tool."
     );
   }

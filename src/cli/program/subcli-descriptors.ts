@@ -67,7 +67,7 @@ export const SUB_CLI_DESCRIPTORS = [
   },
   {
     name: "docs",
-    description: "Search the live OpenClaw docs",
+    description: "Search the live Kova docs",
     hasSubcommands: false,
   },
   {
@@ -97,7 +97,7 @@ export const SUB_CLI_DESCRIPTORS = [
   },
   {
     name: "plugins",
-    description: "Manage OpenClaw plugins and extensions",
+    description: "Manage Kova plugins and extensions",
     hasSubcommands: true,
   },
   {
@@ -127,7 +127,7 @@ export const SUB_CLI_DESCRIPTORS = [
   },
   {
     name: "update",
-    description: "Update OpenClaw and inspect update channel status",
+    description: "Update Kova and inspect update channel status",
     hasSubcommands: true,
   },
   {

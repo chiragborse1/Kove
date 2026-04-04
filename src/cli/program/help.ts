@@ -21,26 +21,23 @@ const ROOT_COMMANDS_HINT =
   "Hint: commands suffixed with * have subcommands. Run <command> --help for details.";
 
 const EXAMPLES = [
-  ["openclaw start", "Start Kova locally and open the Control UI in your browser."],
-  ["openclaw models --help", "Show detailed help for the models command."],
+  ["kova start", "Start Kova locally and open the Control UI in your browser."],
+  ["kova models --help", "Show detailed help for the models command."],
+  ["kova channels login --verbose", "Link personal WhatsApp Web and show QR + connection logs."],
   [
-    "openclaw channels login --verbose",
-    "Link personal WhatsApp Web and show QR + connection logs.",
-  ],
-  [
-    'openclaw message send --target +15555550123 --message "Hi" --json',
+    'kova message send --target +15555550123 --message "Hi" --json',
     "Send via your web session and print JSON result.",
   ],
-  ["openclaw gateway --port 18789", "Run the WebSocket Gateway locally."],
-  ["openclaw --dev gateway", "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001."],
-  ["openclaw gateway --force", "Kill anything bound to the default gateway port, then start it."],
-  ["openclaw gateway ...", "Gateway control via WebSocket."],
+  ["kova gateway --port 18789", "Run the WebSocket Gateway locally."],
+  ["kova --dev gateway", "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001."],
+  ["kova gateway --force", "Kill anything bound to the default gateway port, then start it."],
+  ["kova gateway ...", "Gateway control via WebSocket."],
   [
-    'openclaw agent --to +15555550123 --message "Run summary" --deliver',
+    'kova agent --to +15555550123 --message "Run summary" --deliver',
     "Talk directly to the agent using the Gateway; optionally send the WhatsApp reply.",
   ],
   [
-    'openclaw message send --channel telegram --target @mychat --message "Hi"',
+    'kova message send --channel telegram --target @mychat --message "Hi"',
     "Send via your Telegram bot.",
   ],
 ] as const;
@@ -116,11 +113,7 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     hasRootVersionAlias(process.argv)
   ) {
     const commit = resolveCommitHash({ moduleUrl: import.meta.url });
-    console.log(
-      commit
-        ? `Kova (OpenClaw) ${ctx.programVersion} (${commit})`
-        : `Kova (OpenClaw) ${ctx.programVersion}`,
-    );
+    console.log(commit ? `Kova ${ctx.programVersion} (${commit})` : `Kova ${ctx.programVersion}`);
     process.exit(0);
   }
 
@@ -141,7 +134,7 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     if (command !== program) {
       return "";
     }
-    const docs = formatDocsLink("/cli", "docs.openclaw.ai/cli");
+    const docs = formatDocsLink("/cli", "docs.kova.ai/cli");
     return `\n${theme.heading("Examples:")}\n${fmtExamples}\n\n${theme.muted("Docs:")} ${docs}\n`;
   });
 }

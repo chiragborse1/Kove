@@ -95,13 +95,13 @@ export function registerGatewayCli(program: Command) {
         "after",
         () =>
           `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-            ["openclaw start", "Start Kova and open the Control UI in your browser."],
-            ["openclaw gateway run", "Run the gateway in the foreground."],
-            ["openclaw gateway run --open-browser", "Run the gateway and open the Control UI."],
-            ["openclaw gateway status", "Show service status and probe reachability."],
-            ["openclaw gateway discover", "Find local and wide-area gateway beacons."],
-            ["openclaw gateway call health", "Call a gateway RPC method directly."],
-          ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.openclaw.ai/cli/gateway")}\n`,
+            ["kova start", "Start Kova and open the Control UI in your browser."],
+            ["kova gateway run", "Run the gateway in the foreground."],
+            ["kova gateway run --open-browser", "Run the gateway and open the Control UI."],
+            ["kova gateway status", "Show service status and probe reachability."],
+            ["kova gateway discover", "Find local and wide-area gateway beacons."],
+            ["kova gateway call health", "Call a gateway RPC method directly."],
+          ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.kova.ai/cli/gateway")}\n`,
       ),
   );
 

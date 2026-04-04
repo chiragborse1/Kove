@@ -10,11 +10,10 @@ import { hasExplicitOptions } from "../command-options.js";
 export function registerSetupCommand(program: Command) {
   program
     .command("setup")
-    .description("Initialize the active OpenClaw config and agent workspace")
+    .description("Initialize the active Kova config and agent workspace")
     .addHelpText(
       "after",
-      () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/setup", "docs.openclaw.ai/cli/setup")}\n`,
+      () => `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/setup", "docs.kova.ai/cli/setup")}\n`,
     )
     .option(
       "--workspace <dir>",

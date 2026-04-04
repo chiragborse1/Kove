@@ -11,7 +11,7 @@ export function registerKovaStopCommand(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.openclaw.ai/cli/gateway")}\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.kova.ai/cli/gateway")}\n`,
     )
     .action(async (cmdOpts) => {
       await runDaemonStop(cmdOpts);

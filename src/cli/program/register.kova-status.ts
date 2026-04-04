@@ -40,14 +40,11 @@ export function registerKovaStatusCommand(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          [formatCliCommand("openclaw status"), "Show Kova gateway status and probe reachability."],
-          [formatCliCommand("openclaw status --deep"), "Also scan system-level services."],
-          [formatCliCommand("openclaw status --json"), "Machine-readable output."],
-          [
-            formatCliCommand("openclaw status --require-rpc"),
-            "Exit non-zero when the probe fails.",
-          ],
-        ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.openclaw.ai/cli/gateway")}\n`,
+          [formatCliCommand("kova status"), "Show Kova gateway status and probe reachability."],
+          [formatCliCommand("kova status --deep"), "Also scan system-level services."],
+          [formatCliCommand("kova status --json"), "Machine-readable output."],
+          [formatCliCommand("kova status --require-rpc"), "Exit non-zero when the probe fails."],
+        ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/gateway", "docs.kova.ai/cli/gateway")}\n`,
     )
     .action(async (cmdOpts, command) => {
       await runDaemonStatus({
