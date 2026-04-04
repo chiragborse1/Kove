@@ -4248,4 +4248,3 @@ describe("clearPluginLoaderCache", () => {
     expect(getMemoryEmbeddingProvider("stale")).toBeUndefined();
   });
 });
-

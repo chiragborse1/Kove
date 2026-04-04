@@ -159,4 +159,3 @@ export const GATEWAY_EVENTS = [
   "plugin.approval.resolved",
   GATEWAY_EVENT_UPDATE_AVAILABLE,
 ];
-

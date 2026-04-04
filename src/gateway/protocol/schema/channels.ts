@@ -234,4 +234,3 @@ export const WebLoginWaitParamsSchema = Type.Object(
   },
   { additionalProperties: false },
 );
-
