@@ -1,6 +1,9 @@
 import { LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { resolveAgentIdFromSessionKey } from "../../../src/routing/session-key.js";
+import {
+  buildAgentMainSessionKey,
+  resolveAgentIdFromSessionKey,
+} from "../../../src/routing/session-key.js";
 import { i18n, I18nController, isSupportedLocale } from "../i18n/index.ts";
 import { getSafeLocalStorage } from "../local-storage.ts";
 import {
@@ -58,22 +61,25 @@ import type { AppViewState } from "./app-view-state.ts";
 import { normalizeAssistantIdentity } from "./assistant-identity.ts";
 import { exportChatMarkdown } from "./chat/export.ts";
 import { extractText } from "./chat/message-extract.ts";
+import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import {
   loadAgents,
   loadToolsEffective as loadToolsEffectiveInternal,
   refreshVisibleToolsEffectiveForCurrentSession as refreshVisibleToolsEffectiveForCurrentSessionInternal,
 } from "./controllers/agents.ts";
-import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
-import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import {
+  API_KEY_PROVIDER_DEFINITIONS,
   createApiKeyInputRecord,
   createApiKeyMessageRecord,
   createApiKeyStatusRecord,
+  loadApiKeys,
   loadElevenLabsApiKey,
   type ApiKeyMessage,
   type ApiKeyProviderId,
   type ApiKeyProviderStatus,
+  type ApiKeysSnapshot,
 } from "./controllers/api-keys.ts";
+import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
 import {
   buildBriefingDescription,
   buildBriefingPrompt,
@@ -88,17 +94,24 @@ import {
   type BriefingChannelId,
   type BriefingMessage,
 } from "./controllers/briefing.ts";
-import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
-import { loadChannels } from "./controllers/channels.ts";
+import {
+  buildCanvasUrl,
+  ensureCanvasAuthWorker,
+  probeCanvasUrl,
+  resolveCanvasAuthToken,
+  resolveCanvasBaseUrl,
+} from "./controllers/canvas.ts";
+import { connectTelegram, loadChannels } from "./controllers/channels.ts";
+import type {
+  TelegramPendingApproval,
+  TelegramSetupMessage,
+} from "./controllers/channels.types.ts";
 import { loadConfig } from "./controllers/config.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
+import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
-import {
-  loadInbox as loadInboxInternal,
-  type InboxChannelFilter,
-} from "./controllers/inbox.ts";
+import { loadInbox as loadInboxInternal, type InboxChannelFilter } from "./controllers/inbox.ts";
 import {
   buildMeetingAnalysisPrompt,
   clearMeetingHistoryStorage,
@@ -117,10 +130,21 @@ import {
   type RoutingChannelId,
   type RoutingMessage,
 } from "./controllers/routing.ts";
-import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
+import type {
+  KovaMarketplaceCategory,
+  KovaMarketplaceSkill,
+  SkillMessage,
+} from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
+import {
+  isTauriDesktopEnvironment,
+  listenForDesktopNavigation,
+  loadDesktopSetupState,
+  saveDesktopSetupState,
+  type DesktopNavigatePayload,
+} from "./tauri-desktop.ts";
 import { VALID_THEME_NAMES, type ResolvedTheme, type ThemeMode, type ThemeName } from "./theme.ts";
 import type {
   AgentCreatorDraft,
@@ -154,13 +178,6 @@ import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./u
 import { generateUUID } from "./uuid.ts";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
 import {
-  buildCanvasUrl,
-  ensureCanvasAuthWorker,
-  probeCanvasUrl,
-  resolveCanvasAuthToken,
-  resolveCanvasBaseUrl,
-} from "./controllers/canvas.ts";
-import {
   getCachedElevenLabsApiKey,
   isKovaEmployeeVoiceAgent,
   isVoicePlaybackInterrupted,
@@ -178,6 +195,8 @@ const bootAssistantIdentity = normalizeAssistantIdentity({});
 
 const DEFAULT_EMPLOYEE_MODEL = "openrouter/auto";
 const MEETING_ANALYSIS_SESSION_KEY = `agent:${MEETING_ANALYSIS_AGENT_ID}:meetings`;
+const SETUP_COMPLETE_KEY = "kova.setup.complete";
+const SETUP_NAME_KEY = "kova.setup.name";
 const DEFAULT_AGENT_CREATOR_DRAFT: AgentCreatorDraft = {
   name: "",
   role: "",
@@ -236,7 +255,10 @@ function resolveAgentWorkspaceBaseDir(agentsList: AgentsListResult | null): stri
   return "~/.openclaw/";
 }
 
-function resolveEmployeeWorkspacePath(agentsList: AgentsListResult | null, agentId: string): string {
+function resolveEmployeeWorkspacePath(
+  agentsList: AgentsListResult | null,
+  agentId: string,
+): string {
   return `${resolveAgentWorkspaceBaseDir(agentsList)}workspace-${agentId}`;
 }
 
@@ -357,6 +379,22 @@ function resolveOnboardingMode(): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
 }
 
+function resolveInitialSetupComplete(): boolean {
+  const storage = getSafeLocalStorage();
+  return storage?.getItem(SETUP_COMPLETE_KEY) === "1" || storage?.getItem("kova_onboarded") === "1";
+}
+
+function resolveInitialSetupName(): string {
+  return getSafeLocalStorage()?.getItem(SETUP_NAME_KEY)?.trim() ?? "";
+}
+
+function resolveRecommendedModel(provider: ApiKeyProviderId): string {
+  return (
+    API_KEY_PROVIDER_DEFINITIONS.find((entry) => entry.id === provider)?.recommendedModel ??
+    "openrouter/auto"
+  );
+}
+
 @customElement("openclaw-app")
 export class OpenClawApp extends LitElement {
   private i18nController = new I18nController(this);
@@ -374,6 +412,17 @@ export class OpenClawApp extends LitElement {
   @state() password = "";
   @state() loginShowGatewayToken = false;
   @state() loginShowGatewayPassword = false;
+  @state() desktopApp = isTauriDesktopEnvironment();
+  @state() setupStateLoading = this.desktopApp;
+  @state() setupComplete = resolveInitialSetupComplete();
+  @state() setupName = resolveInitialSetupName();
+  @state() setupStep: 1 | 2 | 3 | 4 = 1;
+  @state() setupProvider: ApiKeyProviderId = "openrouter";
+  @state() setupApiKey = "";
+  @state() setupChannel: "telegram" | "whatsapp" | "skip" = "skip";
+  @state() setupTelegramToken = "";
+  @state() setupBusy = false;
+  @state() setupMessage: ApiKeyMessage | null = null;
   @state() tab: Tab = "chat";
   @state() onboarding = resolveOnboardingMode();
   @state() onboardingStep: 1 | 2 | 3 = 1;
@@ -780,6 +829,7 @@ export class OpenClawApp extends LitElement {
   private logsScrollFrame: number | null = null;
   private toolStreamById = new Map<string, ToolStreamEntry>();
   private toolStreamOrder: string[] = [];
+  private desktopNavigationCleanup: (() => void) | null = null;
   refreshSessionsAfterChat = new Set<string>();
   basePath = "";
   private popStateHandler = () =>
@@ -802,6 +852,18 @@ export class OpenClawApp extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    if (this.desktopApp) {
+      void this.hydrateDesktopSetupState();
+      void listenForDesktopNavigation((payload) => this.handleDesktopNavigation(payload))
+        .then((cleanup) => {
+          this.desktopNavigationCleanup = cleanup;
+        })
+        .catch(() => {
+          this.setupStateLoading = false;
+        });
+    } else {
+      this.setupStateLoading = false;
+    }
     this.onSlashAction = (action: string) => {
       switch (action) {
         case "toggle-focus":
@@ -829,6 +891,8 @@ export class OpenClawApp extends LitElement {
 
   disconnectedCallback() {
     document.removeEventListener("keydown", this.globalKeydownHandler);
+    this.desktopNavigationCleanup?.();
+    this.desktopNavigationCleanup = null;
     this.stopVoicePlayback({ silent: true });
     handleDisconnected(this as unknown as Parameters<typeof handleDisconnected>[0]);
     super.disconnectedCallback();
@@ -938,8 +1002,158 @@ export class OpenClawApp extends LitElement {
 
   setTab(next: Tab) {
     setTabInternal(this as unknown as Parameters<typeof setTabInternal>[0], next);
-    this.onboarding = next === "onboarding";
+    this.onboarding = next === "onboarding" || next === "setup";
     this.navDrawerOpen = false;
+  }
+
+  setSetupName(value: string) {
+    this.setupName = value;
+    this.setupMessage = null;
+  }
+
+  setSetupProvider(provider: ApiKeyProviderId) {
+    this.setupProvider = provider;
+    this.setupMessage = null;
+  }
+
+  setSetupApiKey(value: string) {
+    this.setupApiKey = value;
+    this.setupMessage = null;
+  }
+
+  setSetupChannel(channel: "telegram" | "whatsapp" | "skip") {
+    this.setupChannel = channel;
+    this.setupMessage = null;
+  }
+
+  setSetupTelegramToken(value: string) {
+    this.setupTelegramToken = value;
+    this.setupMessage = null;
+  }
+
+  goToPreviousSetupStep() {
+    if (this.setupBusy || this.setupStep === 1) {
+      return;
+    }
+    this.setupStep = (this.setupStep - 1) as 1 | 2 | 3 | 4;
+    this.setupMessage = null;
+  }
+
+  advanceSetupStep() {
+    if (this.setupBusy) {
+      return;
+    }
+    if (this.setupStep === 1 && !this.setupName.trim()) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Enter your name so Kova can personalize your team.",
+      };
+      return;
+    }
+    if (this.setupStep === 2 && !this.setupApiKey.trim()) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Add an API key to keep setting up your provider.",
+      };
+      return;
+    }
+    if (
+      this.setupStep === 3 &&
+      this.setupChannel === "telegram" &&
+      !this.setupTelegramToken.trim()
+    ) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Add your Telegram bot token before continuing.",
+      };
+      return;
+    }
+    if (this.setupStep < 4) {
+      this.setupStep = (this.setupStep + 1) as 1 | 2 | 3 | 4;
+      this.setupMessage = null;
+    }
+  }
+
+  async completeSetup() {
+    if (this.setupBusy) {
+      return;
+    }
+    if (!this.client || !this.connected) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Kova is still connecting to the local gateway. Try again in a moment.",
+      };
+      return;
+    }
+    if (!this.setupName.trim()) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Enter your name before launching Kova.",
+      };
+      this.setupStep = 1;
+      return;
+    }
+    if (!this.setupApiKey.trim()) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Add your provider API key before launching Kova.",
+      };
+      this.setupStep = 2;
+      return;
+    }
+    if (this.setupChannel === "telegram" && !this.setupTelegramToken.trim()) {
+      this.setupMessage = {
+        kind: "error",
+        text: "Add your Telegram bot token before launching Kova.",
+      };
+      this.setupStep = 3;
+      return;
+    }
+
+    this.setupBusy = true;
+    this.setupMessage = null;
+    try {
+      const provider = this.setupProvider;
+      const apiKey = this.setupApiKey.trim();
+      let snapshot = await this.client.request<ApiKeysSnapshot>("apiKeys.provider.set", {
+        provider,
+        apiKey,
+      });
+
+      snapshot = await this.client.request<ApiKeysSnapshot>("apiKeys.activeModel.set", {
+        provider,
+        model: resolveRecommendedModel(provider),
+        ...(snapshot.configHash ? { baseHash: snapshot.configHash } : {}),
+      });
+
+      this.apiKeysConfigHash = snapshot.configHash;
+      this.apiKeysLoaded = false;
+
+      if (this.setupChannel === "telegram") {
+        this.telegramSetupToken = this.setupTelegramToken.trim();
+        await loadConfig(this);
+        await connectTelegram(this);
+        if (this.telegramSetupMessage?.kind === "error") {
+          throw new Error(this.telegramSetupMessage.text);
+        }
+      }
+
+      await Promise.all([loadApiKeys(this), loadConfig(this), loadChannels(this, false)]);
+
+      await this.persistSetupState();
+      this.setupApiKey = "";
+      this.setupTelegramToken = "";
+      this.setupStep = 1;
+      this.setupMessage = null;
+      this.setTab("employees");
+    } catch (error) {
+      this.setupMessage = {
+        kind: "error",
+        text: `Could not finish setup: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    } finally {
+      this.setupBusy = false;
+    }
   }
 
   setOnboardingStep(next: 1 | 2 | 3) {
@@ -1011,7 +1225,9 @@ export class OpenClawApp extends LitElement {
   }
 
   private resolveCurrentVoiceApiKey(): string {
-    return this.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(this.settings.gatewayUrl);
+    return (
+      this.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(this.settings.gatewayUrl)
+    );
   }
 
   private isVoiceEnabledForAgent(agentId: string): boolean {
@@ -1550,10 +1766,9 @@ export class OpenClawApp extends LitElement {
       };
       return;
     }
-    const channel =
-      availableChannels.includes(this.briefingForm.channel as BriefingChannelId)
-        ? this.briefingForm.channel
-        : availableChannels[0];
+    const channel = availableChannels.includes(this.briefingForm.channel as BriefingChannelId)
+      ? this.briefingForm.channel
+      : availableChannels[0];
     const timezone = getLocalBriefingTimeZone();
     const jobPatch = {
       name: DAILY_BRIEFING_JOB_NAME,
@@ -1761,12 +1976,72 @@ export class OpenClawApp extends LitElement {
     return Object.values(this.apiKeyProviderStatuses).some((status) => status?.hasKey === true);
   }
 
+  private hasCompletedSetup(): boolean {
+    return this.setupComplete;
+  }
+
   private hasCompletedOnboarding(): boolean {
     return getSafeLocalStorage()?.getItem("kova_onboarded") === "1";
   }
 
   private persistOnboardingFlag() {
     getSafeLocalStorage()?.setItem("kova_onboarded", "1");
+  }
+
+  private async hydrateDesktopSetupState() {
+    try {
+      const desktopState = await loadDesktopSetupState();
+      const storage = getSafeLocalStorage();
+      if (desktopState?.userName?.trim()) {
+        this.setupName = desktopState.userName.trim();
+        storage?.setItem(SETUP_NAME_KEY, this.setupName);
+      }
+      if (desktopState?.complete) {
+        this.setupComplete = true;
+        storage?.setItem(SETUP_COMPLETE_KEY, "1");
+        storage?.setItem("kova_onboarded", "1");
+      }
+    } catch {
+      // Ignore desktop setup-store errors and fall back to local state.
+    } finally {
+      this.setupStateLoading = false;
+    }
+  }
+
+  private async persistSetupState() {
+    const storage = getSafeLocalStorage();
+    const normalizedName = this.setupName.trim();
+
+    await saveDesktopSetupState({
+      complete: true,
+      userName: normalizedName || null,
+      provider: this.setupProvider,
+      channel: this.setupChannel,
+    });
+
+    this.setupComplete = true;
+    storage?.setItem(SETUP_COMPLETE_KEY, "1");
+    storage?.setItem("kova_onboarded", "1");
+    if (normalizedName) {
+      storage?.setItem(SETUP_NAME_KEY, normalizedName);
+    } else {
+      storage?.removeItem(SETUP_NAME_KEY);
+    }
+  }
+
+  private handleDesktopNavigation(payload: DesktopNavigatePayload) {
+    if (payload.agentId) {
+      const nextSessionKey = buildAgentMainSessionKey({ agentId: payload.agentId });
+      this.sessionKey = nextSessionKey;
+      this.applySettings({
+        ...this.settings,
+        sessionKey: nextSessionKey,
+        lastActiveSessionKey: nextSessionKey,
+      });
+    }
+    if (payload.tab === "chat") {
+      this.setTab("chat");
+    }
   }
 
   private syncBriefingFormFromState(force = false) {
@@ -1783,7 +2058,7 @@ export class OpenClawApp extends LitElement {
       schedule:
         job?.schedule.kind === "cron"
           ? `${job.schedule.expr}|${job.schedule.tz ?? ""}`
-          : job?.schedule.kind ?? null,
+          : (job?.schedule.kind ?? null),
       deliveryChannel: job?.delivery?.channel ?? null,
       availableChannels,
     });
@@ -1816,8 +2091,34 @@ export class OpenClawApp extends LitElement {
   }
 
   private syncOnboardingRouteState(): boolean {
-    if (this.onboarding !== (this.tab === "onboarding")) {
-      this.onboarding = this.tab === "onboarding";
+    const wizardTab = this.tab === "onboarding" || this.tab === "setup";
+    if (this.onboarding !== wizardTab) {
+      this.onboarding = wizardTab;
+    }
+
+    if (this.desktopApp && this.setupStateLoading) {
+      return false;
+    }
+
+    if (this.tab === "setup") {
+      if (this.hasCompletedSetup()) {
+        this.setTab("employees");
+        return true;
+      }
+      return false;
+    }
+
+    if (this.desktopApp) {
+      if (!this.connected) {
+        return false;
+      }
+      if (!this.hasCompletedSetup()) {
+        this.setupStep = 1;
+        this.setupMessage = null;
+        this.setTab("setup");
+        return true;
+      }
+      return false;
     }
 
     if (!this.connected) {
@@ -1829,7 +2130,10 @@ export class OpenClawApp extends LitElement {
     }
 
     if (this.tab === "onboarding") {
-      if (this.hasCompletedOnboarding() || (this.hasSavedProviderKey() && !this.onboardingInteracted)) {
+      if (
+        this.hasCompletedOnboarding() ||
+        (this.hasSavedProviderKey() && !this.onboardingInteracted)
+      ) {
         this.setTab("employees");
         return true;
       }

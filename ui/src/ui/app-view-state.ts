@@ -5,24 +5,28 @@ import type {
   ApiKeyProviderId,
   ApiKeyProviderStatus,
 } from "./controllers/api-keys.ts";
+import type { BriefingFormState, BriefingMessage } from "./controllers/briefing.ts";
+import type { CanvasStatus } from "./controllers/canvas.ts";
 import type {
-  BriefingFormState,
-  BriefingMessage,
-} from "./controllers/briefing.ts";
-import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
+  TelegramPendingApproval,
+  TelegramSetupMessage,
+} from "./controllers/channels.types.ts";
 import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
+import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { CanvasStatus } from "./controllers/canvas.ts";
-import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { InboxChannelFilter } from "./controllers/inbox.ts";
 import type {
   RoutingAssignments,
   RoutingChannelId,
   RoutingMessage,
 } from "./controllers/routing.ts";
-import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
+import type {
+  KovaMarketplaceCategory,
+  KovaMarketplaceSkill,
+  SkillMessage,
+} from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import type { UiSettings } from "./storage.ts";
@@ -63,6 +67,17 @@ export type AppViewState = {
   password: string;
   loginShowGatewayToken: boolean;
   loginShowGatewayPassword: boolean;
+  desktopApp: boolean;
+  setupStateLoading: boolean;
+  setupComplete: boolean;
+  setupName: string;
+  setupStep: 1 | 2 | 3 | 4;
+  setupProvider: ApiKeyProviderId;
+  setupApiKey: string;
+  setupChannel: "telegram" | "whatsapp" | "skip";
+  setupTelegramToken: string;
+  setupBusy: boolean;
+  setupMessage: ApiKeyMessage | null;
   tab: Tab;
   onboarding: boolean;
   onboardingStep: 1 | 2 | 3;
@@ -413,6 +428,14 @@ export type AppViewState = {
     refreshSessionsAfterChat: Set<string>;
     connect: () => void;
     setTab: (tab: Tab) => void;
+    setSetupName: (value: string) => void;
+    setSetupProvider: (provider: ApiKeyProviderId) => void;
+    setSetupApiKey: (value: string) => void;
+    setSetupChannel: (channel: "telegram" | "whatsapp" | "skip") => void;
+    setSetupTelegramToken: (value: string) => void;
+    goToPreviousSetupStep: () => void;
+    advanceSetupStep: () => void;
+    completeSetup: () => Promise<void>;
     setOnboardingStep: (step: 1 | 2 | 3) => void;
     selectOnboardingProvider: (provider: ApiKeyProviderId) => void;
     completeOnboarding: () => void;

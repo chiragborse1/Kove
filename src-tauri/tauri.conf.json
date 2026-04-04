@@ -1,0 +1,52 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Kova",
+  "version": "1.0.0",
+  "identifier": "ai.kova.app",
+  "build": {
+    "frontendDist": "../dist/control-ui",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm ui:dev",
+    "beforeBuildCommand": "pnpm ui:build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Kova — Your AI Team",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "externalBin": ["binaries/kova-gateway"],
+    "resources": {
+      "../openclaw.mjs": "runtime/openclaw.mjs",
+      "../package.json": "runtime/package.json",
+      "../assets/": "runtime/assets",
+      "../dist/": "runtime/dist",
+      "../dist-runtime/": "runtime/dist-runtime",
+      "../extensions/": "runtime/extensions",
+      "../node_modules/": "runtime/node_modules",
+      "../packages/": "runtime/packages",
+      "../skills/": "runtime/skills",
+      "../vendor/": "runtime/vendor"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

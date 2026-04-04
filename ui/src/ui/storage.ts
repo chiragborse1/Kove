@@ -23,6 +23,7 @@ type PersistedUiSettings = Omit<UiSettings, "token" | "sessionKey" | "lastActive
 import { isSupportedLocale } from "../i18n/index.ts";
 import { getSafeLocalStorage, getSafeSessionStorage } from "../local-storage.ts";
 import { inferBasePathFromPathname, normalizeBasePath } from "./navigation.ts";
+import { isTauriDesktopEnvironment } from "./tauri-desktop.ts";
 import { parseThemeSelection, type ThemeMode, type ThemeName } from "./theme.ts";
 
 export const BORDER_RADIUS_STOPS = [0, 25, 50, 75, 100] as const;
@@ -73,6 +74,12 @@ function formatHostWithPort(hostname: string, port: string): string {
 }
 
 function deriveDefaultGatewayUrl(): { pageUrl: string; effectiveUrl: string } {
+  if (isTauriDesktopEnvironment()) {
+    return {
+      pageUrl: "ws://127.0.0.1:18789",
+      effectiveUrl: "ws://127.0.0.1:18789",
+    };
+  }
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const configured =
     typeof window !== "undefined" &&

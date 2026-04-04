@@ -66,6 +66,217 @@
   padding-top: 0;
 }
 
+.setup-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 20%, transparent), transparent 34%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--ok) 16%, transparent), transparent 30%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, black), var(--bg));
+}
+
+.setup-card {
+  width: min(960px, 100%);
+  display: grid;
+  gap: 24px;
+  padding: 28px;
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 94%, transparent), color-mix(in srgb, var(--surface-2) 96%, transparent));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+}
+
+.setup-shell {
+  display: grid;
+  gap: 24px;
+}
+
+.setup-header {
+  display: grid;
+  gap: 14px;
+}
+
+.setup-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.setup-brand__mark {
+  width: 68px;
+  height: 68px;
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.08em;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.28), transparent 52%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 72%, white), color-mix(in srgb, var(--ok) 45%, var(--accent)));
+}
+
+.setup-brand__copy {
+  display: grid;
+  gap: 4px;
+}
+
+.setup-kicker {
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.setup-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.setup-progress__step {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 84%, transparent);
+}
+
+.setup-progress__step--active {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+}
+
+.setup-progress__step-index {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.setup-progress__step-label {
+  font-weight: 700;
+}
+
+.setup-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.setup-option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.setup-option {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 92%, transparent);
+  cursor: pointer;
+}
+
+.setup-option--selected {
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.setup-option__title {
+  font-weight: 700;
+}
+
+.setup-option__meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.setup-summary {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.setup-summary__item {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--border) 84%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 84%, transparent);
+}
+
+.setup-summary__label {
+  margin-bottom: 6px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.setup-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.setup-loading {
+  display: grid;
+  gap: 16px;
+  text-align: center;
+  justify-items: center;
+}
+
+.setup-loading__pulse {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.24), transparent 56%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 72%, white), color-mix(in srgb, var(--ok) 45%, var(--accent)));
+  box-shadow: 0 0 0 0 rgba(82, 171, 255, 0.28);
+  animation: setup-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes setup-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(82, 171, 255, 0.18);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 20px rgba(82, 171, 255, 0);
+  }
+}
+
+@media (max-width: 720px) {
+  .setup-screen {
+    padding: 18px;
+  }
+
+  .setup-card {
+    padding: 22px;
+  }
+
+  .setup-progress {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .shell--chat-focus .content {
   padding-top: 0;
 }

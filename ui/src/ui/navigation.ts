@@ -1,4 +1,4 @@
-﻿import { t } from "../i18n/index.ts";
+import { t } from "../i18n/index.ts";
 import type { IconName } from "./icons.js";
 
 export const TAB_GROUPS = [
@@ -38,6 +38,7 @@ export const TAB_GROUPS = [
 ] as const;
 
 export type Tab =
+  | "setup"
   | "onboarding"
   | "employees"
   | "inbox"
@@ -66,6 +67,7 @@ export type Tab =
   | "logs";
 
 const TAB_PATHS: Record<Tab, string> = {
+  setup: "/setup",
   onboarding: "/onboarding",
   employees: "/employees",
   inbox: "/inbox",
@@ -177,6 +179,8 @@ export function inferBasePathFromPathname(pathname: string): string {
 
 export function iconForTab(tab: Tab): IconName {
   switch (tab) {
+    case "setup":
+      return "spark";
     case "onboarding":
       return "spark";
     case "employees":
@@ -235,6 +239,9 @@ export function iconForTab(tab: Tab): IconName {
 }
 
 export function titleForTab(tab: Tab) {
+  if (tab === "setup") {
+    return "Setup";
+  }
   if (tab === "onboarding") {
     return "Onboarding";
   }
@@ -257,6 +264,9 @@ export function titleForTab(tab: Tab) {
 }
 
 export function subtitleForTab(tab: Tab) {
+  if (tab === "setup") {
+    return "First launch setup for Kova.";
+  }
   if (tab === "onboarding") {
     return "Set up Kova without the terminal.";
   }

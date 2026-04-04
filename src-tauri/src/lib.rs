@@ -1,0 +1,296 @@
+use serde::{Deserialize, Serialize};
+use tauri::Emitter;
+
+#[cfg(desktop)]
+use std::path::PathBuf;
+#[cfg(desktop)]
+use std::sync::Mutex;
+#[cfg(desktop)]
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+#[cfg(desktop)]
+use tauri::path::BaseDirectory;
+#[cfg(desktop)]
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+#[cfg(desktop)]
+use tauri::{AppHandle, Manager, WindowEvent};
+#[cfg(desktop)]
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+#[cfg(desktop)]
+use tauri_plugin_shell::ShellExt;
+use tauri_plugin_store::StoreExt;
+
+const SETUP_STORE_PATH: &str = "kova-store.json";
+const SETUP_STORE_KEY: &str = "setup";
+const TRAY_EVENT_NAME: &str = "kova:navigate";
+
+#[cfg(desktop)]
+struct KovaRuntimeState {
+  gateway_child: Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
+}
+
+#[cfg(desktop)]
+impl Default for KovaRuntimeState {
+  fn default() -> Self {
+    Self {
+      gateway_child: Mutex::new(None),
+    }
+  }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DesktopSetupState {
+  complete: bool,
+  user_name: Option<String>,
+  provider: Option<String>,
+  channel: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DesktopNavigatePayload {
+  tab: String,
+  agent_id: Option<String>,
+}
+
+#[tauri::command]
+fn get_setup_state(app: tauri::AppHandle) -> Result<DesktopSetupState, String> {
+  read_setup_state(&app)
+}
+
+#[tauri::command]
+fn set_setup_state(app: tauri::AppHandle, state: DesktopSetupState) -> Result<(), String> {
+  write_setup_state(&app, state)
+}
+
+fn read_setup_state(app: &tauri::AppHandle) -> Result<DesktopSetupState, String> {
+  let store = app.store(SETUP_STORE_PATH).map_err(|err| err.to_string())?;
+  let value = store.get(SETUP_STORE_KEY);
+  store.close_resource();
+  match value {
+    Some(raw) => serde_json::from_value(raw).map_err(|err| err.to_string()),
+    None => Ok(DesktopSetupState::default()),
+  }
+}
+
+fn write_setup_state(app: &tauri::AppHandle, state: DesktopSetupState) -> Result<(), String> {
+  let store = app.store(SETUP_STORE_PATH).map_err(|err| err.to_string())?;
+  store.set(
+    SETUP_STORE_KEY,
+    serde_json::to_value(state).map_err(|err| err.to_string())?,
+  );
+  store.save().map_err(|err| err.to_string())?;
+  store.close_resource();
+  Ok(())
+}
+
+#[cfg(desktop)]
+fn focus_main_window(app: &AppHandle) {
+  if let Some(window) = app.get_webview_window("main") {
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_focus();
+  }
+}
+
+#[cfg(desktop)]
+fn emit_desktop_navigation(
+  app: &AppHandle,
+  tab: &str,
+  agent_id: Option<&str>,
+) -> Result<(), tauri::Error> {
+  app.emit(
+    TRAY_EVENT_NAME,
+    DesktopNavigatePayload {
+      tab: tab.to_string(),
+      agent_id: agent_id.map(std::string::ToString::to_string),
+    },
+  )
+}
+
+#[cfg(desktop)]
+fn kill_gateway_child(app: &AppHandle) {
+  let child = {
+    let state = app.state::<KovaRuntimeState>();
+    let lock = state.gateway_child.lock();
+    match lock {
+      Ok(mut guard) => guard.take(),
+      Err(_) => None,
+    }
+  };
+  if let Some(child) = child {
+    let _ = child.kill();
+  }
+}
+
+#[cfg(desktop)]
+fn setup_tray(app: &AppHandle) -> Result<(), tauri::Error> {
+  let open_item = MenuItem::with_id(app, "open", "Open Kova", true, None::<&str>)?;
+  let alex_item = MenuItem::with_id(app, "chat-alex", "Chat with Alex", true, None::<&str>)?;
+  let casey_item = MenuItem::with_id(app, "chat-casey", "Chat with Casey", true, None::<&str>)?;
+  let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+  let separator_a = PredefinedMenuItem::separator(app)?;
+  let separator_b = PredefinedMenuItem::separator(app)?;
+  let menu = Menu::with_items(
+    app,
+    &[
+      &open_item,
+      &separator_a,
+      &alex_item,
+      &casey_item,
+      &separator_b,
+      &quit_item,
+    ],
+  )?;
+
+  let mut tray = TrayIconBuilder::new()
+    .menu(&menu)
+    .show_menu_on_left_click(false)
+    .on_menu_event(|app, event| match event.id.as_ref() {
+      "open" => focus_main_window(app),
+      "chat-alex" => {
+        focus_main_window(app);
+        let _ = emit_desktop_navigation(app, "chat", Some("kova-alex"));
+      }
+      "chat-casey" => {
+        focus_main_window(app);
+        let _ = emit_desktop_navigation(app, "chat", Some("kova-casey"));
+      }
+      "quit" => {
+        kill_gateway_child(app);
+        app.exit(0);
+      }
+      _ => {}
+    })
+    .on_tray_icon_event(|tray, event| {
+      if let TrayIconEvent::Click {
+        button: MouseButton::Left,
+        button_state: MouseButtonState::Up,
+        ..
+      } = event
+      {
+        focus_main_window(&tray.app_handle());
+      }
+    });
+
+  if let Some(icon) = app.default_window_icon() {
+    tray = tray.icon(icon.clone());
+  }
+
+  tray.build(app)?;
+  Ok(())
+}
+
+#[cfg(desktop)]
+fn setup_shortcut(app: &AppHandle) -> Result<(), tauri::Error> {
+  let shortcut = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyK);
+  let shortcut_for_handler = shortcut.clone();
+
+  app.plugin(
+    tauri_plugin_global_shortcut::Builder::new()
+      .with_handler(move |app, current_shortcut, event| {
+        if current_shortcut == &shortcut_for_handler && matches!(event.state(), ShortcutState::Pressed)
+        {
+          focus_main_window(app);
+        }
+      })
+      .build(),
+  )?;
+
+  app.global_shortcut()
+    .register(shortcut)
+    .map_err(|err| tauri::Error::from(std::io::Error::other(err.to_string())))?;
+  Ok(())
+}
+
+#[cfg(desktop)]
+fn runtime_root_for_sidecar(app: &AppHandle) -> Result<PathBuf, String> {
+  let bundled = app
+    .path()
+    .resolve("runtime", BaseDirectory::Resource)
+    .map_err(|err| err.to_string())?;
+  if bundled.join("openclaw.mjs").exists() {
+    return Ok(bundled);
+  }
+
+  PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    .parent()
+    .map(std::path::Path::to_path_buf)
+    .ok_or_else(|| "could not resolve source runtime root".to_string())
+}
+
+#[cfg(desktop)]
+fn launch_gateway_sidecar(app: &AppHandle) -> Result<(), String> {
+  let state_dir = app.path().app_data_dir().map_err(|err| err.to_string())?;
+  std::fs::create_dir_all(&state_dir).map_err(|err| err.to_string())?;
+
+  let runtime_root = runtime_root_for_sidecar(app)?;
+  let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    .parent()
+    .map(std::path::Path::to_path_buf)
+    .ok_or_else(|| "could not resolve source root".to_string())?;
+
+  let sidecar = app
+    .shell()
+    .sidecar("kova-gateway")
+    .map_err(|err| err.to_string())?
+    .args([
+      state_dir.to_string_lossy().to_string(),
+      runtime_root.to_string_lossy().to_string(),
+      source_root.to_string_lossy().to_string(),
+    ]);
+
+  let (_rx, child) = sidecar.spawn().map_err(|err| err.to_string())?;
+  {
+    let state = app.state::<KovaRuntimeState>();
+    let lock = state.gateway_child.lock();
+    if let Ok(mut guard) = lock {
+      *guard = Some(child);
+    }
+  }
+  Ok(())
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+  let mut builder = tauri::Builder::default()
+    .plugin(tauri_plugin_store::Builder::default().build())
+    .plugin(tauri_plugin_shell::init())
+    .invoke_handler(tauri::generate_handler![get_setup_state, set_setup_state]);
+
+  #[cfg(desktop)]
+  {
+    builder = builder.manage(KovaRuntimeState::default());
+  }
+
+  builder
+    .setup(|app| {
+      if cfg!(debug_assertions) {
+        app.handle().plugin(
+          tauri_plugin_log::Builder::default()
+            .level(log::LevelFilter::Info)
+            .build(),
+        )?;
+      }
+
+      #[cfg(desktop)]
+      {
+        setup_shortcut(&app.handle())?;
+        setup_tray(&app.handle())?;
+        if let Err(err) = launch_gateway_sidecar(&app.handle()) {
+          return Err(Box::new(std::io::Error::other(err)));
+        }
+      }
+
+      Ok(())
+    })
+    .on_window_event(|window, event| {
+      #[cfg(desktop)]
+      if let WindowEvent::CloseRequested { api, .. } = event {
+        api.prevent_close();
+        let _ = window.hide();
+      }
+    })
+    .run(tauri::generate_context!())
+    .expect("error while running tauri application");
+}
