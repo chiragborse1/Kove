@@ -33,10 +33,7 @@
       "../openclaw.mjs": "runtime/openclaw.mjs",
       "../package.json": "runtime/package.json",
       "../assets/": "runtime/assets",
-      "../dist/": "runtime/dist",
-      "../dist-runtime/": "runtime/dist-runtime",
       "../extensions/": "runtime/extensions",
-      "../node_modules/": "runtime/node_modules",
       "../packages/": "runtime/packages",
       "../skills/": "runtime/skills",
       "../vendor/": "runtime/vendor"
