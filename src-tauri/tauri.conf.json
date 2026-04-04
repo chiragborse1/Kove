@@ -29,15 +29,7 @@
     "active": true,
     "targets": "all",
     "externalBin": ["binaries/kova-gateway"],
-    "resources": {
-      "../openclaw.mjs": "runtime/openclaw.mjs",
-      "../package.json": "runtime/package.json",
-      "../assets/": "runtime/assets",
-      "../extensions/": "runtime/extensions",
-      "../packages/": "runtime/packages",
-      "../skills/": "runtime/skills",
-      "../vendor/": "runtime/vendor"
-    },
+    "resources": {},
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
