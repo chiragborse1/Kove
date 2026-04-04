@@ -35,7 +35,7 @@ vi.mock("../../infra/git-commit.js", () => ({
 }));
 
 vi.mock("../cli-name.js", () => ({
-  resolveCliName: () => "openclaw",
+  resolveCliName: () => "kova",
   replaceCliName: (cmd: string) => cmd,
 }));
 
@@ -128,17 +128,17 @@ describe("configureProgramHelp", () => {
     const help = captureHelpOutput(program);
     expect(help).toContain("BANNER-LINE");
     expect(help).toContain("Examples:");
-    expect(help).toContain("https://docs.openclaw.ai/cli");
+    expect(help).toContain("https://docs.kova.ai/cli");
   });
 
   it("prints version and exits immediately when version flags are present", () => {
     process.argv = ["node", "openclaw", "--version"];
-    expectVersionExit({ expectedVersion: "Kova (OpenClaw) 9.9.9-test (abc1234)" });
+    expectVersionExit({ expectedVersion: "Kova 9.9.9-test (abc1234)" });
   });
 
   it("prints version and exits immediately without commit metadata", () => {
     process.argv = ["node", "openclaw", "--version"];
     resolveCommitHashMock.mockReturnValue(null);
-    expectVersionExit({ expectedVersion: "Kova (OpenClaw) 9.9.9-test" });
+    expectVersionExit({ expectedVersion: "Kova 9.9.9-test" });
   });
 });

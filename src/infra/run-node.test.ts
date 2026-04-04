@@ -341,6 +341,50 @@ describe("run-node script", () => {
     });
   });
 
+  it("warns when the deprecated openclaw runner alias is used", async () => {
+    await withTempDir(async (tmp) => {
+      await setupTrackedProject(tmp, {
+        files: {
+          [ROOT_SRC]: "export const value = 1;\n",
+        },
+        oldPaths: [ROOT_SRC, ROOT_TSCONFIG, ROOT_PACKAGE],
+        buildPaths: [DIST_ENTRY, BUILD_STAMP],
+      });
+
+      const stderrChunks: string[] = [];
+      const { spawnCalls, spawn, spawnSync } = createSpawnRecorder({
+        gitHead: "abc123\n",
+        gitStatus: "",
+      });
+
+      const exitCode = await runNodeMain({
+        cwd: tmp,
+        args: ["status"],
+        env: {
+          ...process.env,
+          OPENCLAW_RUNNER_LOG: "0",
+          npm_lifecycle_event: "openclaw",
+        },
+        spawn,
+        spawnSync,
+        stderr: {
+          write(chunk) {
+            stderrChunks.push(String(chunk));
+            return true;
+          },
+        },
+        execPath: process.execPath,
+      });
+
+      expect(exitCode).toBe(0);
+      expect(stderrChunks.join("")).toContain(
+        "'openclaw' is deprecated. Please use 'kova' instead.",
+      );
+      expect(stderrChunks.join("")).toContain("Running as kova...");
+      expect(spawnCalls).toEqual([statusCommandSpawn()]);
+    });
+  });
+
   it("rebuilds when extension sources are newer than the build stamp", async () => {
     await withTempDir(async (tmp) => {
       await setupTrackedProject(tmp, {

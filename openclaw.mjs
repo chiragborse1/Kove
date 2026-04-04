@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 const MIN_NODE_MAJOR = 22;
 const MIN_NODE_MINOR = 12;
 const MIN_NODE_VERSION = `${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}`;
+const OPENCLAW_INVOKED_AS_RE = /(?:^|[/\\])openclaw(?:\.mjs)?$/i;
 
 const parseNodeVersion = (rawVersion) => {
   const [majorRaw = "0", minorRaw = "0"] = rawVersion.split(".");
@@ -36,7 +37,25 @@ const ensureSupportedNodeVersion = () => {
   process.exit(1);
 };
 
+const resolveInvokedCliName = () => {
+  const explicit = process.env.OPENCLAW_INVOKED_AS?.trim().toLowerCase();
+  if (explicit === "openclaw" || explicit === "kova") {
+    return explicit;
+  }
+  const argv1 = process.argv[1] ?? "";
+  return OPENCLAW_INVOKED_AS_RE.test(argv1) ? "openclaw" : "kova";
+};
+
+const maybeWarnDeprecatedOpenClawInvocation = () => {
+  if (resolveInvokedCliName() !== "openclaw") {
+    return;
+  }
+  process.stderr.write("⚠️  'openclaw' is deprecated. Please use 'kova' instead.\n");
+  process.stderr.write("Running as kova...\n");
+};
+
 ensureSupportedNodeVersion();
+maybeWarnDeprecatedOpenClawInvocation();
 
 // https://nodejs.org/api/module.html#module-compile-cache
 if (module.enableCompileCache && !process.env.NODE_DISABLE_COMPILE_CACHE) {

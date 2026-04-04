@@ -257,10 +257,32 @@ const logRunner = (message, deps) => {
   deps.stderr.write(`[kova] ${message}\n`);
 };
 
+const OPENCLAW_INVOKED_AS_RE = /(?:^|[/\\])openclaw(?:\.mjs)?$/i;
+
+const resolveInvokedCliName = (deps) => {
+  const lifecycleEvent = deps.env.npm_lifecycle_event?.trim().toLowerCase();
+  if (lifecycleEvent === "openclaw" || lifecycleEvent === "kova") {
+    return lifecycleEvent;
+  }
+  const invokedPath = String(deps.invokedPath ?? "");
+  if (OPENCLAW_INVOKED_AS_RE.test(invokedPath)) {
+    return "openclaw";
+  }
+  return "kova";
+};
+
+const warnDeprecatedOpenClawInvocation = (deps) => {
+  deps.stderr.write("⚠️  'openclaw' is deprecated. Please use 'kova' instead.\n");
+  deps.stderr.write("Running as kova...\n");
+};
+
 const runOpenClaw = async (deps) => {
   const nodeProcess = deps.spawn(deps.execPath, ["openclaw.mjs", ...deps.args], {
     cwd: deps.cwd,
-    env: deps.env,
+    env: {
+      ...deps.env,
+      OPENCLAW_INVOKED_AS: deps.invokedCliName,
+    },
     stdio: "inherit",
   });
   const res = await new Promise((resolve) => {
@@ -310,7 +332,9 @@ export async function runNodeMain(params = {}) {
     cwd: params.cwd ?? process.cwd(),
     args: params.args ?? process.argv.slice(2),
     env: params.env ? { ...params.env } : { ...process.env },
+    invokedPath: params.invokedPath ?? process.argv[1] ?? "",
   };
+  deps.invokedCliName = resolveInvokedCliName(deps);
 
   deps.distRoot = path.join(deps.cwd, "dist");
   deps.distEntry = path.join(deps.distRoot, "/entry.js");
@@ -320,6 +344,10 @@ export async function runNodeMain(params = {}) {
     path: path.join(deps.cwd, sourceRoot),
   }));
   deps.configFiles = runNodeConfigFiles.map((filePath) => path.join(deps.cwd, filePath));
+
+  if (deps.invokedCliName === "openclaw") {
+    warnDeprecatedOpenClawInvocation(deps);
+  }
 
   const buildRequirement = resolveBuildRequirement(deps);
   if (!buildRequirement.shouldBuild) {

@@ -8,6 +8,7 @@ import {
 const HELP_FLAGS = new Set(["-h", "--help"]);
 const VERSION_FLAGS = new Set(["-V", "--version"]);
 const ROOT_VERSION_ALIAS_FLAG = "-v";
+const CLI_PROGRAM_RE = /(?:^|[/\\])(?:openclaw(?:\.mjs)?|kova)$/;
 
 export function hasHelpOrVersion(argv: string[]): boolean {
   return (
@@ -288,7 +289,7 @@ export function buildParseArgv(params: {
   const normalizedArgv =
     programName && baseArgv[0] === programName
       ? baseArgv.slice(1)
-      : baseArgv[0]?.endsWith("openclaw")
+      : CLI_PROGRAM_RE.test(baseArgv[0] ?? "")
         ? baseArgv.slice(1)
         : baseArgv;
   const looksLikeNode =
@@ -297,7 +298,7 @@ export function buildParseArgv(params: {
   if (looksLikeNode) {
     return normalizedArgv;
   }
-  return ["node", programName || "openclaw", ...normalizedArgv];
+  return ["node", programName || "kova", ...normalizedArgv];
 }
 
 export function shouldMigrateStateFromPath(path: string[]): boolean {
