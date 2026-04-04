@@ -254,7 +254,7 @@ const logRunner = (message, deps) => {
   if (deps.env.OPENCLAW_RUNNER_LOG === "0") {
     return;
   }
-  deps.stderr.write(`[openclaw] ${message}\n`);
+  deps.stderr.write(`[kova] ${message}\n`);
 };
 
 const runOpenClaw = async (deps) => {

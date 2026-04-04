@@ -455,8 +455,14 @@
 
 .sidebar-brand {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
+}
+
+.sidebar-brand__logo {
+  display: block;
+  flex: 0 0 auto;
 }
 
 .sidebar-brand__copy {

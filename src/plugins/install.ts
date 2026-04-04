@@ -426,7 +426,7 @@ async function installBundleFromSourceDir(
   } catch (err) {
     return {
       ok: false,
-      error: `Bundle "${pluginId}" installation blocked: code safety scan failed (${String(err)}). Run "openclaw security audit --deep" for details.`,
+      error: `Bundle "${pluginId}" installation blocked: code safety scan failed (${String(err)}). Run "kova security audit --deep" for details.`,
       code: PLUGIN_INSTALL_ERROR_CODE.SECURITY_SCAN_FAILED,
     };
   }
@@ -578,13 +578,13 @@ async function installPluginFromPackageDir(
     if (minHostVersionCheck.kind === "unknown_host_version") {
       return {
         ok: false,
-        error: `plugin "${pluginId}" requires OpenClaw >=${minHostVersionCheck.requirement.minimumLabel}, but this host version could not be determined. Re-run from a released build or set OPENCLAW_VERSION and retry.`,
+        error: `plugin "${pluginId}" requires Kova >=${minHostVersionCheck.requirement.minimumLabel}, but this host version could not be determined. Re-run from a released build or set OPENCLAW_VERSION and retry.`,
         code: PLUGIN_INSTALL_ERROR_CODE.UNKNOWN_HOST_VERSION,
       };
     }
     return {
       ok: false,
-      error: `plugin "${pluginId}" requires OpenClaw >=${minHostVersionCheck.requirement.minimumLabel}, but this host is ${minHostVersionCheck.currentVersion}. Upgrade OpenClaw and retry.`,
+      error: `plugin "${pluginId}" requires Kova >=${minHostVersionCheck.requirement.minimumLabel}, but this host is ${minHostVersionCheck.currentVersion}. Upgrade Kova and retry.`,
       code: PLUGIN_INSTALL_ERROR_CODE.INCOMPATIBLE_HOST_VERSION,
     };
   }
@@ -608,7 +608,7 @@ async function installPluginFromPackageDir(
   } catch (err) {
     return {
       ok: false,
-      error: `Plugin "${pluginId}" installation blocked: code safety scan failed (${String(err)}). Run "openclaw security audit --deep" for details.`,
+      error: `Plugin "${pluginId}" installation blocked: code safety scan failed (${String(err)}). Run "kova security audit --deep" for details.`,
       code: PLUGIN_INSTALL_ERROR_CODE.SECURITY_SCAN_FAILED,
     };
   }
@@ -776,7 +776,7 @@ export async function installPluginFromFile(params: {
   } catch (err) {
     return {
       ok: false,
-      error: `Plugin file "${pluginId}" installation blocked: code safety scan failed (${String(err)}). Run "openclaw security audit --deep" for details.`,
+      error: `Plugin file "${pluginId}" installation blocked: code safety scan failed (${String(err)}). Run "kova security audit --deep" for details.`,
       code: PLUGIN_INSTALL_ERROR_CODE.SECURITY_SCAN_FAILED,
     };
   }

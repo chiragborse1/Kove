@@ -6,12 +6,6 @@ import {
 } from "../../../src/routing/session-key.js";
 import { t } from "../i18n/index.ts";
 import { getSafeLocalStorage } from "../local-storage.ts";
-import {
-  BRAND_TAGLINE,
-  BRAND_WORDMARK,
-  brandDisplayName,
-  brandDisplayText,
-} from "./branding.ts";
 import { refreshChatAvatar } from "./app-chat.ts";
 import { renderUsageTab } from "./app-render-usage-tab.ts";
 import {
@@ -24,10 +18,11 @@ import {
   switchChatSession,
 } from "./app-render.helpers.ts";
 import type { AppViewState } from "./app-view-state.ts";
+import { BRAND_TAGLINE, BRAND_WORDMARK, brandDisplayName, brandDisplayText } from "./branding.ts";
 import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
-import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
+import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import {
   buildToolsEffectiveRequestKey,
   loadAgents,
@@ -53,6 +48,7 @@ import {
   getLocalBriefingTimeZone,
   resolveBriefingConnectedChannels,
 } from "./controllers/briefing.ts";
+import { resolveCanvasEmployees } from "./controllers/canvas.ts";
 import {
   approveTelegramPairing,
   connectTelegram,
@@ -111,7 +107,6 @@ import {
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
-import { resolveCanvasEmployees } from "./controllers/canvas.ts";
 import { isRoutingChannelConnected, resolveRoutingEmployees } from "./controllers/routing.ts";
 import { deleteSessionsAndRefresh, loadSessions, patchSession } from "./controllers/sessions.ts";
 import {
@@ -125,7 +120,8 @@ import {
 import "./components/dashboard-header.ts";
 import { buildExternalLinkRel, EXTERNAL_LINK_TARGET } from "./external-link.ts";
 import { icons } from "./icons.ts";
-import { normalizeBasePath, TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
+import { TAB_GROUPS, subtitleForTab, titleForTab } from "./navigation.ts";
+import { renderAgentCreator } from "./views/agent-creator.ts";
 import { agentLogoUrl } from "./views/agents-utils.ts";
 import {
   resolveAgentConfig,
@@ -134,7 +130,6 @@ import {
   resolveModelPrimary,
   sortLocaleStrings,
 } from "./views/agents-utils.ts";
-import { renderAgentCreator } from "./views/agent-creator.ts";
 import { renderApiKeys } from "./views/api-keys.ts";
 import { renderChat } from "./views/chat.ts";
 import { renderCommandPalette } from "./views/command-palette.ts";
@@ -204,8 +199,14 @@ function readChannelStatus<T>(
 }
 
 function countConnectedChannels(state: AppViewState): number {
-  const telegram = readChannelStatus<{ running?: boolean | null }>(state.channelsSnapshot, "telegram");
-  const whatsapp = readChannelStatus<{ connected?: boolean | null }>(state.channelsSnapshot, "whatsapp");
+  const telegram = readChannelStatus<{ running?: boolean | null }>(
+    state.channelsSnapshot,
+    "telegram",
+  );
+  const whatsapp = readChannelStatus<{ connected?: boolean | null }>(
+    state.channelsSnapshot,
+    "whatsapp",
+  );
   let count = 0;
   if (telegram?.running === true) {
     count += 1;
@@ -218,13 +219,13 @@ function countConnectedChannels(state: AppViewState): number {
 
 function countActiveEmployees(state: AppViewState): number {
   const dashboardCount =
-    state.employeesDashboard?.employees.filter((employee) => employee.id.startsWith("kova-")).length ?? 0;
+    state.employeesDashboard?.employees.filter((employee) => employee.id.startsWith("kova-"))
+      .length ?? 0;
   if (dashboardCount > 0) {
     return dashboardCount;
   }
   const agentsCount =
-    state.agentsList?.agents.filter((agent) => agent.id.startsWith("kova-"))
-      .length ?? 0;
+    state.agentsList?.agents.filter((agent) => agent.id.startsWith("kova-")).length ?? 0;
   return agentsCount;
 }
 
@@ -235,7 +236,10 @@ function renderGatewayHealthBar(state: AppViewState) {
 
   return html`
     <div class="health-bar" aria-label="Gateway health">
-      <div class="health-item" title=${state.connected ? "Gateway is connected" : "Gateway is disconnected"}>
+      <div
+        class="health-item"
+        title=${state.connected ? "Gateway is connected" : "Gateway is disconnected"}
+      >
         <span
           class="health-dot ${state.connected ? "health-dot--online" : "health-dot--offline"}"
           aria-hidden="true"
@@ -261,7 +265,9 @@ function renderGatewayHealthBar(state: AppViewState) {
         <span>${employeeCount} employees</span>
       </button>
       ${version
-        ? html`<div class="health-item health-item--version" title=${`Gateway version v${version}`}>v${version}</div>`
+        ? html`<div class="health-item health-item--version" title=${`Gateway version v${version}`}>
+            v${version}
+          </div>`
         : nothing}
     </div>
   `;
@@ -486,7 +492,6 @@ export function renderApp(state: AppViewState) {
   const chatAvatarUrl = state.chatAvatarUrl ?? assistantAvatarUrl ?? null;
   const configValue =
     state.configForm ?? (state.configSnapshot?.config as Record<string, unknown> | null);
-  const basePath = normalizeBasePath(state.basePath ?? "");
   const resolvedAgentId =
     state.agentsSelectedId ??
     state.agentsList?.defaultId ??
@@ -558,6 +563,7 @@ export function renderApp(state: AppViewState) {
     state.cronForm.deliveryMode === "webhook"
       ? rawDeliveryToSuggestions.filter((value) => isHttpUrl(value))
       : rawDeliveryToSuggestions;
+  const brandLogoUrl = agentLogoUrl(state.basePath ?? "");
 
   return html`
     ${renderCommandPalette({
@@ -626,8 +632,7 @@ export function renderApp(state: AppViewState) {
               <kbd class="topbar-search__kbd">Ctrl/Cmd+K</kbd>
             </button>
             <div class="topbar-status">
-              ${isChat ? renderChatMobileToggle(state) : nothing}
-              ${renderGatewayHealthBar(state)}
+              ${isChat ? renderChatMobileToggle(state) : nothing} ${renderGatewayHealthBar(state)}
               ${renderTopbarThemeModeToggle(state)}
             </div>
           </div>
@@ -638,6 +643,12 @@ export function renderApp(state: AppViewState) {
           <div class="sidebar-shell">
             <div class="sidebar-shell__header">
               <div class="sidebar-brand">
+                <img
+                  src=${brandLogoUrl}
+                  alt="Kova"
+                  class="sidebar-brand__logo"
+                  style="width:48px;height:48px;object-fit:contain;"
+                />
                 ${navCollapsed
                   ? nothing
                   : html`
@@ -707,7 +718,7 @@ export function renderApp(state: AppViewState) {
               <div class="sidebar-utility-group">
                 <a
                   class="nav-item nav-item--external sidebar-utility-link"
-                  href="https://docs.openclaw.ai"
+                  href="https://docs.kova.ai"
                   target=${EXTERNAL_LINK_TARGET}
                   rel=${buildExternalLinkRel()}
                   title="${t("common.docs")} (opens in new tab)"
@@ -1658,8 +1669,7 @@ export function renderApp(state: AppViewState) {
                 detailKey: state.skillsDetailKey,
                 kova_marketplaceLoading: state.kova_marketplaceLoading,
                 kova_marketplaceSkills: state.kova_marketplaceSkills,
-                kova_marketplaceError:
-                  state.kova_marketplaceError ?? state.kova_installedError,
+                kova_marketplaceError: state.kova_marketplaceError ?? state.kova_installedError,
                 kova_marketplaceCategory: state.kova_marketplaceCategory,
                 kova_marketplaceInstalledIds: state.kova_installedSkillIds,
                 kova_marketplaceBusyId: state.kova_marketplaceBusyId,
@@ -1673,8 +1683,7 @@ export function renderApp(state: AppViewState) {
                   installSkill(state, skillKey, name, installId),
                 onDetailOpen: (key) => (state.skillsDetailKey = key),
                 onDetailClose: () => (state.skillsDetailKey = null),
-                onKovaMarketplaceCategoryChange: (next) =>
-                  (state.kova_marketplaceCategory = next),
+                onKovaMarketplaceCategoryChange: (next) => (state.kova_marketplaceCategory = next),
                 onKovaMarketplaceInstall: (skill) => kova_installMarketplaceSkill(state, skill),
               }),
             )
@@ -1975,7 +1984,8 @@ export function renderApp(state: AppViewState) {
               ],
               includeVirtualSections: false,
             })
-          : nothing}        ${state.tab === "apiKeys"
+          : nothing}
+        ${state.tab === "apiKeys"
           ? renderApiKeys({
               loading: state.apiKeysLoading,
               connected: state.connected,
@@ -1994,7 +2004,8 @@ export function renderApp(state: AppViewState) {
               providerStatuses: state.apiKeyProviderStatuses,
               providerInputs: state.apiKeyProviderInputs,
               providerMessages: state.apiKeyProviderMessages,
-              onProviderInput: (provider, value) => updateProviderApiKeyInput(state, provider, value),
+              onProviderInput: (provider, value) =>
+                updateProviderApiKeyInput(state, provider, value),
               onElevenLabsInput: (value) => updateElevenLabsApiKeyInput(state, value),
               onModelOptionChange: (value) => updateApiKeysModelOption(state, value),
               onCustomModelInput: (value) => updateApiKeysCustomModelInput(state, value),

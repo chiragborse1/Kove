@@ -4,6 +4,7 @@ import {
   normalizeToolName,
   resolveToolProfilePolicy,
 } from "../../../../src/agents/tool-policy-shared.js";
+import { brandDisplayName } from "../branding.ts";
 import type {
   AgentIdentityResult,
   AgentsFilesListResult,
@@ -12,7 +13,6 @@ import type {
   ToolCatalogProfile,
   ToolsCatalogResult,
 } from "../types.ts";
-import { brandDisplayName } from "../branding.ts";
 
 export type AgentToolEntry = {
   id: string;
@@ -220,7 +220,7 @@ export function resolveAgentAvatarUrl(
 
 export function agentLogoUrl(basePath: string): string {
   const base = basePath?.trim() ? basePath.replace(/\/$/, "") : "";
-  return base ? `${base}/favicon.svg` : "favicon.svg";
+  return base ? `${base}/assets/kova-logo.png` : "/assets/kova-logo.png";
 }
 
 function isLikelyEmoji(value: string) {

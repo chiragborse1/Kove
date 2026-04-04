@@ -89,7 +89,7 @@ if (
 
     child.once("error", (error) => {
       console.error(
-        "[openclaw] Failed to respawn CLI:",
+        "[kova] Failed to respawn CLI:",
         error instanceof Error ? (error.stack ?? error.message) : error,
       );
       process.exit(1);
@@ -109,14 +109,12 @@ if (
     Promise.all([import("./version.js"), import("./infra/git-commit.js")])
       .then(([{ VERSION }, { resolveCommitHash }]) => {
         const commit = resolveCommitHash({ moduleUrl: import.meta.url });
-        console.log(
-          commit ? `Kova (OpenClaw) ${VERSION} (${commit})` : `Kova (OpenClaw) ${VERSION}`,
-        );
+        console.log(commit ? `Kova ${VERSION} (${commit})` : `Kova ${VERSION}`);
         process.exit(0);
       })
       .catch((error) => {
         console.error(
-          "[openclaw] Failed to resolve version:",
+          "[kova] Failed to resolve version:",
           error instanceof Error ? (error.stack ?? error.message) : error,
         );
         process.exitCode = 1;
@@ -129,20 +127,20 @@ if (
   if (!ensureCliRespawnReady()) {
     const parsedContainer = parseCliContainerArgs(process.argv);
     if (!parsedContainer.ok) {
-      console.error(`[openclaw] ${parsedContainer.error}`);
+      console.error(`[kova] ${parsedContainer.error}`);
       process.exit(2);
     }
 
     const parsed = parseCliProfileArgs(parsedContainer.argv);
     if (!parsed.ok) {
       // Keep it simple; Commander will handle rich help/errors after we strip flags.
-      console.error(`[openclaw] ${parsed.error}`);
+      console.error(`[kova] ${parsed.error}`);
       process.exit(2);
     }
 
     const containerTargetName = resolveCliContainerTarget(process.argv);
     if (containerTargetName && parsed.profile) {
-      console.error("[openclaw] --container cannot be combined with --profile/--dev");
+      console.error("[kova] --container cannot be combined with --profile/--dev");
       process.exit(2);
     }
 
@@ -176,7 +174,7 @@ export function tryHandleRootHelpFastPath(
     deps.onError ??
     ((error: unknown) => {
       console.error(
-        "[openclaw] Failed to display help:",
+        "[kova] Failed to display help:",
         error instanceof Error ? (error.stack ?? error.message) : error,
       );
       process.exitCode = 1;
@@ -203,7 +201,7 @@ function runMainOrRootHelp(argv: string[]): void {
     .then(({ runCli }) => runCli(argv))
     .catch((error) => {
       console.error(
-        "[openclaw] Failed to start CLI:",
+        "[kova] Failed to start CLI:",
         error instanceof Error ? (error.stack ?? error.message) : error,
       );
       process.exitCode = 1;
