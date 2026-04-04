@@ -28,6 +28,7 @@ type GatewayRunSignalAction = "stop" | "restart";
 
 export async function runGatewayLoop(params: {
   start: () => Promise<Awaited<ReturnType<typeof startGatewayServer>>>;
+  onStarted?: () => Promise<void> | void;
   runtime: RuntimeEnv;
   lockPort?: number;
 }) {
@@ -230,6 +231,7 @@ export async function runGatewayLoop(params: {
       onIteration();
       try {
         server = await params.start();
+        await params.onStarted?.();
         isFirstStart = false;
       } catch (err) {
         // On initial startup, let the error propagate so the outer handler

@@ -204,6 +204,31 @@ describe("runGatewayLoop", () => {
     });
   });
 
+  it("calls onStarted after the gateway server is ready", async () => {
+    vi.clearAllMocks();
+
+    await withIsolatedSignals(async ({ captureSignal }) => {
+      const close = vi.fn(async () => {});
+      const { start, started } = createSignaledStart(close);
+      const onStarted = vi.fn(async () => {});
+      const { runtime, exited } = createRuntimeWithExitSignal();
+      const { runGatewayLoop } = await import("./run-loop.js");
+
+      void runGatewayLoop({
+        start: start as unknown as Parameters<typeof runGatewayLoop>[0]["start"],
+        onStarted,
+        runtime: runtime as unknown as Parameters<typeof runGatewayLoop>[0]["runtime"],
+      });
+
+      await waitForStart(started);
+      expect(onStarted).toHaveBeenCalledTimes(1);
+
+      const sigterm = captureSignal("SIGTERM");
+      sigterm();
+      await expect(exited).resolves.toBe(0);
+    });
+  });
+
   it("restarts after SIGUSR1 even when drain times out, and resets lanes for the new iteration", async () => {
     vi.clearAllMocks();
 

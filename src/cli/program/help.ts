@@ -21,6 +21,7 @@ const ROOT_COMMANDS_HINT =
   "Hint: commands suffixed with * have subcommands. Run <command> --help for details.";
 
 const EXAMPLES = [
+  ["openclaw start", "Start Kova locally and open the Control UI in your browser."],
   ["openclaw models --help", "Show detailed help for the models command."],
   [
     "openclaw channels login --verbose",
@@ -116,7 +117,9 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
   ) {
     const commit = resolveCommitHash({ moduleUrl: import.meta.url });
     console.log(
-      commit ? `OpenClaw ${ctx.programVersion} (${commit})` : `OpenClaw ${ctx.programVersion}`,
+      commit
+        ? `Kova (OpenClaw) ${ctx.programVersion} (${commit})`
+        : `Kova (OpenClaw) ${ctx.programVersion}`,
     );
     process.exit(0);
   }

@@ -6,6 +6,11 @@ export type CoreCliCommandDescriptor = {
 
 export const CORE_CLI_COMMAND_DESCRIPTORS = [
   {
+    name: "start",
+    description: "Start Kova locally and open the Control UI",
+    hasSubcommands: false,
+  },
+  {
     name: "setup",
     description: "Initialize local config and agent workspace",
     hasSubcommands: false,

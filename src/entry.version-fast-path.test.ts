@@ -99,7 +99,7 @@ describe("entry root version fast path", () => {
 
     await import("./entry.js");
     await vi.waitFor(() => {
-      expect(logSpy).toHaveBeenCalledWith("OpenClaw 9.9.9-test (abc1234)");
+      expect(logSpy).toHaveBeenCalledWith("Kova (OpenClaw) 9.9.9-test (abc1234)");
       expect(exitSpy).toHaveBeenCalledWith(0);
     });
 
@@ -112,7 +112,7 @@ describe("entry root version fast path", () => {
 
     await import("./entry.js");
     await vi.waitFor(() => {
-      expect(logSpy).toHaveBeenCalledWith("OpenClaw 9.9.9-test");
+      expect(logSpy).toHaveBeenCalledWith("Kova (OpenClaw) 9.9.9-test");
       expect(exitSpy).toHaveBeenCalledWith(0);
     });
 

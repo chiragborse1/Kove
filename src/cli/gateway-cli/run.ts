@@ -1,3 +1,4 @@
+import { exec } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { Command } from "commander";
@@ -56,6 +57,7 @@ type GatewayRunOpts = {
   rawStreamPath?: unknown;
   dev?: boolean;
   reset?: boolean;
+  openBrowser?: boolean;
 };
 
 const gatewayLog = createSubsystemLogger("gateway");
@@ -83,6 +85,7 @@ const GATEWAY_RUN_BOOLEAN_KEYS = [
   "claudeCliLogs",
   "compact",
   "rawStream",
+  "openBrowser",
 ] as const;
 
 const SUPERVISED_GATEWAY_LOCK_RETRY_MS = 5000;
@@ -94,6 +97,33 @@ const GATEWAY_AUTH_MODES: readonly GatewayAuthMode[] = [
   "trusted-proxy",
 ];
 const GATEWAY_TAILSCALE_MODES: readonly GatewayTailscaleMode[] = ["off", "serve", "funnel"];
+
+function resolveGatewayBrowserUrl(port: number): string {
+  return `http://127.0.0.1:${port}`;
+}
+
+function resolveBrowserOpenCommand(url: string): string {
+  const quotedUrl = JSON.stringify(url);
+  if (process.platform === "win32") {
+    return `start "" ${quotedUrl}`;
+  }
+  if (process.platform === "darwin") {
+    return `open ${quotedUrl}`;
+  }
+  return `xdg-open ${quotedUrl}`;
+}
+
+async function openGatewayBrowser(url: string): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    exec(resolveBrowserOpenCommand(url), (error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
 
 function warnInlinePasswordFlag() {
   defaultRuntime.error(
@@ -440,6 +470,7 @@ async function runGatewayCommand(opts: GatewayRunOpts) {
           ...(opts.tailscaleResetOnExit ? { resetOnExit: true } : {}),
         }
       : undefined;
+  let shouldOpenBrowser = Boolean(opts.openBrowser);
 
   const startLoop = async () =>
     await runGatewayLoop({
@@ -451,6 +482,20 @@ async function runGatewayCommand(opts: GatewayRunOpts) {
           auth: authOverride,
           tailscale: tailscaleOverride,
         }),
+      onStarted: shouldOpenBrowser
+        ? async () => {
+            shouldOpenBrowser = false;
+            const url = resolveGatewayBrowserUrl(port);
+            try {
+              await openGatewayBrowser(url);
+              gatewayLog.info(`opened browser: ${url}`);
+            } catch (error) {
+              gatewayLog.warn(
+                `gateway started, but could not open browser automatically: ${String(error)}`,
+              );
+            }
+          }
+        : undefined,
     });
 
   try {
@@ -498,7 +543,10 @@ async function runGatewayCommand(opts: GatewayRunOpts) {
   }
 }
 
-export function addGatewayRunCommand(cmd: Command): Command {
+export function addGatewayRunCommand(
+  cmd: Command,
+  defaults: Partial<GatewayRunOpts> = {},
+): Command {
   return cmd
     .option("--port <port>", "Port for the gateway WebSocket")
     .option(
@@ -544,7 +592,12 @@ export function addGatewayRunCommand(cmd: Command): Command {
     .option("--compact", 'Alias for "--ws-log compact"', false)
     .option("--raw-stream", "Log raw model stream events to jsonl", false)
     .option("--raw-stream-path <path>", "Raw stream jsonl path")
+    .option("--open-browser", "Open the Control UI in your default browser after startup", false)
     .action(async (opts, command) => {
-      await runGatewayCommand(resolveGatewayRunOptions(opts, command));
+      const resolvedOpts = resolveGatewayRunOptions(opts, command);
+      if (defaults.openBrowser) {
+        resolvedOpts.openBrowser = Boolean(resolvedOpts.openBrowser || defaults.openBrowser);
+      }
+      await runGatewayCommand(resolvedOpts);
     });
 }

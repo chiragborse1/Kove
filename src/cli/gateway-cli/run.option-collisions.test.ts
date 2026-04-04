@@ -3,6 +3,15 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { withTempSecretFiles } from "../../test-utils/secret-file-fixture.js";
 import { createCliRuntimeCapture } from "../test-runtime-capture.js";
 
+const execMock = vi.fn(
+  (
+    _command: string,
+    callback?: (error: Error | null, stdout?: string, stderr?: string) => void,
+  ) => {
+    callback?.(null, "", "");
+    return {} as never;
+  },
+);
 const startGatewayServer = vi.fn(async (_port: number, _opts?: unknown) => ({
   close: vi.fn(async () => {}),
 }));
@@ -16,15 +25,31 @@ const forceFreePortAndWait = vi.fn(async (_port: number, _opts: unknown) => ({
 }));
 const waitForPortBindable = vi.fn(async (_port: number, _opts?: unknown) => 0);
 const ensureDevGatewayConfig = vi.fn(async (_opts?: unknown) => {});
-const runGatewayLoop = vi.fn(async ({ start }: { start: () => Promise<unknown> }) => {
-  await start();
-});
+const runGatewayLoop = vi.fn(
+  async ({
+    start,
+    onStarted,
+  }: {
+    start: () => Promise<unknown>;
+    onStarted?: () => Promise<void> | void;
+  }) => {
+    await start();
+    await onStarted?.();
+  },
+);
 const configState = vi.hoisted(() => ({
   cfg: {} as Record<string, unknown>,
   snapshot: { exists: false } as Record<string, unknown>,
 }));
 
 const { runtimeErrors, defaultRuntime, resetRuntimeCapture } = createCliRuntimeCapture();
+
+vi.mock("node:child_process", () => ({
+  exec: (
+    command: string,
+    callback?: (error: Error | null, stdout?: string, stderr?: string) => void,
+  ) => execMock(command, callback),
+}));
 
 vi.mock("../../config/config.js", () => ({
   getConfigPath: () => "/tmp/openclaw-test-missing-config.json",
@@ -117,14 +142,20 @@ vi.mock("./run-loop.js", () => ({
 
 describe("gateway run option collisions", () => {
   let addGatewayRunCommand: typeof import("./run.js").addGatewayRunCommand;
+  let registerStartCommand: typeof import("../program/register.start.js").registerStartCommand;
   let sharedProgram: Command;
+  let startProgram: Command;
 
   beforeAll(async () => {
     ({ addGatewayRunCommand } = await import("./run.js"));
+    ({ registerStartCommand } = await import("../program/register.start.js"));
     sharedProgram = new Command();
     sharedProgram.exitOverride();
     const gateway = addGatewayRunCommand(sharedProgram.command("gateway"));
     addGatewayRunCommand(gateway.command("run"));
+    startProgram = new Command();
+    startProgram.exitOverride();
+    registerStartCommand(startProgram);
   });
 
   beforeEach(() => {
@@ -139,10 +170,25 @@ describe("gateway run option collisions", () => {
     waitForPortBindable.mockClear();
     ensureDevGatewayConfig.mockClear();
     runGatewayLoop.mockClear();
+    execMock.mockClear();
   });
 
   async function runGatewayCli(argv: string[]) {
     await sharedProgram.parseAsync(argv, { from: "user" });
+  }
+
+  async function runStartCli(argv: string[]) {
+    await startProgram.parseAsync(argv, { from: "user" });
+  }
+
+  function expectedBrowserCommand(url: string) {
+    if (process.platform === "win32") {
+      return `start "" "${url}"`;
+    }
+    if (process.platform === "darwin") {
+      return `open "${url}"`;
+    }
+    return `xdg-open "${url}"`;
   }
 
   function expectAuthOverrideMode(mode: string) {
@@ -194,6 +240,24 @@ describe("gateway run option collisions", () => {
 
     expect(setConsoleSubsystemFilter).toHaveBeenCalledWith(["agent/cli-backend"]);
     expect(process.env.OPENCLAW_CLI_BACKEND_LOG_OUTPUT).toBe("1");
+  });
+
+  it("opens the browser when gateway run uses --open-browser", async () => {
+    await runGatewayCli(["gateway", "run", "--allow-unconfigured", "--open-browser"]);
+
+    expect(execMock).toHaveBeenCalledWith(
+      expectedBrowserCommand("http://127.0.0.1:18789"),
+      expect.any(Function),
+    );
+  });
+
+  it("opens the browser by default for the root start command", async () => {
+    await runStartCli(["start", "--allow-unconfigured"]);
+
+    expect(execMock).toHaveBeenCalledWith(
+      expectedBrowserCommand("http://127.0.0.1:18789"),
+      expect.any(Function),
+    );
   });
 
   it("starts gateway when token mode has no configured token (startup bootstrap path)", async () => {

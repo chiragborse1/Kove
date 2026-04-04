@@ -164,6 +164,9 @@ export function collectReleasePackageMetadataErrors(pkg: PackageJson): string[] 
       `package.json bin.openclaw must be "openclaw.mjs"; found "${pkg.bin?.openclaw ?? ""}".`,
     );
   }
+  if (pkg.bin?.kova !== "./dist/index.js") {
+    errors.push(`package.json bin.kova must be "./dist/index.js"; found "${pkg.bin?.kova ?? ""}".`);
+  }
   if (pkg.peerDependencies?.["node-llama-cpp"] !== "3.18.1") {
     errors.push(
       `package.json peerDependencies["node-llama-cpp"] must be "3.18.1"; found "${

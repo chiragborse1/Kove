@@ -95,7 +95,9 @@ export function registerGatewayCli(program: Command) {
         "after",
         () =>
           `\n${theme.heading("Examples:")}\n${formatHelpExamples([
+            ["openclaw start", "Start Kova and open the Control UI in your browser."],
             ["openclaw gateway run", "Run the gateway in the foreground."],
+            ["openclaw gateway run --open-browser", "Run the gateway and open the Control UI."],
             ["openclaw gateway status", "Show service status and probe reachability."],
             ["openclaw gateway discover", "Find local and wide-area gateway beacons."],
             ["openclaw gateway call health", "Call a gateway RPC method directly."],

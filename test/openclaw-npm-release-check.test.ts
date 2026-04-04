@@ -348,7 +348,7 @@ describe("collectReleasePackageMetadataErrors", () => {
         description: "Multi-channel AI gateway with extensible messaging integrations",
         license: "MIT",
         repository: { url: "git+https://github.com/openclaw/openclaw.git" },
-        bin: { openclaw: "openclaw.mjs" },
+        bin: { openclaw: "openclaw.mjs", kova: "./dist/index.js" },
         peerDependencies: { "node-llama-cpp": "3.18.1" },
         peerDependenciesMeta: { "node-llama-cpp": { optional: true } },
       }),
@@ -362,7 +362,7 @@ describe("collectReleasePackageMetadataErrors", () => {
         description: "Multi-channel AI gateway with extensible messaging integrations",
         license: "MIT",
         repository: { url: "git+https://github.com/openclaw/openclaw.git" },
-        bin: { openclaw: "openclaw.mjs" },
+        bin: { openclaw: "openclaw.mjs", kova: "./dist/index.js" },
         peerDependencies: { "node-llama-cpp": "3.18.1" },
       }),
     ).toContain('package.json peerDependenciesMeta["node-llama-cpp"].optional must be true.');

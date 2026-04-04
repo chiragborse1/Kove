@@ -42,6 +42,19 @@ const coreEntries: CoreCliEntry[] = [
   {
     commands: [
       {
+        name: "start",
+        description: "Start Kova locally and open the Control UI",
+        hasSubcommands: false,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("./register.start.js");
+      mod.registerStartCommand(program);
+    },
+  },
+  {
+    commands: [
+      {
         name: "setup",
         description: "Initialize local config and agent workspace",
         hasSubcommands: false,

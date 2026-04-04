@@ -208,6 +208,12 @@ describe("formatCliCommand", () => {
     );
   });
 
+  it("handles kova alias with profile injection", () => {
+    expect(formatCliCommand("kova start", { OPENCLAW_PROFILE: "work" })).toBe(
+      "kova --profile work start",
+    );
+  });
+
   it("inserts --container when a container hint is set", () => {
     expect(
       formatCliCommand("openclaw gateway status --deep", { OPENCLAW_CONTAINER_HINT: "demo" }),

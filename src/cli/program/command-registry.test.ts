@@ -27,6 +27,12 @@ vi.mock("./register.maintenance.js", () => ({
   },
 }));
 
+vi.mock("./register.start.js", () => ({
+  registerStartCommand: (program: Command) => {
+    program.command("start");
+  },
+}));
+
 vi.mock("./register.status-health-sessions.js", () => ({
   registerStatusHealthSessionsCommands: (program: Command) => {
     program.command("status");
@@ -81,6 +87,12 @@ describe("command-registry", () => {
     expect(names).not.toContain("agent");
     expect(names).not.toContain("status");
     expect(names).not.toContain("doctor");
+    expect(names).not.toContain("start");
+  });
+
+  it("includes start in core CLI command names", () => {
+    const names = getCoreCliCommandNames();
+    expect(names).toContain("start");
   });
 
   it("registerCoreCliByName resolves agents to the agent entry", async () => {
