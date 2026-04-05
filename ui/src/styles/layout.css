@@ -212,7 +212,7 @@
   height: 8px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: #ef4444;
+  background: #d97706;
 }
 
 .health-dot--online {
@@ -221,7 +221,7 @@
 }
 
 .health-dot--offline {
-  background: #ef4444;
+  background: #d97706;
 }
 
 .health-icon {

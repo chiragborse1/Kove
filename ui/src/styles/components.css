@@ -83,6 +83,13 @@
   padding: 10px 16px;
   font-size: 15px;
   font-weight: 600;
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.login-gate__connect:hover {
+  background: #b45309;
+  border-color: #b45309;
 }
 
 .login-gate__help {
@@ -188,7 +195,7 @@
 }
 
 .update-banner__btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(217, 119, 6, 0.15);
 }
 
 .update-banner__close {
@@ -538,7 +545,7 @@
   height: 8px;
   border-radius: var(--radius-full);
   background: var(--danger);
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.5);
   animation: pulse-subtle 2s ease-in-out infinite;
 }
 
@@ -715,7 +722,7 @@
 }
 
 .btn.danger:hover {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(217, 119, 6, 0.15);
 }
 
 .btn--sm {
@@ -1366,8 +1373,8 @@
 }
 
 .callout.danger {
-  border-color: rgba(239, 68, 68, 0.25);
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.04) 100%);
+  border-color: rgba(217, 119, 6, 0.25);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(217, 119, 6, 0.04) 100%);
   color: var(--danger);
 }
 
@@ -1757,7 +1764,7 @@
 
 .cron-job-status-error {
   color: var(--danger);
-  border-color: rgba(239, 68, 68, 0.35);
+  border-color: rgba(217, 119, 6, 0.35);
   background: var(--danger-subtle);
 }
 
@@ -1856,7 +1863,7 @@
 
 .chip-danger {
   color: var(--danger);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(217, 119, 6, 0.3);
   background: var(--danger-subtle);
 }
 
@@ -3943,8 +3950,8 @@ td.data-table-key-col {
 }
 
 .ov-attention-item.danger {
-  border-color: var(--danger-subtle, rgba(239, 68, 68, 0.2));
-  background: rgba(239, 68, 68, 0.05);
+  border-color: var(--danger-subtle, rgba(217, 119, 6, 0.2));
+  background: rgba(217, 119, 6, 0.05);
 }
 
 .ov-attention-icon {
