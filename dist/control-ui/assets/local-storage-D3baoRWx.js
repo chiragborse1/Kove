@@ -1,0 +1,2 @@
+function e(e){return!!e&&typeof e.getItem==`function`&&typeof e.setItem==`function`}function t(t){let n=Object.getOwnPropertyDescriptor(globalThis,t);if(typeof process<`u`&&{}?.VITEST)return n&&!n.get&&e(n.value)?n.value:null;if(typeof window<`u`&&typeof document<`u`)try{let n=window[t];return e(n)?n:null}catch{return null}return n&&!n.get&&e(n.value)?n.value:null}function n(){return t(`localStorage`)}function r(){return t(`sessionStorage`)}export{r as n,n as t};
+//# sourceMappingURL=local-storage-D3baoRWx.js.map
