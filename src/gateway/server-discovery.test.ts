@@ -4,7 +4,17 @@ const getTailnetHostname = vi.hoisted(() => vi.fn());
 
 vi.mock("../infra/tailscale.js", () => ({ getTailnetHostname }));
 
-import { resolveTailnetDnsHint } from "./server-discovery.js";
+import { formatBonjourInstanceName, resolveTailnetDnsHint } from "./server-discovery.js";
+
+describe("formatBonjourInstanceName", () => {
+  test("rebrands the human-readable product suffix to Kova", () => {
+    expect(formatBonjourInstanceName("Chirag (OpenClaw)")).toBe("Chirag (Kova)");
+  });
+
+  test("keeps unbranded names and appends Kova", () => {
+    expect(formatBonjourInstanceName("Chirag")).toBe("Chirag (Kova)");
+  });
+});
 
 describe("resolveTailnetDnsHint", () => {
   const prevTailnetDns = { value: undefined as string | undefined };

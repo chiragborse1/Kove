@@ -91,6 +91,7 @@ const { startGatewayBonjourAdvertiser } = await import("./bonjour.js");
 describe("gateway bonjour advertiser", () => {
   type ServiceCall = {
     name?: unknown;
+    type?: unknown;
     hostname?: unknown;
     domain?: unknown;
     txt?: unknown;
@@ -463,6 +464,27 @@ describe("gateway bonjour advertiser", () => {
     expect(gatewayCall?.[0]?.domain).toBe("local");
     expect(gatewayCall?.[0]?.hostname).toBe("openclaw");
     expect((gatewayCall?.[0]?.txt as Record<string, string>)?.lanHost).toBe("openclaw.local");
+
+    await started.stop();
+  });
+
+  it("rebrands Bonjour instance names from OpenClaw to Kova", async () => {
+    enableAdvertiserUnitMode();
+
+    const destroy = vi.fn().mockResolvedValue(undefined);
+    const advertise = vi.fn().mockResolvedValue(undefined);
+    mockCiaoService({ advertise, destroy });
+
+    const started = await startGatewayBonjourAdvertiser({
+      instanceName: "Chirag (OpenClaw)",
+      gatewayPort: 18789,
+      sshPort: 2222,
+    });
+
+    const [gatewayCall] = createService.mock.calls as Array<[ServiceCall]>;
+    expect(gatewayCall?.[0]?.name).toBe("Chirag (Kova)");
+    expect((gatewayCall?.[0]?.txt as Record<string, string>)?.displayName).toBe("Chirag");
+    expect(gatewayCall?.[0]?.type).toBe("openclaw-gw");
 
     await started.stop();
   });

@@ -43,6 +43,14 @@ function safeServiceName(name: string) {
   return trimmed.length > 0 ? trimmed : "Kova";
 }
 
+function normalizeInstanceProductName(name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return "Kova";
+  }
+  return trimmed.replace(/\((?:OpenClaw|Kova)\)\s*$/i, "(Kova)");
+}
+
 function prettifyInstanceName(name: string) {
   const normalized = name.trim().replace(/\s+/g, " ");
   return normalized.replace(/\s+\((?:OpenClaw|Kova)\)\s*$/i, "").trim() || normalized;
@@ -156,7 +164,7 @@ export async function startGatewayBonjourAdvertiser(
         .trim() || "openclaw";
     const instanceName =
       typeof opts.instanceName === "string" && opts.instanceName.trim()
-        ? opts.instanceName.trim()
+        ? normalizeInstanceProductName(opts.instanceName)
         : `${hostname} (Kova)`;
     const displayName = prettifyInstanceName(instanceName);
 
