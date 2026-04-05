@@ -203,10 +203,6 @@
   filter: brightness(1.12);
 }
 
-.health-item--version {
-  color: color-mix(in srgb, var(--muted) 88%, transparent);
-}
-
 .health-dot {
   width: 8px;
   height: 8px;
@@ -797,60 +793,6 @@
   min-height: 42px;
 }
 
-.sidebar-version {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 12px;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--bg-elevated) 72%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-}
-
-.sidebar-version__label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.sidebar-version__text {
-  font-size: 12px;
-  color: var(--text);
-  font-weight: 600;
-}
-
-.sidebar-version__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--accent) 78%, white 22%);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
-  opacity: 1;
-  margin: 0 auto;
-}
-
-.sidebar-version__status {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  flex-shrink: 0;
-  margin-left: auto;
-}
-
-.sidebar-version__status.sidebar-connection-status--online {
-  background: var(--ok);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 14%, transparent);
-}
-
-.sidebar-version__status.sidebar-connection-status--offline {
-  background: var(--danger);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 14%, transparent);
-}
-
 .sidebar--collapsed .sidebar-shell__footer {
   padding: 8px 0 2px;
 }
@@ -858,18 +800,6 @@
 .sidebar--collapsed .sidebar-utility-group {
   justify-items: center;
   gap: 6px;
-}
-
-.sidebar--collapsed .sidebar-version {
-  width: 44px;
-  min-height: 44px;
-  padding: 0;
-  justify-content: center;
-  border-radius: var(--radius-lg);
-}
-
-.sidebar--collapsed .sidebar-version__status {
-  margin-left: 0;
 }
 
 /* Mode switch in sidebar — hidden on desktop, shown on mobile */

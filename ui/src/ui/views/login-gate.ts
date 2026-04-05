@@ -113,15 +113,6 @@ export function renderLoginGate(state: AppViewState) {
             <li>${t("overview.connection.step2")} ${renderConnectCommand("kova dashboard")}</li>
             <li>${t("overview.connection.step3")}</li>
           </ol>
-          <div class="login-gate__docs">
-            <a
-              class="session-link"
-              href="https://docs.kova.ai/web/dashboard"
-              target="_blank"
-              rel="noreferrer"
-              >${t("overview.connection.docsLink")}</a
-            >
-          </div>
         </div>
       </div>
     </div>

@@ -230,7 +230,6 @@ function countActiveEmployees(state: AppViewState): number {
 function renderGatewayHealthBar(state: AppViewState) {
   const channelCount = countConnectedChannels(state);
   const employeeCount = countActiveEmployees(state);
-  const version = state.hello?.server?.version ?? state.serverVersion ?? "";
 
   return html`
     <div class="health-bar" aria-label="Gateway health">
@@ -262,11 +261,6 @@ function renderGatewayHealthBar(state: AppViewState) {
         <span class="health-icon" aria-hidden="true">${icons.brain}</span>
         <span>${employeeCount} employees</span>
       </button>
-      ${version
-        ? html`<div class="health-item health-item--version" title=${`Gateway version v${version}`}>
-            v${version}
-          </div>`
-        : nothing}
     </div>
   `;
 }

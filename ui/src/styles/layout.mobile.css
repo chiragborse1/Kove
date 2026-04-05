@@ -199,21 +199,8 @@
     padding: 12px 8px 0;
   }
 
-  .sidebar--collapsed .sidebar-version {
-    width: auto;
-    min-height: 40px;
-    padding: 0 12px;
-  }
-
   .shell--nav-collapsed:not(.shell--nav-drawer-open) .sidebar--collapsed .sidebar-shell__footer {
     padding: 8px 0 2px;
-  }
-
-  .shell--nav-collapsed:not(.shell--nav-drawer-open) .sidebar--collapsed .sidebar-version {
-    width: 44px;
-    min-height: 44px;
-    padding: 0;
-    justify-content: center;
   }
 
   .shell--nav-collapsed:not(.shell--nav-drawer-open) .sidebar-mode-switch {
@@ -280,10 +267,6 @@
   .health-item {
     gap: 4px;
     font-size: 11px;
-  }
-
-  .health-item--version {
-    display: none;
   }
 
   .health-icon,
