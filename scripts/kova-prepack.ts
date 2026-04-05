@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node --import tsx
 
-import { spawnSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -27,6 +27,7 @@ function main(): void {
   const isolatedHome = mkdtempSync(path.join(os.tmpdir(), "kova-prepack-home-"));
   const isolatedStateDir = mkdtempSync(path.join(os.tmpdir(), "kova-prepack-state-"));
   try {
+    execSync("pnpm ui:build", { stdio: "inherit" });
     run({
       command: "node",
       args: ["scripts/tsdown-build.mjs"],
