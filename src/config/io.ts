@@ -38,7 +38,13 @@ import {
   materializeRuntimeConfig,
 } from "./materialize.js";
 import { applyMergePatch } from "./merge-patch.js";
-import { resolveConfigPath, resolveDefaultConfigCandidates, resolveStateDir } from "./paths.js";
+import {
+  resolveCanonicalConfigPath,
+  resolveConfigPath,
+  resolveDefaultConfigCandidates,
+  resolveLegacyConfigPathsForCanonicalPath,
+  resolveStateDir,
+} from "./paths.js";
 import { isBlockedObjectKey } from "./prototype-keys.js";
 import { applyConfigOverrides } from "./runtime-overrides.js";
 import type { OpenClawConfig, ConfigFileSnapshot, LegacyConfigIssue } from "./types.js";
@@ -1540,6 +1546,35 @@ function normalizeDeps(overrides: ConfigIoDeps = {}): Required<ConfigIoDeps> {
   };
 }
 
+function maybePromoteLegacyConfigToCanonical(deps: Required<ConfigIoDeps>): string | null {
+  if (deps.configPath || deps.env.OPENCLAW_CONFIG_PATH?.trim()) {
+    return null;
+  }
+  const canonicalConfigPath = resolveCanonicalConfigPath(
+    deps.env,
+    resolveStateDir(deps.env, deps.homedir),
+  );
+  if (deps.fs.existsSync(canonicalConfigPath)) {
+    return canonicalConfigPath;
+  }
+  const legacyConfigPath = resolveLegacyConfigPathsForCanonicalPath(canonicalConfigPath).find(
+    (candidate) => deps.fs.existsSync(candidate),
+  );
+  if (!legacyConfigPath) {
+    return null;
+  }
+  try {
+    deps.fs.mkdirSync(path.dirname(canonicalConfigPath), { recursive: true });
+    deps.fs.copyFileSync(legacyConfigPath, canonicalConfigPath);
+    return canonicalConfigPath;
+  } catch (error) {
+    deps.logger.warn(
+      `Failed to migrate legacy config ${legacyConfigPath} -> ${canonicalConfigPath}: ${String(error)}`,
+    );
+    return legacyConfigPath;
+  }
+}
+
 function maybeLoadDotEnvForConfig(env: NodeJS.ProcessEnv): void {
   // Only hydrate dotenv for the real process env. Callers using injected env
   // objects (tests/diagnostics) should stay isolated.
@@ -1673,12 +1708,15 @@ async function finalizeReadConfigSnapshotInternalResult(
 
 export function createConfigIO(overrides: ConfigIoDeps = {}) {
   const deps = normalizeDeps(overrides);
+  const migratedConfigPath = maybePromoteLegacyConfigToCanonical(deps);
   const requestedConfigPath = resolveConfigPathForDeps(deps);
   const candidatePaths = deps.configPath
     ? [requestedConfigPath]
     : resolveDefaultConfigCandidates(deps.env, deps.homedir);
   const configPath =
-    candidatePaths.find((candidate) => deps.fs.existsSync(candidate)) ?? requestedConfigPath;
+    migratedConfigPath ??
+    candidatePaths.find((candidate) => deps.fs.existsSync(candidate)) ??
+    requestedConfigPath;
 
   function observeLoadConfigSnapshot(snapshot: ConfigFileSnapshot): ConfigFileSnapshot {
     observeConfigSnapshotSync(deps, snapshot);

@@ -112,7 +112,7 @@ describe("state + config path candidates", () => {
     expect(resolveStateDir(env)).toBe(path.join(resolvedHome, ".kova"));
 
     const candidates = resolveDefaultConfigCandidates(env);
-    expect(candidates[0]).toBe(path.join(resolvedHome, ".kova", "openclaw.json"));
+    expect(candidates[0]).toBe(path.join(resolvedHome, ".kova", "kova.json"));
   }
 
   it("uses OPENCLAW_STATE_DIR when set", () => {
@@ -152,10 +152,13 @@ describe("state + config path candidates", () => {
     const resolvedHome = path.resolve(home);
     const candidates = resolveDefaultConfigCandidates({} as NodeJS.ProcessEnv, () => home);
     const expected = [
+      path.join(resolvedHome, ".kova", "kova.json"),
       path.join(resolvedHome, ".kova", "openclaw.json"),
       path.join(resolvedHome, ".kova", "clawdbot.json"),
+      path.join(resolvedHome, ".openclaw", "kova.json"),
       path.join(resolvedHome, ".openclaw", "openclaw.json"),
       path.join(resolvedHome, ".openclaw", "clawdbot.json"),
+      path.join(resolvedHome, ".clawdbot", "kova.json"),
       path.join(resolvedHome, ".clawdbot", "openclaw.json"),
       path.join(resolvedHome, ".clawdbot", "clawdbot.json"),
     ];
@@ -212,7 +215,7 @@ describe("state + config path candidates", () => {
       const overrideDir = path.join(root, "override");
       const env = { OPENCLAW_STATE_DIR: overrideDir } as NodeJS.ProcessEnv;
       const resolved = resolveConfigPath(env, overrideDir, () => root);
-      expect(resolved).toBe(path.join(overrideDir, "openclaw.json"));
+      expect(resolved).toBe(path.join(overrideDir, "kova.json"));
     });
   });
 

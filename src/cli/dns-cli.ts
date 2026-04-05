@@ -154,9 +154,7 @@ export function registerDnsCli(program: Command) {
       );
       defaultRuntime.log("");
       defaultRuntime.log(
-        theme.heading(
-          "Recommended config ($OPENCLAW_CONFIG_PATH, default ~/.openclaw/openclaw.json):",
-        ),
+        theme.heading("Recommended config ($OPENCLAW_CONFIG_PATH, default ~/.kova/kova.json):"),
       );
       defaultRuntime.writeJson({
         gateway: { bind: "auto" },
@@ -252,7 +250,7 @@ export function registerDnsCli(program: Command) {
         defaultRuntime.log("");
         defaultRuntime.log(
           theme.muted(
-            "Note: enable discovery.wideArea.enabled in the active Kova config ($OPENCLAW_CONFIG_PATH, default ~/.openclaw/openclaw.json) on the gateway and restart the gateway so it writes the DNS-SD zone.",
+            "Note: enable discovery.wideArea.enabled in the active Kova config ($OPENCLAW_CONFIG_PATH, default ~/.kova/kova.json) on the gateway and restart the gateway so it writes the DNS-SD zone.",
           ),
         );
       }

@@ -19,7 +19,7 @@ async function writeConfig(
   home: string,
   dirname: ".openclaw",
   port: number,
-  filename: string = "openclaw.json",
+  filename: string = "kova.json",
 ) {
   const dir = path.join(home, dirname);
   await fs.mkdir(dir, { recursive: true });
@@ -37,9 +37,9 @@ function createIoForHome(home: string, env: NodeJS.ProcessEnv = {} as NodeJS.Pro
 
 async function expectNoNewerVersionWarning(touchedVersion: string) {
   await withTempHome(async (home) => {
-    const configDir = path.join(home, ".openclaw");
+    const configDir = path.join(home, ".kova");
     await fs.mkdir(configDir, { recursive: true });
-    const configPath = path.join(configDir, "openclaw.json");
+    const configPath = path.join(configDir, "kova.json");
     await fs.writeFile(
       configPath,
       JSON.stringify({ meta: { lastTouchedVersion: touchedVersion } }, null, 2),
@@ -66,19 +66,22 @@ async function expectNoNewerVersionWarning(touchedVersion: string) {
 }
 
 describe("config io paths", () => {
-  it("uses ~/.openclaw/openclaw.json when config exists", async () => {
+  it("migrates ~/.openclaw/openclaw.json to ~/.openclaw/kova.json when config exists", async () => {
     await withTempHome(async (home) => {
-      const configPath = await writeConfig(home, ".openclaw", 19001);
+      const legacyConfigPath = await writeConfig(home, ".openclaw", 19001, "openclaw.json");
       const io = createIoForHome(home);
-      expect(io.configPath).toBe(configPath);
+      const migratedPath = path.join(home, ".kova", "kova.json");
+      expect(io.configPath).toBe(migratedPath);
       expect(io.loadConfig().gateway?.port).toBe(19001);
+      await expect(fs.readFile(migratedPath, "utf-8")).resolves.toContain('"port": 19001');
+      await expect(fs.readFile(legacyConfigPath, "utf-8")).resolves.toContain('"port": 19001');
     });
   });
 
-  it("defaults to ~/.kova/openclaw.json when config is missing", async () => {
+  it("defaults to ~/.kova/kova.json when config is missing", async () => {
     await withTempHome(async (home) => {
       const io = createIoForHome(home);
-      expect(io.configPath).toBe(path.join(home, ".kova", "openclaw.json"));
+      expect(io.configPath).toBe(path.join(home, ".kova", "kova.json"));
     });
   });
 
@@ -88,7 +91,7 @@ describe("config io paths", () => {
         env: { OPENCLAW_HOME: path.join(home, "svc-home") } as NodeJS.ProcessEnv,
         homedir: () => path.join(home, "ignored-home"),
       });
-      expect(io.configPath).toBe(path.join(home, "svc-home", ".kova", "openclaw.json"));
+      expect(io.configPath).toBe(path.join(home, "svc-home", ".kova", "kova.json"));
     });
   });
 
@@ -103,9 +106,9 @@ describe("config io paths", () => {
 
   it("normalizes safe-bin config entries at config load time", async () => {
     await withTempHome(async (home) => {
-      const configDir = path.join(home, ".openclaw");
+      const configDir = path.join(home, ".kova");
       await fs.mkdir(configDir, { recursive: true });
-      const configPath = path.join(configDir, "openclaw.json");
+      const configPath = path.join(configDir, "kova.json");
       await fs.writeFile(
         configPath,
         JSON.stringify(
@@ -163,9 +166,9 @@ describe("config io paths", () => {
 
   it("logs invalid config path details and throws on invalid config", async () => {
     await withTempHome(async (home) => {
-      const configDir = path.join(home, ".openclaw");
+      const configDir = path.join(home, ".kova");
       await fs.mkdir(configDir, { recursive: true });
-      const configPath = path.join(configDir, "openclaw.json");
+      const configPath = path.join(configDir, "kova.json");
       await fs.writeFile(
         configPath,
         JSON.stringify({ gateway: { port: "not-a-number" } }, null, 2),

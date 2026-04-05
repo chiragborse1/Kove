@@ -67,7 +67,7 @@ async function promptWhatsAppOwnerAllowFrom(params: {
   const { prompter, existingAllowFrom } = params;
 
   await prompter.note(
-    "We need the sender/owner number so OpenClaw can allowlist you.",
+    "We need the sender/owner number so Kova can allowlist you.",
     "WhatsApp number",
   );
   const entry = await prompter.text({

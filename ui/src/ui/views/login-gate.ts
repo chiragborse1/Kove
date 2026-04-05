@@ -43,7 +43,7 @@ export function renderLoginGate(state: AppViewState) {
                   const v = (e.target as HTMLInputElement).value;
                   state.applySettings({ ...state.settings, token: v });
                 }}
-                placeholder="OPENCLAW_GATEWAY_TOKEN (${t("login.passwordPlaceholder")})"
+                placeholder="Paste your gateway token"
                 @keydown=${(e: KeyboardEvent) => {
                   if (e.key === "Enter") {
                     state.connect();
@@ -62,6 +62,9 @@ export function renderLoginGate(state: AppViewState) {
               >
                 ${state.loginShowGatewayToken ? icons.eye : icons.eyeOff}
               </button>
+            </div>
+            <div class="login-gate__field-note">
+              Run 'kova dashboard' to get your token automatically.
             </div>
           </label>
           <label class="field">

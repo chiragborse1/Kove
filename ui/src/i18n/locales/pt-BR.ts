@@ -59,7 +59,7 @@ export const pt_BR: TranslationMap = {
     skills: "Habilidades e chaves API.",
     nodes: "Dispositivos e comandos.",
     chat: "Chat do gateway para intervenções rápidas.",
-    config: "Editar openclaw.json.",
+    config: "Editar kova.json.",
     apiKeys: "OpenRouter key and model defaults.",
     communications: "Configurações de canais, mensagens e áudio.",
     appearance: "Configurações de tema, UI e assistente de configuração.",

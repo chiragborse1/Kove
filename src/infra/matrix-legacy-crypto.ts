@@ -383,7 +383,7 @@ export async function autoPrepareLegacyMatrixCrypto(params: {
     if (!plan.deviceId) {
       warnings.push(
         `Legacy Matrix encrypted state detected at ${plan.legacyCryptoPath}, but no device ID was found for account "${plan.accountId}". ` +
-          `OpenClaw will continue, but old encrypted history cannot be recovered automatically.`,
+          `Kova will continue, but old encrypted history cannot be recovered automatically.`,
       );
       continue;
     }

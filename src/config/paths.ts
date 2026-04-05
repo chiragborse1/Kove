@@ -21,8 +21,8 @@ const PREFERRED_STATE_DIRNAME = ".kova";
 const OPENCLAW_COMPAT_STATE_DIRNAME = ".openclaw";
 // Support the remaining legacy pre-rebrand state dir.
 const LEGACY_STATE_DIRNAMES = [".clawdbot"] as const;
-const CONFIG_FILENAME = "openclaw.json";
-const LEGACY_CONFIG_FILENAMES = ["clawdbot.json"] as const;
+const CONFIG_FILENAME = "kova.json";
+const LEGACY_CONFIG_FILENAMES = ["openclaw.json", "clawdbot.json"] as const;
 
 function resolveDefaultHomeDir(): string {
   return resolveRequiredHomeDir(process.env, os.homedir);
@@ -187,7 +187,7 @@ export const STATE_DIR = resolveStateDir();
 /**
  * Config file path (JSON or JSON5).
  * Can be overridden via OPENCLAW_CONFIG_PATH.
- * Default: ~/.kova/openclaw.json (or $KOVA_STATE_DIR/openclaw.json)
+ * Default: ~/.kova/kova.json (or $KOVA_STATE_DIR/kova.json)
  */
 export function resolveCanonicalConfigPath(
   env: NodeJS.ProcessEnv = process.env,
@@ -198,6 +198,11 @@ export function resolveCanonicalConfigPath(
     return resolveUserPath(override, env, envHomedir(env));
   }
   return path.join(stateDir, CONFIG_FILENAME);
+}
+
+export function resolveLegacyConfigPathsForCanonicalPath(configPath: string): string[] {
+  const dir = path.dirname(configPath);
+  return LEGACY_CONFIG_FILENAMES.map((name) => path.join(dir, name));
 }
 
 /**

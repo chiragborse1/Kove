@@ -1,7 +1,7 @@
 #!/usr/bin/env -S node --import tsx
 
 import { execSync, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -23,22 +23,36 @@ function run(step: RunStep): void {
   process.exit(result.status ?? 1);
 }
 
+function writeGitCommitMetadata(): void {
+  const hash = execSync("git rev-parse --short HEAD", {
+    stdio: ["ignore", "pipe", "inherit"],
+  })
+    .toString()
+    .trim();
+  const distDir = path.join(process.cwd(), "dist");
+  mkdirSync(distDir, { recursive: true });
+  writeFileSync(path.join(distDir, "git-commit.json"), `${JSON.stringify({ hash }, null, 2)}\n`);
+}
+
 function main(): void {
   const isolatedHome = mkdtempSync(path.join(os.tmpdir(), "kova-prepack-home-"));
   const isolatedStateDir = mkdtempSync(path.join(os.tmpdir(), "kova-prepack-state-"));
   try {
     execSync("pnpm ui:build", { stdio: "inherit" });
+    // Seed the metadata before the build, then refresh it after tsdown's clean step.
+    writeGitCommitMetadata();
     run({
       command: "node",
       args: ["scripts/tsdown-build.mjs"],
     });
-    run({
-      command: "node",
-      args: ["scripts/build-stamp.mjs"],
-    });
+    writeGitCommitMetadata();
     run({
       command: "node",
       args: ["scripts/copy-bundled-plugin-metadata.mjs"],
+    });
+    run({
+      command: "node",
+      args: ["scripts/build-stamp.mjs"],
     });
     run({
       command: "node",

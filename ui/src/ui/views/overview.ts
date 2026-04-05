@@ -232,7 +232,7 @@ export function renderOverview(props: OverviewProps) {
                         const v = (e.target as HTMLInputElement).value;
                         props.onSettingsChange({ ...props.settings, token: v });
                       }}
-                      placeholder="OPENCLAW_GATEWAY_TOKEN"
+                      placeholder="Paste your gateway token"
                     />
                     <button
                       type="button"
@@ -245,6 +245,9 @@ export function renderOverview(props: OverviewProps) {
                     >
                       ${props.showGatewayToken ? icons.eye : icons.eyeOff}
                     </button>
+                  </div>
+                  <div class="login-gate__field-note">
+                    Run 'kova dashboard' to get your token automatically.
                   </div>
                 </label>
                 <label class="field">

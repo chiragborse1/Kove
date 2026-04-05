@@ -60,7 +60,7 @@ export const en: TranslationMap = {
     skills: "Skills and API keys.",
     nodes: "Paired devices and commands.",
     chat: "Gateway chat for quick interventions.",
-    config: "Edit openclaw.json.",
+    config: "Edit kova.json.",
     apiKeys: "OpenRouter key and model defaults.",
     communications: "Channels, messages, and audio settings.",
     appearance: "Theme, UI, and setup wizard settings.",
@@ -380,7 +380,7 @@ export const en: TranslationMap = {
     },
   },
   login: {
-    subtitle: "Gateway Dashboard",
+    subtitle: "Connect to your AI team",
     passwordPlaceholder: "optional",
   },
   chat: {

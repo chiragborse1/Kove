@@ -132,6 +132,22 @@ describe("git commit resolution", () => {
     expect(readBuildInfoCommit.mock.calls.length).toBe(firstCallRequires);
   });
 
+  it("prefers embedded commit metadata when build info is missing", async () => {
+    const temp = await makeTempDir("git-commit-embedded");
+
+    expect(
+      resolveCommitHash({
+        cwd: temp,
+        env: {},
+        readers: {
+          readBuildInfoCommit: () => null,
+          readEmbeddedCommit: () => "c0ffee0",
+          readPackageJsonCommit: () => "badc0ff",
+        },
+      }),
+    ).toBe("c0ffee0");
+  });
+
   it("caches package.json fallback results per resolved search directory", async () => {
     const temp = await makeTempDir("git-commit-package-json-cache");
     const readPackageJsonCommit = vi.fn(() => "badc0ff");

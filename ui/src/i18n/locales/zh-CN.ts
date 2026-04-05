@@ -59,7 +59,7 @@ export const zh_CN: TranslationMap = {
     skills: "技能和 API 密钥。",
     nodes: "配对设备和命令。",
     chat: "网关聊天，快速干预。",
-    config: "编辑 openclaw.json。",
+    config: "编辑 kova.json。",
     apiKeys: "OpenRouter key and model defaults.",
     communications: "频道、消息和音频设置。",
     appearance: "主题、界面和设置向导设置。",

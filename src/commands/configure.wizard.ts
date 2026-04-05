@@ -8,7 +8,7 @@ import { ensureControlUiAssetsBuilt } from "../infra/control-ui-assets.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
 import { note } from "../terminal/note.js";
-import { resolveUserPath } from "../utils.js";
+import { displayPath, resolveUserPath } from "../utils.js";
 import { createClackPrompter } from "../wizard/clack-prompter.js";
 import { WizardCancelledError } from "../wizard/prompts.js";
 import { resolveSetupSecretInputString } from "../wizard/setup.secret-input.js";
@@ -146,7 +146,7 @@ async function promptChannelMode(runtime: RuntimeEnv): Promise<ChannelsWizardMod
         {
           value: "remove",
           label: "Remove channel config",
-          hint: "Delete channel tokens/settings from openclaw.json",
+          hint: "Delete channel tokens/settings from kova.json",
         },
       ],
       initialValue: "configure",
@@ -459,7 +459,7 @@ export async function runConfigureWizard(
       const workspaceInput = guardCancel(
         await text({
           message: "Workspace directory",
-          initialValue: workspaceDir,
+          initialValue: displayPath(workspaceDir),
         }),
         runtime,
       );
@@ -483,7 +483,7 @@ export async function runConfigureWizard(
         if (hasExistingContent) {
           note(
             [
-              `Existing workspace detected at ${workspaceDir}`,
+              `Existing workspace detected at ${displayPath(workspaceDir)}`,
               "Existing files are preserved. Missing templates may be created, never overwritten.",
             ].join("\n"),
             "Existing workspace",

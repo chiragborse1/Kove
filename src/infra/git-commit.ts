@@ -24,6 +24,7 @@ const cachedGitCommitBySearchDir = new Map<string, string | null>();
 
 export type CommitMetadataReaders = {
   readGitCommit?: (searchDir: string, packageRoot: string | null) => string | null | undefined;
+  readEmbeddedCommit?: () => string | null;
   readBuildInfoCommit?: () => string | null;
   readPackageJsonCommit?: () => string | null;
 };
@@ -158,6 +159,30 @@ const readCommitFromPackageJson = () => {
   }
 };
 
+const readCommitFromEmbeddedMetadata = () => {
+  try {
+    const require = createRequire(import.meta.url);
+    const candidates = ["../git-commit.json", "./git-commit.json"];
+    for (const candidate of candidates) {
+      try {
+        const info = require(candidate) as {
+          hash?: string | null;
+          commit?: string | null;
+        };
+        const formatted = formatCommit(info.hash ?? info.commit ?? null);
+        if (formatted) {
+          return formatted;
+        }
+      } catch {
+        // ignore missing candidate
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 const readCommitFromBuildInfo = () => {
   try {
     const require = createRequire(import.meta.url);
@@ -216,6 +241,10 @@ export const resolveCommitHash = (
   const buildInfoCommit = readers.readBuildInfoCommit?.() ?? readCommitFromBuildInfo();
   if (buildInfoCommit) {
     return cacheGitCommit(searchDir, buildInfoCommit);
+  }
+  const embeddedCommit = readers.readEmbeddedCommit?.() ?? readCommitFromEmbeddedMetadata();
+  if (embeddedCommit) {
+    return cacheGitCommit(searchDir, embeddedCommit);
   }
   const pkgCommit = readers.readPackageJsonCommit?.() ?? readCommitFromPackageJson();
   if (pkgCommit) {
