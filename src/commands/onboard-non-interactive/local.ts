@@ -264,7 +264,7 @@ export async function runNonInteractiveLocalSetup(params: {
 
   if (!opts.json) {
     runtime.log(
-      `Tip: run \`${formatCliCommand("openclaw configure --section web")}\` to store your Brave API key for web_search. Docs: https://docs.openclaw.ai/tools/web`,
+      `Tip: run \`${formatCliCommand("kova configure --section web")}\` to store your Brave API key for web_search. Docs: https://docs.kova.ai/tools/web`,
     );
   }
 }

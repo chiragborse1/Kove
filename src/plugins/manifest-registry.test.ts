@@ -522,7 +522,7 @@ describe("loadPluginManifestRegistry", () => {
       name: "skips plugins whose minHostVersion is newer than the current host",
       minHostVersion: ">=2026.3.22",
       env: { OPENCLAW_VERSION: "2026.3.21" } as NodeJS.ProcessEnv,
-      expectedMessage: "plugin requires OpenClaw >=2026.3.22, but this host is 2026.3.21",
+      expectedMessage: "plugin requires Kova >=2026.3.22, but this host is 2026.3.21",
       expectWarn: false,
     },
     {
@@ -535,7 +535,7 @@ describe("loadPluginManifestRegistry", () => {
       name: "warns distinctly when host version cannot be determined",
       minHostVersion: ">=2026.3.22",
       env: { OPENCLAW_VERSION: "unknown" } as NodeJS.ProcessEnv,
-      expectedMessage: "host version could not be determined",
+      expectedMessage: "current Kova version is unavailable in this runtime",
       expectWarn: true,
     },
   ] as const)("$name", ({ minHostVersion, env, expectedMessage, expectWarn }) => {

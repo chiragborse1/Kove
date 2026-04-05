@@ -367,7 +367,7 @@ export async function runSearchSetupFlow(
       [
         "No web search providers are currently available under this plugin policy.",
         "Enable plugins or remove deny rules, then run setup again.",
-        "Docs: https://docs.openclaw.ai/tools/web",
+        "Docs: https://docs.kova.ai/tools/web",
       ].join("\n"),
       "Web search",
     );
@@ -378,7 +378,7 @@ export async function runSearchSetupFlow(
     [
       "Web search lets your agent look things up online.",
       "Choose a provider. Some providers need an API key, and some work key-free.",
-      "Docs: https://docs.openclaw.ai/tools/web",
+      "Docs: https://docs.kova.ai/tools/web",
     ].join("\n"),
     "Web search",
   );
@@ -452,8 +452,8 @@ export async function runSearchSetupFlow(
     await prompter.note(
       [
         `${entry.label} works without an API key.`,
-        "OpenClaw will enable the plugin and use it as your web_search provider.",
-        `Docs: ${entry.docsUrl ?? "https://docs.openclaw.ai/tools/web"}`,
+        "Kova will enable the plugin and use it as your web_search provider.",
+        `Docs: ${entry.docsUrl ?? "https://docs.kova.ai/tools/web"}`,
       ].join("\n"),
       "Web search",
     );
@@ -482,10 +482,10 @@ export async function runSearchSetupFlow(
     const ref = buildSearchEnvRef(config, choice);
     await prompter.note(
       [
-        "Secret references enabled — OpenClaw will store a reference instead of the API key.",
+        "Secret references enabled — Kova will store a reference instead of the API key.",
         `Env var: ${ref.id}${envAvailable ? " (detected)" : ""}.`,
         ...(envAvailable ? [] : [`Set ${ref.id} in the Gateway environment.`]),
-        "Docs: https://docs.openclaw.ai/tools/web",
+        "Docs: https://docs.kova.ai/tools/web",
       ].join("\n"),
       "Web search",
     );
@@ -547,7 +547,7 @@ export async function runSearchSetupFlow(
     [
       `No ${credentialLabel} stored — web_search won't work until a key is available.`,
       `Get your key at: ${entry.signupUrl}`,
-      "Docs: https://docs.openclaw.ai/tools/web",
+      "Docs: https://docs.kova.ai/tools/web",
     ].join("\n"),
     "Web search",
   );

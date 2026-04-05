@@ -1175,7 +1175,7 @@ describe("installPluginFromDir", () => {
       hostVersion: "2026.3.21",
       minHostVersion: ">=2026.3.22",
       expectedCode: PLUGIN_INSTALL_ERROR_CODE.INCOMPATIBLE_HOST_VERSION,
-      expectedMessageIncludes: ["requires OpenClaw >=2026.3.22, but this host is 2026.3.21"],
+      expectedMessageIncludes: ["requires Kova >=2026.3.22, but this host is 2026.3.21"],
     },
     {
       name: "rejects plugins with invalid minHostVersion metadata",
@@ -1188,7 +1188,7 @@ describe("installPluginFromDir", () => {
       hostVersion: "unknown",
       minHostVersion: ">=2026.3.22",
       expectedCode: PLUGIN_INSTALL_ERROR_CODE.UNKNOWN_HOST_VERSION,
-      expectedMessageIncludes: ["host version could not be determined"],
+      expectedMessageIncludes: ["the current Kova version is unavailable in this runtime"],
     },
   ] as const)(
     "$name",
