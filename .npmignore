@@ -8,3 +8,8 @@ docs/
 apps/
 *.png
 *.jpg
+
+# Force include UI assets despite gitignore
+!dist/
+!dist/control-ui/
+!dist/control-ui/**
