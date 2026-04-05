@@ -17,9 +17,10 @@ export function resolveIsNixMode(env: NodeJS.ProcessEnv = process.env): boolean 
 
 export const isNixMode = resolveIsNixMode();
 
+const PREFERRED_STATE_DIRNAME = ".kova";
+const OPENCLAW_COMPAT_STATE_DIRNAME = ".openclaw";
 // Support the remaining legacy pre-rebrand state dir.
 const LEGACY_STATE_DIRNAMES = [".clawdbot"] as const;
-const NEW_STATE_DIRNAME = ".openclaw";
 const CONFIG_FILENAME = "openclaw.json";
 const LEGACY_CONFIG_FILENAMES = ["clawdbot.json"] as const;
 
@@ -32,12 +33,22 @@ function envHomedir(env: NodeJS.ProcessEnv): () => string {
   return () => resolveRequiredHomeDir(env, os.homedir);
 }
 
+function preferredStateDir(homedir: () => string = resolveDefaultHomeDir): string {
+  return path.join(homedir(), PREFERRED_STATE_DIRNAME);
+}
+
+function openClawCompatStateDir(homedir: () => string = resolveDefaultHomeDir): string {
+  return path.join(homedir(), OPENCLAW_COMPAT_STATE_DIRNAME);
+}
+
 function legacyStateDirs(homedir: () => string = resolveDefaultHomeDir): string[] {
   return LEGACY_STATE_DIRNAMES.map((dir) => path.join(homedir(), dir));
 }
 
+// Keep the existing clawdbot -> openclaw migration target stable. Kova bootstraps
+// a compat symlink instead of moving openclaw data into a new directory.
 function newStateDir(homedir: () => string = resolveDefaultHomeDir): string {
-  return path.join(homedir(), NEW_STATE_DIRNAME);
+  return openClawCompatStateDir(homedir);
 }
 
 export function resolveLegacyStateDir(homedir: () => string = resolveDefaultHomeDir): string {
@@ -52,10 +63,65 @@ export function resolveNewStateDir(homedir: () => string = resolveDefaultHomeDir
   return newStateDir(homedir);
 }
 
+function pathExists(targetPath: string): boolean {
+  try {
+    return fs.existsSync(targetPath);
+  } catch {
+    return false;
+  }
+}
+
+function buildKovaCompatLinkMessage(params: {
+  env: NodeJS.ProcessEnv;
+  preferredDir: string;
+  compatDir: string;
+}): string {
+  if (params.env.OPENCLAW_HOME?.trim()) {
+    return `Kova: linked ${params.preferredDir} -> ${params.compatDir} for compatibility`;
+  }
+  return "Kova: linked ~/.kova → ~/.openclaw for compatibility";
+}
+
+export function ensureDefaultStateDirReady(
+  env: NodeJS.ProcessEnv = process.env,
+  homedir: () => string = envHomedir(env),
+): { created: boolean; linked: boolean; message?: string } {
+  if (env.OPENCLAW_STATE_DIR?.trim() || env.VITEST === "true") {
+    return { created: false, linked: false };
+  }
+
+  const effectiveHomedir = () => resolveRequiredHomeDir(env, homedir);
+  const preferredDir = preferredStateDir(effectiveHomedir);
+  if (pathExists(preferredDir)) {
+    return { created: false, linked: false };
+  }
+
+  const compatDir = openClawCompatStateDir(effectiveHomedir);
+  if (pathExists(compatDir)) {
+    try {
+      fs.symlinkSync(compatDir, preferredDir, process.platform === "win32" ? "junction" : "dir");
+      return {
+        created: false,
+        linked: true,
+        message: buildKovaCompatLinkMessage({ env, preferredDir, compatDir }),
+      };
+    } catch {
+      return { created: false, linked: false };
+    }
+  }
+
+  try {
+    fs.mkdirSync(preferredDir, { recursive: true, mode: 0o700 });
+    return { created: true, linked: false };
+  } catch {
+    return { created: false, linked: false };
+  }
+}
+
 /**
  * State directory for mutable data (sessions, logs, caches).
  * Can be overridden via OPENCLAW_STATE_DIR.
- * Default: ~/.openclaw
+ * Default: ~/.kova
  */
 export function resolveStateDir(
   env: NodeJS.ProcessEnv = process.env,
@@ -66,16 +132,19 @@ export function resolveStateDir(
   if (override) {
     return resolveUserPath(override, env, effectiveHomedir);
   }
-  const newDir = newStateDir(effectiveHomedir);
+  const newDir = preferredStateDir(effectiveHomedir);
   if (env.OPENCLAW_TEST_FAST === "1") {
     return newDir;
   }
-  const legacyDirs = legacyStateDirs(effectiveHomedir);
+  const compatibilityDirs = [
+    openClawCompatStateDir(effectiveHomedir),
+    ...legacyStateDirs(effectiveHomedir),
+  ];
   const hasNew = fs.existsSync(newDir);
   if (hasNew) {
     return newDir;
   }
-  const existingLegacy = legacyDirs.find((dir) => {
+  const existingLegacy = compatibilityDirs.find((dir) => {
     try {
       return fs.existsSync(dir);
     } catch {
@@ -101,7 +170,7 @@ export const STATE_DIR = resolveStateDir();
 /**
  * Config file path (JSON or JSON5).
  * Can be overridden via OPENCLAW_CONFIG_PATH.
- * Default: ~/.openclaw/openclaw.json (or $OPENCLAW_STATE_DIR/openclaw.json)
+ * Default: ~/.kova/openclaw.json (or $OPENCLAW_STATE_DIR/openclaw.json)
  */
 export function resolveCanonicalConfigPath(
   env: NodeJS.ProcessEnv = process.env,
@@ -183,7 +252,7 @@ export const CONFIG_PATH = resolveConfigPathCandidate();
 
 /**
  * Resolve default config path candidates across default locations.
- * Order: explicit config path → state-dir-derived paths → new default.
+ * Order: explicit config path → state-dir-derived paths → preferred default → compatibility dirs.
  */
 export function resolveDefaultConfigCandidates(
   env: NodeJS.ProcessEnv = process.env,
@@ -203,7 +272,11 @@ export function resolveDefaultConfigCandidates(
     candidates.push(...LEGACY_CONFIG_FILENAMES.map((name) => path.join(resolved, name)));
   }
 
-  const defaultDirs = [newStateDir(effectiveHomedir), ...legacyStateDirs(effectiveHomedir)];
+  const defaultDirs = [
+    preferredStateDir(effectiveHomedir),
+    openClawCompatStateDir(effectiveHomedir),
+    ...legacyStateDirs(effectiveHomedir),
+  ];
   for (const dir of defaultDirs) {
     candidates.push(path.join(dir, CONFIG_FILENAME));
     candidates.push(...LEGACY_CONFIG_FILENAMES.map((name) => path.join(dir, name)));

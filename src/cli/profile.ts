@@ -84,7 +84,11 @@ function resolveProfileStateDir(
   homedir: () => string,
 ): string {
   const suffix = profile.toLowerCase() === "default" ? "" : `-${profile}`;
-  return path.join(resolveRequiredHomeDir(env as NodeJS.ProcessEnv, homedir), `.openclaw${suffix}`);
+  const home = resolveRequiredHomeDir(env as NodeJS.ProcessEnv, homedir);
+  if (!suffix) {
+    return path.join(home, ".kova");
+  }
+  return path.join(home, `.openclaw${suffix}`);
 }
 
 export function applyCliProfileEnv(params: {

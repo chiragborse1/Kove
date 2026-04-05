@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import type { OpenClawConfig } from "../config/config.js";
-import { resolveStateDir } from "../config/paths.js";
+import { ensureDefaultStateDirReady, resolveStateDir } from "../config/paths.js";
 import { normalizeEnv } from "../infra/env.js";
 import { formatUncaughtError } from "../infra/errors.js";
 import { isMainModule } from "../infra/is-main.js";
@@ -150,6 +150,11 @@ export async function runCli(argv: string[] = process.argv) {
     return;
   }
   let normalizedArgv = parsedProfile.argv;
+
+  const stateDirBootstrap = ensureDefaultStateDirReady(process.env);
+  if (stateDirBootstrap.message) {
+    console.log(stateDirBootstrap.message);
+  }
 
   if (shouldLoadCliDotEnv()) {
     const { loadCliDotEnv } = await import("./dotenv.js");

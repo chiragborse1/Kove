@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { withTempDir } from "../test-helpers/temp-dir.js";
 import {
   DEFAULT_GATEWAY_PORT,
+  ensureDefaultStateDirReady,
   resolveDefaultConfigCandidates,
   resolveConfigPathCandidate,
   resolveConfigPath,
@@ -108,10 +109,10 @@ describe("state + config path candidates", () => {
       throw new Error("OPENCLAW_HOME must be set for this assertion helper");
     }
     const resolvedHome = path.resolve(configuredHome);
-    expect(resolveStateDir(env)).toBe(path.join(resolvedHome, ".openclaw"));
+    expect(resolveStateDir(env)).toBe(path.join(resolvedHome, ".kova"));
 
     const candidates = resolveDefaultConfigCandidates(env);
-    expect(candidates[0]).toBe(path.join(resolvedHome, ".openclaw", "openclaw.json"));
+    expect(candidates[0]).toBe(path.join(resolvedHome, ".kova", "openclaw.json"));
   }
 
   it("uses OPENCLAW_STATE_DIR when set", () => {
@@ -142,6 +143,8 @@ describe("state + config path candidates", () => {
     const resolvedHome = path.resolve(home);
     const candidates = resolveDefaultConfigCandidates({} as NodeJS.ProcessEnv, () => home);
     const expected = [
+      path.join(resolvedHome, ".kova", "openclaw.json"),
+      path.join(resolvedHome, ".kova", "clawdbot.json"),
       path.join(resolvedHome, ".openclaw", "openclaw.json"),
       path.join(resolvedHome, ".openclaw", "clawdbot.json"),
       path.join(resolvedHome, ".clawdbot", "openclaw.json"),
@@ -150,16 +153,25 @@ describe("state + config path candidates", () => {
     expect(candidates).toEqual(expected);
   });
 
-  it("prefers ~/.openclaw when it exists and legacy dir is missing", async () => {
+  it("prefers ~/.kova when it exists and compatibility dirs are missing", async () => {
     await withTempDir({ prefix: "openclaw-state-" }, async (root) => {
-      const newDir = path.join(root, ".openclaw");
+      const newDir = path.join(root, ".kova");
       await fs.mkdir(newDir, { recursive: true });
       const resolved = resolveStateDir({} as NodeJS.ProcessEnv, () => root);
       expect(resolved).toBe(newDir);
     });
   });
 
-  it("falls back to existing legacy state dir when ~/.openclaw is missing", async () => {
+  it("falls back to ~/.openclaw when ~/.kova is missing", async () => {
+    await withTempDir({ prefix: "openclaw-state-compat-" }, async (root) => {
+      const compatDir = path.join(root, ".openclaw");
+      await fs.mkdir(compatDir, { recursive: true });
+      const resolved = resolveStateDir({} as NodeJS.ProcessEnv, () => root);
+      expect(resolved).toBe(compatDir);
+    });
+  });
+
+  it("falls back to existing legacy state dir when ~/.kova and ~/.openclaw are missing", async () => {
     await withTempDir({ prefix: "openclaw-state-legacy-" }, async (root) => {
       const legacyDir = path.join(root, ".clawdbot");
       await fs.mkdir(legacyDir, { recursive: true });
@@ -191,6 +203,30 @@ describe("state + config path candidates", () => {
       const env = { OPENCLAW_STATE_DIR: overrideDir } as NodeJS.ProcessEnv;
       const resolved = resolveConfigPath(env, overrideDir, () => root);
       expect(resolved).toBe(path.join(overrideDir, "openclaw.json"));
+    });
+  });
+
+  it("creates ~/.kova on a fresh install", async () => {
+    await withTempDir({ prefix: "openclaw-state-bootstrap-" }, async (root) => {
+      const result = ensureDefaultStateDirReady({} as NodeJS.ProcessEnv, () => root);
+      expect(result).toEqual({ created: true, linked: false });
+      await expect(fs.stat(path.join(root, ".kova"))).resolves.toBeDefined();
+    });
+  });
+
+  it("links ~/.kova to ~/.openclaw when compatibility state already exists", async () => {
+    await withTempDir({ prefix: "openclaw-state-link-" }, async (root) => {
+      const compatDir = path.join(root, ".openclaw");
+      await fs.mkdir(compatDir, { recursive: true });
+
+      const result = ensureDefaultStateDirReady({} as NodeJS.ProcessEnv, () => root);
+
+      expect(result).toMatchObject({
+        created: false,
+        linked: true,
+        message: "Kova: linked ~/.kova → ~/.openclaw for compatibility",
+      });
+      await expect(fs.readlink(path.join(root, ".kova"))).resolves.toBe(compatDir);
     });
   });
 });

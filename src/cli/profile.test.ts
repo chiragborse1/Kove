@@ -94,6 +94,18 @@ describe("parseCliProfileArgs", () => {
 });
 
 describe("applyCliProfileEnv", () => {
+  it("uses ~/.kova for the default profile", () => {
+    const env: Record<string, string | undefined> = {};
+    applyCliProfileEnv({
+      profile: "default",
+      env,
+      homedir: () => "/home/peter",
+    });
+    const expectedStateDir = path.join(path.resolve("/home/peter"), ".kova");
+    expect(env.OPENCLAW_STATE_DIR).toBe(expectedStateDir);
+    expect(env.OPENCLAW_CONFIG_PATH).toBe(path.join(expectedStateDir, "openclaw.json"));
+  });
+
   it("fills env defaults for dev profile", () => {
     const env: Record<string, string | undefined> = {};
     applyCliProfileEnv({

@@ -7,6 +7,7 @@ import { isRootHelpInvocation, isRootVersionInvocation } from "./cli/argv.js";
 import { parseCliContainerArgs, resolveCliContainerTarget } from "./cli/container-target.js";
 import { applyCliProfileEnv, parseCliProfileArgs } from "./cli/profile.js";
 import { normalizeWindowsArgv } from "./cli/windows-argv.js";
+import { ensureDefaultStateDirReady } from "./config/paths.js";
 import { buildCliRespawnPlan } from "./entry.respawn.js";
 import { isTruthyEnvValue, normalizeEnv } from "./infra/env.js";
 import { isMainModule } from "./infra/is-main.js";
@@ -148,6 +149,11 @@ if (
       applyCliProfileEnv({ profile: parsed.profile });
       // Keep Commander and ad-hoc argv checks consistent.
       process.argv = parsed.argv;
+    }
+
+    const stateDirBootstrap = ensureDefaultStateDirReady(process.env);
+    if (stateDirBootstrap.message) {
+      console.log(stateDirBootstrap.message);
     }
 
     if (!tryHandleRootVersionFastPath(process.argv)) {

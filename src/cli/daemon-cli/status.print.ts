@@ -15,7 +15,7 @@ import { isWSLEnv } from "../../infra/wsl.js";
 import { getResolvedLoggerSettings } from "../../logging.js";
 import { defaultRuntime } from "../../runtime.js";
 import { colorize } from "../../terminal/theme.js";
-import { shortenHomePath } from "../../utils.js";
+import { displayKovaHomeStatePath } from "../../utils.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   createCliStatusTextStyles,
@@ -61,6 +61,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
   const { rich, label, accent, infoText, okText, warnText, errorText } =
     createCliStatusTextStyles();
   const spacer = () => defaultRuntime.log("");
+  const displayStatePath = (input: string) => displayKovaHomeStatePath(input);
 
   const { service, rpc, extraServices } = status;
   const serviceStatus = service.loaded
@@ -69,7 +70,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
   defaultRuntime.log(`${label("Service:")} ${accent(service.label)} (${serviceStatus})`);
   try {
     const logFile = getResolvedLoggerSettings().file;
-    defaultRuntime.log(`${label("File logs:")} ${infoText(shortenHomePath(logFile))}`);
+    defaultRuntime.log(`${label("File logs:")} ${infoText(displayStatePath(logFile))}`);
   } catch {
     // ignore missing config/log resolution
   }
@@ -80,12 +81,12 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
   }
   if (service.command?.sourcePath) {
     defaultRuntime.log(
-      `${label("Service file:")} ${infoText(shortenHomePath(service.command.sourcePath))}`,
+      `${label("Service file:")} ${infoText(displayStatePath(service.command.sourcePath))}`,
     );
   }
   if (service.command?.workingDirectory) {
     defaultRuntime.log(
-      `${label("Working dir:")} ${infoText(shortenHomePath(service.command.workingDirectory))}`,
+      `${label("Working dir:")} ${infoText(displayStatePath(service.command.workingDirectory))}`,
     );
   }
   const daemonEnvLines = safeDaemonEnv(service.command?.environment);
@@ -108,7 +109,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
   }
 
   if (status.config) {
-    const cliCfg = `${shortenHomePath(status.config.cli.path)}${status.config.cli.exists ? "" : " (missing)"}${status.config.cli.valid ? "" : " (invalid)"}`;
+    const cliCfg = `${displayStatePath(status.config.cli.path)}${status.config.cli.exists ? "" : " (missing)"}${status.config.cli.valid ? "" : " (invalid)"}`;
     defaultRuntime.log(`${label("Config (cli):")} ${infoText(cliCfg)}`);
     if (!status.config.cli.valid && status.config.cli.issues?.length) {
       for (const issue of status.config.cli.issues.slice(0, 5)) {
@@ -118,7 +119,7 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
       }
     }
     if (status.config.daemon) {
-      const daemonCfg = `${shortenHomePath(status.config.daemon.path)}${status.config.daemon.exists ? "" : " (missing)"}${status.config.daemon.valid ? "" : " (invalid)"}`;
+      const daemonCfg = `${displayStatePath(status.config.daemon.path)}${status.config.daemon.exists ? "" : " (missing)"}${status.config.daemon.valid ? "" : " (invalid)"}`;
       defaultRuntime.log(`${label("Config (service):")} ${infoText(daemonCfg)}`);
       if (!status.config.daemon.valid && status.config.daemon.issues?.length) {
         for (const issue of status.config.daemon.issues.slice(0, 5)) {
@@ -302,8 +303,8 @@ export function printDaemonStatus(status: DaemonStatus, opts: { json: boolean })
       );
     } else if (process.platform === "darwin") {
       const logs = resolveGatewayLogPaths(service.command?.environment ?? process.env);
-      defaultRuntime.error(`${errorText("Logs:")} ${shortenHomePath(logs.stdoutPath)}`);
-      defaultRuntime.error(`${errorText("Errors:")} ${shortenHomePath(logs.stderrPath)}`);
+      defaultRuntime.error(`${errorText("Logs:")} ${displayStatePath(logs.stdoutPath)}`);
+      defaultRuntime.error(`${errorText("Errors:")} ${displayStatePath(logs.stderrPath)}`);
     }
     spacer();
   }

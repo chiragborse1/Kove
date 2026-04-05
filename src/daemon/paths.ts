@@ -38,5 +38,8 @@ export function resolveGatewayStateDir(env: Record<string, string | undefined>):
   }
   const home = resolveHomeDir(env);
   const suffix = resolveGatewayProfileSuffix(env.OPENCLAW_PROFILE);
+  if (!suffix) {
+    return path.join(home, ".kova");
+  }
   return path.join(home, `.openclaw${suffix}`);
 }

@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   assertWebChannel,
   CONFIG_DIR,
+  displayKovaHomeStatePath,
   ensureDir,
   jidToE164,
   normalizeE164,
@@ -119,10 +120,10 @@ describe("jidToE164", () => {
 });
 
 describe("resolveConfigDir", () => {
-  it("prefers ~/.openclaw when legacy dir is missing", async () => {
+  it("prefers ~/.kova when compatibility dirs are missing", async () => {
     const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "openclaw-config-dir-"));
     try {
-      const newDir = path.join(root, ".openclaw");
+      const newDir = path.join(root, ".kova");
       await fs.promises.mkdir(newDir, { recursive: true });
       const resolved = resolveConfigDir({} as NodeJS.ProcessEnv, () => root);
       expect(resolved).toBe(newDir);
@@ -174,6 +175,16 @@ describe("shortenHomeInString", () => {
       shortenHomeInString(`config: ${path.resolve("/srv/openclaw-home")}/.openclaw/openclaw.json`),
     ).toBe("config: $OPENCLAW_HOME/.openclaw/openclaw.json");
 
+    vi.unstubAllEnvs();
+  });
+});
+
+describe("displayKovaHomeStatePath", () => {
+  it("shows ~/.kova for home-state paths still rooted at ~/.openclaw", () => {
+    vi.stubEnv("HOME", "/home/tester");
+    expect(displayKovaHomeStatePath("/home/tester/.openclaw/openclaw.json")).toBe(
+      "~/.kova/openclaw.json",
+    );
     vi.unstubAllEnvs();
   });
 });

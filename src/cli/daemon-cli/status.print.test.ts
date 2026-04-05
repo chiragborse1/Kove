@@ -44,7 +44,7 @@ vi.mock("../../infra/wsl.js", () => ({
 }));
 
 vi.mock("../../logging.js", () => ({
-  getResolvedLoggerSettings: () => ({ file: "/tmp/openclaw.log" }),
+  getResolvedLoggerSettings: () => ({ file: "/Users/test/.openclaw/logs/openclaw.log" }),
 }));
 
 vi.mock("./shared.js", () => ({
@@ -117,7 +117,38 @@ describe("printDaemonStatus", () => {
       expect.stringContaining("Gateway runtime PID does not own the listening port"),
     );
     expect(runtime.error).toHaveBeenCalledWith(
-      expect.stringContaining(formatCliCommand("openclaw gateway restart")),
+      expect.stringContaining(formatCliCommand("kova gateway restart")),
     );
+  });
+
+  it("shows ~/.kova for status paths rooted at ~/.openclaw", () => {
+    vi.stubEnv("HOME", "/Users/test");
+
+    printDaemonStatus(
+      {
+        service: {
+          label: "LaunchAgent",
+          loaded: true,
+          loadedText: "loaded",
+          notLoadedText: "not loaded",
+          runtime: { status: "running", pid: 8000 },
+        },
+        config: {
+          cli: {
+            path: "/Users/test/.openclaw/openclaw.json",
+            exists: true,
+            valid: true,
+          },
+        },
+        rpc: { ok: true },
+        extraServices: [],
+      },
+      { json: false },
+    );
+
+    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("~/.kova/logs/openclaw.log"));
+    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("~/.kova/openclaw.json"));
+
+    vi.unstubAllEnvs();
   });
 });
