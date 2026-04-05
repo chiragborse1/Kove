@@ -1,17 +1,23 @@
 {
-  "name": "openclaw",
+  "name": "kova",
   "version": "2026.4.2",
-  "description": "Multi-channel AI gateway with extensible messaging integrations",
-  "keywords": [],
-  "homepage": "https://github.com/openclaw/openclaw#readme",
+  "description": "Kova is a multi-channel AI gateway with extensible messaging integrations",
+  "keywords": [
+    "agents",
+    "ai",
+    "assistant",
+    "kova",
+    "team"
+  ],
+  "homepage": "https://kova.ai",
   "bugs": {
-    "url": "https://github.com/openclaw/openclaw/issues"
+    "url": "https://github.com/chiragborse1/Kove/issues"
   },
   "license": "MIT",
   "author": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openclaw/openclaw.git"
+    "url": "git+https://github.com/chiragborse1/Kove.git"
   },
   "bin": {
     "kova": "./dist/index.js",
