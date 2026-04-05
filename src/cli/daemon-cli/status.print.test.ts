@@ -146,8 +146,8 @@ describe("printDaemonStatus", () => {
       { json: false },
     );
 
-    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("~/.kova/logs/openclaw.log"));
-    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("~/.kova/openclaw.json"));
+    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("~/.kova/logs/kova.log"));
+    expect(runtime.log).toHaveBeenCalledWith(expect.stringContaining("~/.kova/kova.json"));
 
     vi.unstubAllEnvs();
   });

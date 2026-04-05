@@ -1,6 +1,10 @@
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { POSIX_OPENCLAW_TMP_DIR, resolvePreferredOpenClawTmpDir } from "./tmp-openclaw-dir.js";
+import {
+  POSIX_OPENCLAW_TMP_DIR,
+  resolvePreferredOpenClawTmpDir,
+  toKovaDisplayLogPath,
+} from "./tmp-openclaw-dir.js";
 
 type TmpDirOptions = NonNullable<Parameters<typeof resolvePreferredOpenClawTmpDir>[0]>;
 
@@ -413,5 +417,14 @@ describe("resolvePreferredOpenClawTmpDir", () => {
         warn: vi.fn(),
       }),
     ).toThrow(/Unable to create fallback OpenClaw temp dir/);
+  });
+});
+
+describe("toKovaDisplayLogPath", () => {
+  it("rebrands the displayed /tmp/openclaw log path to /tmp/kova", () => {
+    expect(toKovaDisplayLogPath("/tmp/openclaw/openclaw-2026-04-05.log")).toBe(
+      "/tmp/kova/kova-2026-04-05.log",
+    );
+    expect(toKovaDisplayLogPath("/tmp/openclaw/openclaw.log")).toBe("/tmp/kova/kova.log");
   });
 });

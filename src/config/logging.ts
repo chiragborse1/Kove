@@ -1,5 +1,5 @@
 import type { RuntimeEnv } from "../runtime.js";
-import { displayPath } from "../utils.js";
+import { displayKovaConfigPath } from "../utils.js";
 import { createConfigIO } from "./io.js";
 
 type LogConfigUpdatedOptions = {
@@ -8,7 +8,7 @@ type LogConfigUpdatedOptions = {
 };
 
 export function formatConfigPath(path: string = createConfigIO().configPath): string {
-  return displayPath(path);
+  return displayKovaConfigPath(path);
 }
 
 export function logConfigUpdated(runtime: RuntimeEnv, opts: LogConfigUpdatedOptions = {}): void {

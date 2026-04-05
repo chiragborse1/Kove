@@ -3,6 +3,7 @@ import { tmpdir as getOsTmpDir } from "node:os";
 import path from "node:path";
 
 export const POSIX_OPENCLAW_TMP_DIR = "/tmp/openclaw";
+export const POSIX_KOVA_TMP_DIR = "/tmp/kova";
 const TMP_DIR_ACCESS_MODE = fs.constants.W_OK | fs.constants.X_OK;
 
 type ResolvePreferredOpenClawTmpDirOptions = {
@@ -166,4 +167,31 @@ export function resolvePreferredOpenClawTmpDir(
   } catch {
     return ensureTrustedFallbackDir();
   }
+}
+
+export function ensureKovaTmpSymlinkSync(): void {
+  try {
+    const displayStat = fs.lstatSync(POSIX_KOVA_TMP_DIR);
+    if (displayStat.isDirectory() || displayStat.isSymbolicLink()) {
+      return;
+    }
+  } catch {
+    // Create the display alias when it does not exist yet.
+  }
+
+  try {
+    fs.symlinkSync(
+      POSIX_OPENCLAW_TMP_DIR,
+      POSIX_KOVA_TMP_DIR,
+      process.platform === "win32" ? "junction" : "dir",
+    );
+  } catch {
+    // Best effort only; the real log path remains under /tmp/openclaw.
+  }
+}
+
+export function toKovaDisplayLogPath(filePath: string): string {
+  return filePath
+    .replace(/^\/tmp\/openclaw(?=\/|$)/, POSIX_KOVA_TMP_DIR)
+    .replace(/([\\/])openclaw(?=(?:-[^\\/]+)?\.log$)/, "$1kova");
 }

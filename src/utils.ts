@@ -325,6 +325,14 @@ export function displayKovaHomeStatePath(input: string): string {
   return shortened.replace(/^(\$OPENCLAW_HOME|~)([\\/])\.openclaw(?=$|[\\/])/, "$1$2.kova");
 }
 
+export function displayKovaConfigPath(input: string): string {
+  const displayPath = displayKovaHomeStatePath(input);
+  return displayPath.replace(
+    /^(\$OPENCLAW_HOME|~)([\\/])\.kova(?=$|[\\/]).*([\\/])openclaw\.json$/,
+    "$1$2.kova$3kova.json",
+  );
+}
+
 export function shortenHomeInString(input: string): string {
   if (!input) {
     return input;
@@ -337,7 +345,7 @@ export function shortenHomeInString(input: string): string {
 }
 
 export function displayPath(input: string): string {
-  return shortenHomePath(input);
+  return displayKovaConfigPath(input);
 }
 
 export function displayString(input: string): string {

@@ -26,6 +26,12 @@ describe("config logging", () => {
     expect(formatConfigPath()).toBe("/tmp/openclaw-dev/openclaw.json");
   });
 
+  it("shows ~/.kova/kova.json for displayed home-state config paths", () => {
+    vi.stubEnv("HOME", "/Users/test");
+    expect(formatConfigPath("/Users/test/.openclaw/openclaw.json")).toBe("~/.kova/kova.json");
+    vi.unstubAllEnvs();
+  });
+
   it("logs the live config path when no explicit path is provided", () => {
     const runtime = { log: vi.fn() };
     logConfigUpdated(runtime as never);

@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
+  displayKovaConfigPath,
   assertWebChannel,
   CONFIG_DIR,
   displayKovaHomeStatePath,
@@ -185,6 +186,15 @@ describe("displayKovaHomeStatePath", () => {
     expect(displayKovaHomeStatePath("/home/tester/.openclaw/openclaw.json")).toBe(
       "~/.kova/openclaw.json",
     );
+    vi.unstubAllEnvs();
+  });
+});
+
+describe("displayKovaConfigPath", () => {
+  it("shows ~/.kova/kova.json for displayed home-state config paths", () => {
+    vi.stubEnv("HOME", "/home/tester");
+    expect(displayKovaConfigPath("/home/tester/.openclaw/openclaw.json")).toBe("~/.kova/kova.json");
+    expect(displayKovaConfigPath("/home/tester/.kova/openclaw.json")).toBe("~/.kova/kova.json");
     vi.unstubAllEnvs();
   });
 });

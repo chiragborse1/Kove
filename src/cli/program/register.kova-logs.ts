@@ -1,33 +1,22 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { Command } from "commander";
+import {
+  ensureKovaTmpSymlinkSync,
+  POSIX_KOVA_TMP_DIR,
+  POSIX_OPENCLAW_TMP_DIR,
+  toKovaDisplayLogPath,
+} from "../../infra/tmp-openclaw-dir.js";
 import { defaultRuntime } from "../../runtime.js";
 import { theme } from "../../terminal/theme.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 
-const KOVA_LOG_DIR = "/tmp/openclaw";
-const KOVA_DISPLAY_LOG_DIR = "/tmp/kova";
+const KOVA_LOG_DIR = POSIX_OPENCLAW_TMP_DIR;
+const KOVA_DISPLAY_LOG_DIR = POSIX_KOVA_TMP_DIR;
 const KOVA_LOG_PREFIX = "openclaw-";
 const KOVA_LOG_SUFFIX = ".log";
 const KOVA_LOG_LINES = 50;
 const KOVA_LOG_READ_CHUNK_BYTES = 64 * 1024;
-
-async function ensureKovaLogSymlink(): Promise<void> {
-  try {
-    const stat = await fs.lstat(KOVA_DISPLAY_LOG_DIR).catch(() => null);
-    if (stat?.isSymbolicLink() || stat) {
-      return;
-    }
-    await fs.symlink(KOVA_LOG_DIR, KOVA_DISPLAY_LOG_DIR, "dir");
-  } catch {
-    // Best effort only; log reading should not depend on symlink creation.
-  }
-}
-
-function toKovaDisplayLogPath(filePath: string): string {
-  const displayPath = filePath.replace(`${KOVA_LOG_DIR}/`, `${KOVA_DISPLAY_LOG_DIR}/`);
-  return displayPath.replace("/openclaw-", "/kova-");
-}
 
 async function resolveLatestKovaLogPath(): Promise<string | null> {
   let entries: string[];
@@ -102,7 +91,7 @@ export function registerKovaLogsCommand(program: Command) {
     .description(`Print the last ${KOVA_LOG_LINES} lines from the latest Kova gateway log`)
     .action(async () => {
       await runCommandWithRuntime(defaultRuntime, async () => {
-        await ensureKovaLogSymlink();
+        ensureKovaTmpSymlinkSync();
         const logPath = await resolveLatestKovaLogPath();
         if (!logPath) {
           throw new Error(`No Kova gateway log files found under ${KOVA_DISPLAY_LOG_DIR}.`);

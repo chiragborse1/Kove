@@ -2,6 +2,7 @@ import chalk from "chalk";
 import { DEFAULT_MODEL, DEFAULT_PROVIDER } from "../agents/defaults.js";
 import { resolveConfiguredModelRef } from "../agents/model-selection.js";
 import type { loadConfig } from "../config/config.js";
+import { ensureKovaTmpSymlinkSync, toKovaDisplayLogPath } from "../infra/tmp-openclaw-dir.js";
 import { getResolvedLoggerSettings } from "../logging.js";
 import { collectEnabledInsecureOrDangerousFlags } from "../security/dangerous-config-flags.js";
 
@@ -29,7 +30,8 @@ export function logGatewayStartup(params: {
     params.bindHosts && params.bindHosts.length > 0 ? params.bindHosts : [params.bindHost];
   const listenEndpoints = hosts.map((host) => `${scheme}://${formatHost(host)}:${params.port}`);
   params.log.info(`listening on ${listenEndpoints.join(", ")} (PID ${process.pid})`);
-  params.log.info(`log file: ${getResolvedLoggerSettings().file}`);
+  ensureKovaTmpSymlinkSync();
+  params.log.info(`log file: ${toKovaDisplayLogPath(getResolvedLoggerSettings().file)}`);
   if (params.isNixMode) {
     params.log.info("gateway: running in Nix mode (config managed externally)");
   }
