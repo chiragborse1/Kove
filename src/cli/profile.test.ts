@@ -135,6 +135,20 @@ describe("applyCliProfileEnv", () => {
     expect(env.OPENCLAW_CONFIG_PATH).toBe(path.join("/custom", "openclaw.json"));
   });
 
+  it("respects KOVA_STATE_DIR as the primary explicit state-dir override", () => {
+    const env: Record<string, string | undefined> = {
+      KOVA_STATE_DIR: "/custom-kova",
+    };
+    applyCliProfileEnv({
+      profile: "dev",
+      env,
+      homedir: () => "/home/peter",
+    });
+    expect(env.KOVA_STATE_DIR).toBe("/custom-kova");
+    expect(env.OPENCLAW_STATE_DIR).toBe("/custom-kova");
+    expect(env.OPENCLAW_CONFIG_PATH).toBe(path.join("/custom-kova", "openclaw.json"));
+  });
+
   it("uses OPENCLAW_HOME when deriving profile state dir", () => {
     const env: Record<string, string | undefined> = {
       OPENCLAW_HOME: "/srv/openclaw-home",

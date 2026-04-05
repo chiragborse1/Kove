@@ -69,6 +69,17 @@ describe("Nix integration (U3, U5, U9)", () => {
       );
     });
 
+    it("STATE_DIR prefers KOVA_STATE_DIR over OPENCLAW_STATE_DIR", () => {
+      expect(
+        resolveStateDir(
+          envWith({
+            KOVA_STATE_DIR: "/custom/kova/state",
+            OPENCLAW_STATE_DIR: "/custom/openclaw/state",
+          }),
+        ),
+      ).toBe(path.resolve("/custom/kova/state"));
+    });
+
     it("STATE_DIR respects OPENCLAW_HOME when state override is unset", () => {
       const customHome = path.join(path.sep, "custom", "home");
       expect(

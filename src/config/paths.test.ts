@@ -123,6 +123,15 @@ describe("state + config path candidates", () => {
     expect(resolveStateDir(env, () => "/home/test")).toBe(path.resolve("/new/state"));
   });
 
+  it("prefers KOVA_STATE_DIR over OPENCLAW_STATE_DIR when both are set", () => {
+    const env = {
+      KOVA_STATE_DIR: "/new/kova-state",
+      OPENCLAW_STATE_DIR: "/legacy/openclaw-state",
+    } as NodeJS.ProcessEnv;
+
+    expect(resolveStateDir(env, () => "/home/test")).toBe(path.resolve("/new/kova-state"));
+  });
+
   it("uses OPENCLAW_HOME for default state/config locations", () => {
     const env = {
       OPENCLAW_HOME: "/srv/openclaw-home",
@@ -162,12 +171,13 @@ describe("state + config path candidates", () => {
     });
   });
 
-  it("falls back to ~/.openclaw when ~/.kova is missing", async () => {
+  it("links ~/.kova to ~/.openclaw when compatibility state already exists and resolves via ~/.kova", async () => {
     await withTempDir({ prefix: "openclaw-state-compat-" }, async (root) => {
       const compatDir = path.join(root, ".openclaw");
       await fs.mkdir(compatDir, { recursive: true });
       const resolved = resolveStateDir({} as NodeJS.ProcessEnv, () => root);
-      expect(resolved).toBe(compatDir);
+      expect(resolved).toBe(path.join(root, ".kova"));
+      await expect(fs.readlink(path.join(root, ".kova"))).resolves.toBe(compatDir);
     });
   });
 

@@ -302,7 +302,21 @@ function resolveHomeDisplayPrefix(): { home: string; prefix: string } | undefine
   return { home, prefix: "~" };
 }
 
-export function shortenHomePath(input: string): string {
+function rewriteKovaDisplayPath(input: string): string {
+  if (!input) {
+    return input;
+  }
+  const stateDisplay = input.replace(
+    /(\$OPENCLAW_HOME|~)([\\/])\.openclaw(?=$|[\\/])/g,
+    "$1$2.kova",
+  );
+  return stateDisplay.replace(
+    /((?:\$OPENCLAW_HOME|~)(?:[\\/])\.kova(?:[\\/][^\\/\s]+)*)([\\/])openclaw\.json\b/g,
+    (_match, prefix: string, sep: string) => `${prefix}${sep}kova.json`,
+  );
+}
+
+function shortenHomePathRaw(input: string): string {
   if (!input) {
     return input;
   }
@@ -320,17 +334,19 @@ export function shortenHomePath(input: string): string {
   return input;
 }
 
+export function shortenHomePath(input: string): string {
+  return rewriteKovaDisplayPath(shortenHomePathRaw(input));
+}
+
 export function displayKovaHomeStatePath(input: string): string {
-  const shortened = shortenHomePath(input);
-  return shortened.replace(/^(\$OPENCLAW_HOME|~)([\\/])\.openclaw(?=$|[\\/])/, "$1$2.kova");
+  return shortenHomePathRaw(input).replace(
+    /(\$OPENCLAW_HOME|~)([\\/])\.openclaw(?=$|[\\/])/g,
+    "$1$2.kova",
+  );
 }
 
 export function displayKovaConfigPath(input: string): string {
-  const displayPath = displayKovaHomeStatePath(input);
-  return displayPath.replace(
-    /^(\$OPENCLAW_HOME|~)([\\/])\.kova(?=$|[\\/]).*([\\/])openclaw\.json$/,
-    "$1$2.kova$3kova.json",
-  );
+  return rewriteKovaDisplayPath(shortenHomePathRaw(input));
 }
 
 export function shortenHomeInString(input: string): string {
@@ -341,7 +357,7 @@ export function shortenHomeInString(input: string): string {
   if (!display) {
     return input;
   }
-  return input.split(display.home).join(display.prefix);
+  return rewriteKovaDisplayPath(input.split(display.home).join(display.prefix));
 }
 
 export function displayPath(input: string): string {

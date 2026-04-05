@@ -71,6 +71,18 @@ function pathExists(targetPath: string): boolean {
   }
 }
 
+function resolveStateDirOverrideValue(env: NodeJS.ProcessEnv): string | undefined {
+  const kovaOverride = env.KOVA_STATE_DIR?.trim();
+  if (kovaOverride) {
+    return kovaOverride;
+  }
+  const openClawOverride = env.OPENCLAW_STATE_DIR?.trim();
+  if (openClawOverride) {
+    return openClawOverride;
+  }
+  return undefined;
+}
+
 function buildKovaCompatLinkMessage(params: {
   env: NodeJS.ProcessEnv;
   preferredDir: string;
@@ -86,7 +98,7 @@ export function ensureDefaultStateDirReady(
   env: NodeJS.ProcessEnv = process.env,
   homedir: () => string = envHomedir(env),
 ): { created: boolean; linked: boolean; message?: string } {
-  if (env.OPENCLAW_STATE_DIR?.trim() || env.VITEST === "true") {
+  if (resolveStateDirOverrideValue(env) || env.VITEST === "true") {
     return { created: false, linked: false };
   }
 
@@ -110,6 +122,11 @@ export function ensureDefaultStateDirReady(
     }
   }
 
+  const hasLegacyDir = legacyStateDirs(effectiveHomedir).some((dir) => pathExists(dir));
+  if (hasLegacyDir) {
+    return { created: false, linked: false };
+  }
+
   try {
     fs.mkdirSync(preferredDir, { recursive: true, mode: 0o700 });
     return { created: true, linked: false };
@@ -120,7 +137,7 @@ export function ensureDefaultStateDirReady(
 
 /**
  * State directory for mutable data (sessions, logs, caches).
- * Can be overridden via OPENCLAW_STATE_DIR.
+ * Can be overridden via KOVA_STATE_DIR or OPENCLAW_STATE_DIR.
  * Default: ~/.kova
  */
 export function resolveStateDir(
@@ -128,7 +145,7 @@ export function resolveStateDir(
   homedir: () => string = envHomedir(env),
 ): string {
   const effectiveHomedir = () => resolveRequiredHomeDir(env, homedir);
-  const override = env.OPENCLAW_STATE_DIR?.trim();
+  const override = resolveStateDirOverrideValue(env);
   if (override) {
     return resolveUserPath(override, env, effectiveHomedir);
   }
@@ -136,14 +153,14 @@ export function resolveStateDir(
   if (env.OPENCLAW_TEST_FAST === "1") {
     return newDir;
   }
+  ensureDefaultStateDirReady(env, effectiveHomedir);
+  if (pathExists(newDir)) {
+    return newDir;
+  }
   const compatibilityDirs = [
     openClawCompatStateDir(effectiveHomedir),
     ...legacyStateDirs(effectiveHomedir),
   ];
-  const hasNew = fs.existsSync(newDir);
-  if (hasNew) {
-    return newDir;
-  }
   const existingLegacy = compatibilityDirs.find((dir) => {
     try {
       return fs.existsSync(dir);
@@ -170,7 +187,7 @@ export const STATE_DIR = resolveStateDir();
 /**
  * Config file path (JSON or JSON5).
  * Can be overridden via OPENCLAW_CONFIG_PATH.
- * Default: ~/.kova/openclaw.json (or $OPENCLAW_STATE_DIR/openclaw.json)
+ * Default: ~/.kova/openclaw.json (or $KOVA_STATE_DIR/openclaw.json)
  */
 export function resolveCanonicalConfigPath(
   env: NodeJS.ProcessEnv = process.env,
@@ -223,7 +240,7 @@ export function resolveConfigPath(
   if (env.OPENCLAW_TEST_FAST === "1") {
     return path.join(stateDir, CONFIG_FILENAME);
   }
-  const stateOverride = env.OPENCLAW_STATE_DIR?.trim();
+  const stateOverride = resolveStateDirOverrideValue(env);
   const candidates = [
     path.join(stateDir, CONFIG_FILENAME),
     ...LEGACY_CONFIG_FILENAMES.map((name) => path.join(stateDir, name)),
@@ -265,9 +282,9 @@ export function resolveDefaultConfigCandidates(
   }
 
   const candidates: string[] = [];
-  const openclawStateDir = env.OPENCLAW_STATE_DIR?.trim();
-  if (openclawStateDir) {
-    const resolved = resolveUserPath(openclawStateDir, env, effectiveHomedir);
+  const stateDirOverride = resolveStateDirOverrideValue(env);
+  if (stateDirOverride) {
+    const resolved = resolveUserPath(stateDirOverride, env, effectiveHomedir);
     candidates.push(path.join(resolved, CONFIG_FILENAME));
     candidates.push(...LEGACY_CONFIG_FILENAMES.map((name) => path.join(resolved, name)));
   }

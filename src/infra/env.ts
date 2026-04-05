@@ -51,6 +51,17 @@ export function normalizeZaiEnv(): void {
   }
 }
 
+export function normalizeStateDirEnv(): void {
+  const kovaStateDir = process.env.KOVA_STATE_DIR?.trim();
+  const openClawStateDir = process.env.OPENCLAW_STATE_DIR?.trim();
+  if (kovaStateDir && !openClawStateDir) {
+    process.env.OPENCLAW_STATE_DIR = kovaStateDir;
+  }
+  if (openClawStateDir && !kovaStateDir) {
+    process.env.KOVA_STATE_DIR = openClawStateDir;
+  }
+}
+
 export function isTruthyEnvValue(value?: string): boolean {
   if (typeof value !== "string") {
     return false;
@@ -67,5 +78,6 @@ export function isTruthyEnvValue(value?: string): boolean {
 }
 
 export function normalizeEnv(): void {
+  normalizeStateDirEnv();
   normalizeZaiEnv();
 }
