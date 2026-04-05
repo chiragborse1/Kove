@@ -158,6 +158,14 @@ describe("resolveOpenClawPackageRoot", () => {
       },
     },
     {
+      name: "accepts kova package roots",
+      setup: () => {
+        const pkgRoot = fx("kova-package-root");
+        setPackageRoot(pkgRoot, "kova");
+        return { opts: { cwd: pkgRoot }, expected: pkgRoot };
+      },
+    },
+    {
       name: "falls through from a non-openclaw moduleUrl candidate to cwd",
       setup: () => {
         const wrongPkgRoot = fx("moduleurl-fallthrough", "wrong");
