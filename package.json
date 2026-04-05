@@ -34,6 +34,7 @@
     "README.md",
     "dist/",
     "!dist/**/*.map",
+    "docs/reference/templates",
     "skills/",
     "scripts/npm-runner.mjs",
     "scripts/postinstall-bundled-plugins.mjs"
