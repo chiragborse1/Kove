@@ -1,0 +1,41 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json" # Only trigger when version changes
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build backend
+        run: |
+          node scripts/tsdown-build.mjs
+          node scripts/copy-bundled-plugin-metadata.mjs
+
+      - name: Build UI
+        run: pnpm ui:build
+
+      - name: Verify version
+        run: |
+          node dist/index.js --version
+          npm pack --dry-run 2>&1 | grep "control-ui/index"
+
+      - name: Publish to npm
+        run: npm publish --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

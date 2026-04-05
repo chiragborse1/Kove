@@ -21,20 +21,11 @@ run_cmd() {
   "$@"
 }
 
-run_shell() {
-  local cmd=$1
-  if $dry_run; then
-    printf '[dry-run] %s\n' "$cmd"
-    return 0
-  fi
-  bash -lc "$cmd"
-}
-
 worktree_dirty() {
   [[ -n "$(git status --short)" ]]
 }
 
-echo "🤖 Kova Release Script"
+echo "Kova Release Script"
 
 if worktree_dirty; then
   if $dry_run; then
@@ -84,12 +75,6 @@ fi
 echo "Pushing..."
 run_cmd git push origin main
 
-echo "Publishing..."
-if $dry_run; then
-  run_shell "npm publish --access public --ignore-scripts --dry-run"
-else
-  run_cmd npm publish --access public --ignore-scripts
-fi
-
-echo "✅ Released getkova@${release_version}"
-echo "Verify at: https://www.npmjs.com/package/getkova"
+# Publishing handled by GitHub Actions (.github/workflows/publish.yml)
+echo "Publishing is handled by GitHub Actions (.github/workflows/publish.yml)."
+echo "Verify the workflow run, then confirm on npm: https://www.npmjs.com/package/getkova"
