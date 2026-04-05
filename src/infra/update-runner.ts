@@ -645,7 +645,7 @@ export async function runGatewayUpdate(opts: UpdateRunnerOptions = {}): Promise<
       }
 
       const manager = await resolveAvailableManager(runCommand, gitRoot, timeoutMs);
-      const preflightRoot = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-update-preflight-"));
+      const preflightRoot = await fs.mkdtemp(path.join(os.tmpdir(), "kova-update-preflight-"));
       const worktreeDir = path.join(preflightRoot, "worktree");
       const worktreeStep = await runStep(
         step(

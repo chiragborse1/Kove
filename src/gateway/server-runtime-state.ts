@@ -125,7 +125,9 @@ export async function createGatewayRuntimeState(params: {
         });
         if (handler.rootDir) {
           canvasHost = handler;
-          params.logCanvas.info(`canvas host ready (root ${handler.rootDir})`);
+          if (process.env.KOVA_VERBOSE === "1") {
+            params.logCanvas.info(`canvas host ready (root ${handler.rootDir})`);
+          }
         }
       } catch (err) {
         params.logCanvas.warn(`canvas host failed to start: ${String(err)}`);
