@@ -3,34 +3,36 @@ import path from "node:path";
 import type { Command } from "commander";
 import {
   ensureKovaTmpSymlinkSync,
-  POSIX_KOVA_TMP_DIR,
-  POSIX_OPENCLAW_TMP_DIR,
+  resolvePreferredOpenClawTmpDir,
   toKovaDisplayLogPath,
 } from "../../infra/tmp-openclaw-dir.js";
 import { defaultRuntime } from "../../runtime.js";
 import { theme } from "../../terminal/theme.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 
-const KOVA_LOG_DIR = POSIX_OPENCLAW_TMP_DIR;
-const KOVA_DISPLAY_LOG_DIR = POSIX_KOVA_TMP_DIR;
-const KOVA_LOG_PREFIX = "openclaw-";
+const KOVA_LOG_PREFIXES = ["kova-", "openclaw-"];
 const KOVA_LOG_SUFFIX = ".log";
 const KOVA_LOG_LINES = 50;
 const KOVA_LOG_READ_CHUNK_BYTES = 64 * 1024;
 
 async function resolveLatestKovaLogPath(): Promise<string | null> {
+  const logDir = resolvePreferredOpenClawTmpDir();
   let entries: string[];
   try {
-    entries = await fs.readdir(KOVA_LOG_DIR);
+    entries = await fs.readdir(logDir);
   } catch {
     return null;
   }
 
   const candidates = await Promise.all(
     entries
-      .filter((entry) => entry.startsWith(KOVA_LOG_PREFIX) && entry.endsWith(KOVA_LOG_SUFFIX))
+      .filter(
+        (entry) =>
+          KOVA_LOG_PREFIXES.some((prefix) => entry.startsWith(prefix)) &&
+          entry.endsWith(KOVA_LOG_SUFFIX),
+      )
       .map(async (entry) => {
-        const filePath = path.join(KOVA_LOG_DIR, entry);
+        const filePath = path.join(logDir, entry);
         try {
           const stat = await fs.stat(filePath);
           if (!stat.isFile()) {
@@ -94,7 +96,11 @@ export function registerKovaLogsCommand(program: Command) {
         ensureKovaTmpSymlinkSync();
         const logPath = await resolveLatestKovaLogPath();
         if (!logPath) {
-          throw new Error(`No Kova gateway log files found under ${KOVA_DISPLAY_LOG_DIR}.`);
+          throw new Error(
+            `No Kova gateway log files found under ${toKovaDisplayLogPath(
+              resolvePreferredOpenClawTmpDir(),
+            )}.`,
+          );
         }
         const output = await readLastLines(logPath, KOVA_LOG_LINES);
         defaultRuntime.log(theme.muted(`Latest log: ${toKovaDisplayLogPath(logPath)}`));

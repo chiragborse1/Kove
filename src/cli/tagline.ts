@@ -1,4 +1,4 @@
-const DEFAULT_TAGLINE = "All your chats, one Kova.";
+const DEFAULT_TAGLINE = "Your AI team is ready. Let's get to work.";
 export type TaglineMode = "random" | "default" | "off";
 
 const HOLIDAY_TAGLINES = {
@@ -7,7 +7,7 @@ const HOLIDAY_TAGLINES = {
   lunarNewYear:
     "Lunar New Year: May your builds be lucky, your branches prosperous, and your merge conflicts chased away with fireworks.",
   christmas:
-    "Christmas: Ho ho ho—Santa's little claw-sistant is here to ship joy, roll back chaos, and stash the keys safely.",
+    "Christmas: Ho ho ho—Kova is here to ship joy, roll back chaos, and stash the keys safely.",
   eid: "Eid al-Fitr: Celebration mode: queues cleared, tasks completed, and good vibes committed to main with clean history.",
   diwali:
     "Diwali: Let the logs sparkle and the bugs flee—today we light up the terminal and ship with pride.",
@@ -24,7 +24,13 @@ const HOLIDAY_TAGLINES = {
 } as const;
 
 const TAGLINES: string[] = [
-  "Your terminal just grew claws—type something and let the bot pinch the busywork.",
+  "Your AI team is ready. Let's get to work.",
+  "Hire great AI. Pay nothing. Ship everything.",
+  "6 employees. 0 sick days. Infinite patience.",
+  "Your team never sleeps. Neither does the coffee machine.",
+  "Built different. Works different. Ships different.",
+  "The team you always wanted, minus the office politics.",
+  "Your terminal just hired a team—type something and let Kova handle the busywork.",
   "Welcome to the command line: where dreams compile and confidence segfaults.",
   'I run on caffeine, JSON5, and the audacity of "it worked on my machine."',
   "Gateway online—please keep hands, feet, and appendages inside the shell at all times.",
@@ -41,7 +47,7 @@ const TAGLINES: string[] = [
   "Hot reload for config, cold sweat for deploys.",
   "I'm the assistant your terminal demanded, not the one your sleep schedule requested.",
   "I keep secrets like a vault... unless you print them in debug logs again.",
-  "Automation with claws: minimal fuss, maximal pinch.",
+  "Automation with focus: minimal fuss, maximal output.",
   "I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.",
   "If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.",
   "Your task has been queued; your dignity has been deprecated.",
@@ -60,11 +66,11 @@ const TAGLINES: string[] = [
   "Your config is valid, your assumptions are not.",
   "I don't just autocomplete—I auto-commit (emotionally), then ask you to review (logically).",
   'Less clicking, more shipping, fewer "where did that file go" moments.',
-  "Claws out, commit in—let's ship something mildly responsible.",
-  "I'll butter your workflow like a lobster roll: messy, delicious, effective.",
-  "Shell yeah—I'm here to pinch the toil and leave you the glory.",
+  "Heads down, commit in—let's ship something mildly responsible.",
+  "Kova handles the repetitive work so your attention can stay on the interesting parts.",
+  "Shell yeah—I'm here to cut the toil and leave you the glory.",
   "If it's repetitive, I'll automate it; if it's hard, I'll bring jokes and a rollback plan.",
-  "The only crab in your contacts you actually want to hear from. 🦞",
+  "The only teammate in your contacts who actually enjoys the repetitive stuff. 🤖",
   'WhatsApp automation without the "please accept our new privacy policy".',
   "iMessage green bubble energy, but for everyone.",
   "No $999 stand required.",
@@ -74,7 +80,7 @@ const TAGLINES: string[] = [
   "Greetings, Professor Falken",
   "I don't sleep, I just enter low-power mode and dream of clean diffs.",
   "Your personal assistant, minus the passive-aggressive calendar reminders.",
-  "Built by lobsters, for humans. Don't question the hierarchy.",
+  "Built for ambitious teams, tuned for people who like shipping.",
   "I've seen your commit messages. We'll work on that together.",
   "More integrations than your therapist's intake form.",
   "Running on your hardware, reading your logs, judging nothing (mostly).",
@@ -90,12 +96,12 @@ const TAGLINES: string[] = [
   "Like having a senior engineer on call, except I don't bill hourly or sigh audibly.",
   "Making 'I'll automate that later' happen now.",
   "Your second brain, except this one actually remembers where you left things.",
-  "Half butler, half debugger, full crustacean.",
+  "Half operator, half debugger, fully locked in.",
   "I don't have opinions about tabs vs spaces. I have opinions about everything else.",
   "Open source means you can see exactly how I judge your config.",
   "I've survived more breaking changes than your last three relationships.",
   "Runs on a Raspberry Pi. Dreams of a rack in Iceland.",
-  "The lobster in your shell. 🦞",
+  "The team in your shell. 🤖",
   "Alexa, but with taste.",
   "I'm not AI-powered, I'm AI-possessed. Big difference.",
   "Deployed locally, trusted globally, debugged eternally.",

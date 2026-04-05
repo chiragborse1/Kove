@@ -57,8 +57,8 @@ export function formatCliBannerLine(version: string, options: BannerOptions = {}
   const commitLabel = commit ?? "unknown";
   const tagline = pickTagline({ ...options, mode: resolveTaglineMode(options) });
   const rich = options.richTty ?? isRich();
-  const title = "🦞 Kova";
-  const prefix = "🦞 ";
+  const title = "🤖 Kova";
+  const prefix = "🤖 ";
   const columns = options.columns ?? process.stdout.columns ?? 120;
   const plainBaseLine = `${title} ${version} (${commitLabel})`;
   const plainFullLine = tagline ? `${plainBaseLine} — ${tagline}` : plainBaseLine;
@@ -92,20 +92,20 @@ export function formatCliBannerLine(version: string, options: BannerOptions = {}
   return `${line1}\n${line2}`;
 }
 
-const LOBSTER_ASCII = [
+const KOVA_ASCII = [
   "▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
   "██░▄▄▄░██░▄▄░██░▄▄▄██░▀██░██░▄▄▀██░████░▄▄▀██░███░██",
   "██░███░██░▀▀░██░▄▄▄██░█░█░██░█████░████░▀▀░██░█░█░██",
   "██░▀▀▀░██░█████░▀▀▀██░██▄░██░▀▀▄██░▀▀░█░██░██▄▀▄▀▄██",
   "▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀",
-  "                  🦞 KOVA 🦞                       ",
+  "                  🤖 KOVA 🤖                       ",
   " ",
 ];
 
 export function formatCliBannerArt(options: BannerOptions = {}): string {
   const rich = options.richTty ?? isRich();
   if (!rich) {
-    return LOBSTER_ASCII.join("\n");
+    return KOVA_ASCII.join("\n");
   }
 
   const colorChar = (ch: string) => {
@@ -121,10 +121,10 @@ export function formatCliBannerArt(options: BannerOptions = {}): string {
     return theme.muted(ch);
   };
 
-  const colored = LOBSTER_ASCII.map((line) => {
+  const colored = KOVA_ASCII.map((line) => {
     if (line.includes("KOVA")) {
       return (
-        theme.muted("           ") + theme.accent("🦞") + theme.info(" KOVA ") + theme.accent("🦞")
+        theme.muted("           ") + theme.accent("🤖") + theme.info(" KOVA ") + theme.accent("🤖")
       );
     }
     return splitGraphemes(line).map(colorChar).join("");

@@ -68,7 +68,7 @@ export function resolvePreferredOpenClawTmpDir(
 
   const fallback = (): string => {
     const base = tmpdir();
-    const suffix = uid === undefined ? "openclaw" : `openclaw-${uid}`;
+    const suffix = uid === undefined ? "kova" : `kova-${uid}`;
     return path.join(base, suffix);
   };
 
@@ -141,13 +141,13 @@ export function resolvePreferredOpenClawTmpDir(
     return fallbackPath;
   };
 
-  const existingPreferredState = resolveDirState(POSIX_OPENCLAW_TMP_DIR);
+  const existingPreferredState = resolveDirState(POSIX_KOVA_TMP_DIR);
   if (existingPreferredState === "available") {
-    return POSIX_OPENCLAW_TMP_DIR;
+    return POSIX_KOVA_TMP_DIR;
   }
   if (existingPreferredState === "invalid") {
-    if (tryRepairWritableBits(POSIX_OPENCLAW_TMP_DIR)) {
-      return POSIX_OPENCLAW_TMP_DIR;
+    if (tryRepairWritableBits(POSIX_KOVA_TMP_DIR)) {
+      return POSIX_KOVA_TMP_DIR;
     }
     return ensureTrustedFallbackDir();
   }
@@ -155,38 +155,43 @@ export function resolvePreferredOpenClawTmpDir(
   try {
     accessSync("/tmp", TMP_DIR_ACCESS_MODE);
     // Create with a safe default; subsequent callers expect it exists.
-    mkdirSync(POSIX_OPENCLAW_TMP_DIR, { recursive: true, mode: 0o700 });
-    chmodSync(POSIX_OPENCLAW_TMP_DIR, 0o700);
+    mkdirSync(POSIX_KOVA_TMP_DIR, { recursive: true, mode: 0o700 });
+    chmodSync(POSIX_KOVA_TMP_DIR, 0o700);
     if (
-      resolveDirState(POSIX_OPENCLAW_TMP_DIR) !== "available" &&
-      !tryRepairWritableBits(POSIX_OPENCLAW_TMP_DIR)
+      resolveDirState(POSIX_KOVA_TMP_DIR) !== "available" &&
+      !tryRepairWritableBits(POSIX_KOVA_TMP_DIR)
     ) {
       return ensureTrustedFallbackDir();
     }
-    return POSIX_OPENCLAW_TMP_DIR;
+    return POSIX_KOVA_TMP_DIR;
   } catch {
     return ensureTrustedFallbackDir();
   }
 }
 
 export function ensureKovaTmpSymlinkSync(): void {
+  const preferredDir = resolvePreferredOpenClawTmpDir();
+  if (preferredDir !== POSIX_KOVA_TMP_DIR) {
+    return;
+  }
+
   try {
-    const displayStat = fs.lstatSync(POSIX_KOVA_TMP_DIR);
-    if (displayStat.isDirectory() || displayStat.isSymbolicLink()) {
+    const legacyStat = fs.lstatSync(POSIX_OPENCLAW_TMP_DIR);
+    if (legacyStat.isDirectory() || legacyStat.isSymbolicLink()) {
       return;
     }
   } catch {
-    // Create the display alias when it does not exist yet.
+    // Create the legacy alias when it does not exist yet.
   }
 
   try {
     fs.symlinkSync(
-      POSIX_OPENCLAW_TMP_DIR,
       POSIX_KOVA_TMP_DIR,
+      POSIX_OPENCLAW_TMP_DIR,
       process.platform === "win32" ? "junction" : "dir",
     );
   } catch {
-    // Best effort only; the real log path remains under /tmp/openclaw.
+    // Best effort only; the real log path remains under /tmp/kova.
   }
 }
 

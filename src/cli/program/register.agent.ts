@@ -219,7 +219,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/agent", "docs.kova.ai/cli/agent")
         `
 ${theme.heading("Examples:")}
 ${formatHelpExamples([
-  ['kova agents set-identity --agent main --name "Kova" --emoji "🦞"', "Set name + emoji."],
+  ['kova agents set-identity --agent main --name "Kova" --emoji "🤖"', "Set name + emoji."],
   ["kova agents set-identity --agent main --avatar avatars/openclaw.png", "Set avatar path."],
   [
     "kova agents set-identity --workspace ~/.openclaw/workspace --from-identity",
