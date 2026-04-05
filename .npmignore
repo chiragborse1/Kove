@@ -1,3 +1,10 @@
-**/node_modules/
-**/.runtime-deps-*/
-docs/.generated/
+assets/
+*.Zone.Identifier
+src-tauri/
+ui/
+test/
+test-fixtures/
+docs/
+apps/
+*.png
+*.jpg
