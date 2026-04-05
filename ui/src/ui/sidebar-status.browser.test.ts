@@ -4,7 +4,7 @@ import { mountApp, registerAppMountHooks } from "./test-helpers/app-mount.ts";
 registerAppMountHooks();
 
 describe("sidebar connection status", () => {
-  it("shows a single online status dot next to the version", async () => {
+  it("does not render the bottom-left version or status widget", async () => {
     const app = mountApp("/chat");
     await app.updateComplete;
 
@@ -17,8 +17,7 @@ describe("sidebar connection status", () => {
 
     const version = app.querySelector<HTMLElement>(".sidebar-version");
     const statusDot = app.querySelector<HTMLElement>(".sidebar-version__status");
-    expect(version).not.toBeNull();
-    expect(statusDot).not.toBeNull();
-    expect(statusDot?.getAttribute("aria-label")).toContain("Online");
+    expect(version).toBeNull();
+    expect(statusDot).toBeNull();
   });
 });

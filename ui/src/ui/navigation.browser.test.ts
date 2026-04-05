@@ -139,7 +139,31 @@ describe("control UI routing", () => {
     await app.updateComplete;
 
     expect(app.querySelector(".sidebar-shell__footer")).not.toBeNull();
-    expect(app.querySelector(".sidebar-utility-link")).not.toBeNull();
+    expect(app.querySelector(".sidebar-mode-switch")).not.toBeNull();
+  });
+
+  it("shows only API Keys in the settings sidebar group", async () => {
+    const app = mountApp("/api-keys");
+    await app.updateComplete;
+
+    const apiKeys = app.querySelector<HTMLElement>(".nav-item--tab-apiKeys");
+    const hiddenTabs = [
+      "config",
+      "communications",
+      "appearance",
+      "automation",
+      "infrastructure",
+      "aiAgents",
+      "debug",
+      "logs",
+    ].map((tab) => app.querySelector<HTMLElement>(`.nav-item--tab-${tab}`));
+
+    expect(apiKeys).not.toBeNull();
+    expect(apiKeys && getComputedStyle(apiKeys).display).not.toBe("none");
+    for (const hiddenTab of hiddenTabs) {
+      expect(hiddenTab).not.toBeNull();
+      expect(hiddenTab && getComputedStyle(hiddenTab).display).toBe("none");
+    }
   });
 
   it("keeps the collapsed desktop rail compact", async () => {

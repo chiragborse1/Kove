@@ -17,10 +17,11 @@ describe("TAB_GROUPS", () => {
     vi.unstubAllGlobals();
   });
 
-  it("does not expose unfinished settings slices in the sidebar", () => {
+  it("keeps API Keys in the settings navigation entries", () => {
     const settings = navigation.TAB_GROUPS.find((group) => group.label === "settings");
     expect(settings?.tabs).toEqual([
       "config",
+      "apiKeys",
       "communications",
       "appearance",
       "automation",

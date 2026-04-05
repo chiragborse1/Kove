@@ -678,6 +678,18 @@
   opacity: 1;
 }
 
+/* Hidden in Kova v1 - will re-enable in future */
+.nav-item--tab-config,
+.nav-item--tab-communications,
+.nav-item--tab-appearance,
+.nav-item--tab-automation,
+.nav-item--tab-infrastructure,
+.nav-item--tab-aiAgents,
+.nav-item--tab-debug,
+.nav-item--tab-logs {
+  display: none;
+}
+
 .nav-item.active,
 .nav-item--active {
   color: var(--text-strong);

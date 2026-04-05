@@ -62,7 +62,7 @@ export function renderTab(state: AppViewState, tab: Tab, opts?: { collapsed?: bo
   return html`
     <a
       href=${href}
-      class="nav-item ${isActive ? "nav-item--active" : ""}"
+      class="nav-item nav-item--tab-${tab} ${isActive ? "nav-item--active" : ""}"
       @click=${(event: MouseEvent) => {
         if (
           event.defaultPrevented ||
