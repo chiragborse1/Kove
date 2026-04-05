@@ -1005,7 +1005,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
         ),
       );
       defaultRuntime.log(
-        theme.muted("Examples: `npm install -g kova@latest` or `pnpm add -g kova@latest`"),
+        theme.muted("Examples: `npm install -g getkova@latest` or `pnpm add -g getkova@latest`"),
       );
     }
     defaultRuntime.exit(0);

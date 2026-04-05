@@ -93,10 +93,11 @@ Model note: while many providers/models are supported, for the best experience a
 Runtime: **Node 24 (recommended) or Node 22.16+**.
 
 ```bash
-npm install -g openclaw@latest
-# or: pnpm add -g openclaw@latest
+npm install -g getkova@latest
+# or: pnpm add -g getkova@latest
 
-openclaw onboard --install-daemon
+# The CLI command is `kova` after installation.
+kova onboard --install-daemon
 ```
 
 OpenClaw Onboard installs the Gateway daemon (launchd/systemd user service) so it stays running.
