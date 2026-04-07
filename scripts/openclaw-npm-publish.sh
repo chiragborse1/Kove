@@ -18,7 +18,7 @@ if [[ -n "${publish_target}" && -f "${publish_target}" ]]; then
 fi
 
 package_version="$(node -p "require('./package.json').version")"
-current_beta_version="$(npm view openclaw dist-tags.beta 2>/dev/null || true)"
+current_beta_version="$(npm view getkova dist-tags.beta 2>/dev/null || true)"
 mapfile -t publish_plan < <(
   PACKAGE_VERSION="${package_version}" CURRENT_BETA_VERSION="${current_beta_version}" node --import tsx --input-type=module <<'EOF'
 import {
@@ -99,8 +99,8 @@ if [[ -n "${mirror_dist_tags_csv}" ]]; then
   IFS=',' read -r -a mirror_dist_tags <<< "${mirror_dist_tags_csv}"
   for dist_tag in "${mirror_dist_tags[@]}"; do
     [[ -n "${dist_tag}" ]] || continue
-    echo "Mirroring openclaw@${package_version} onto dist-tag ${dist_tag}"
+    echo "Mirroring getkova@${package_version} onto dist-tag ${dist_tag}"
     NPM_CONFIG_USERCONFIG="${mirror_userconfig}" \
-      npm dist-tag add "openclaw@${package_version}" "${dist_tag}"
+      npm dist-tag add "getkova@${package_version}" "${dist_tag}"
   done
 fi

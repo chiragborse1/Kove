@@ -18,7 +18,7 @@ on:
         type: string
 
 concurrency:
-  group: openclaw-npm-release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+  group: kova-npm-release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
   cancel-in-progress: false
 
 env:
@@ -70,16 +70,16 @@ jobs:
           set -euo pipefail
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
-          if npm view "openclaw@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
+          if npm view "getkova@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
             if [[ "${PREFLIGHT_ONLY}" == "true" ]]; then
-              echo "openclaw@${PACKAGE_VERSION} is already published on npm; continuing because preflight_only=true."
+              echo "getkova@${PACKAGE_VERSION} is already published on npm; continuing because preflight_only=true."
               exit 0
             fi
-            echo "openclaw@${PACKAGE_VERSION} is already published on npm."
+            echo "getkova@${PACKAGE_VERSION} is already published on npm."
             exit 1
           fi
 
-          echo "Publishing openclaw@${PACKAGE_VERSION}"
+          echo "Publishing getkova@${PACKAGE_VERSION}"
 
       - name: Check
         env:
@@ -125,7 +125,7 @@ jobs:
             exit 1
           fi
           RELEASE_SHA="$(git rev-parse HEAD)"
-          ARTIFACT_DIR="$RUNNER_TEMP/openclaw-npm-preflight"
+          ARTIFACT_DIR="$RUNNER_TEMP/kova-npm-preflight"
           rm -rf "$ARTIFACT_DIR"
           mkdir -p "$ARTIFACT_DIR"
           cp "$PACK_PATH" "$ARTIFACT_DIR/"
@@ -136,7 +136,7 @@ jobs:
       - name: Upload prepared npm publish bundle
         uses: actions/upload-artifact@v7
         with:
-          name: openclaw-npm-preflight-${{ inputs.tag }}
+          name: kova-npm-preflight-${{ inputs.tag }}
           path: ${{ steps.packed_tarball.outputs.dir }}
           if-no-files-found: error
 
@@ -206,12 +206,12 @@ jobs:
           set -euo pipefail
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
-          if npm view "openclaw@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
-            echo "openclaw@${PACKAGE_VERSION} is already published on npm."
+          if npm view "getkova@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
+            echo "getkova@${PACKAGE_VERSION} is already published on npm."
             exit 1
           fi
 
-          echo "Publishing openclaw@${PACKAGE_VERSION}"
+          echo "Publishing getkova@${PACKAGE_VERSION}"
 
       - name: Verify preflight run metadata
         env:
@@ -225,7 +225,7 @@ jobs:
       - name: Download prepared npm tarball
         uses: actions/download-artifact@v8
         with:
-          name: openclaw-npm-preflight-${{ inputs.tag }}
+          name: kova-npm-preflight-${{ inputs.tag }}
           path: preflight-tarball
           repository: ${{ github.repository }}
           run-id: ${{ inputs.preflight_run_id }}

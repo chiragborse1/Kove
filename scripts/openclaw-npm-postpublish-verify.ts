@@ -24,7 +24,7 @@ export function buildPublishedInstallScenarios(version: string): PublishedInstal
     throw new Error(`Unsupported release version "${version}".`);
   }
 
-  const exactSpec = `openclaw@${version}`;
+  const exactSpec = `getkova@${version}`;
   const scenarios: PublishedInstallScenario[] = [
     {
       name: "fresh-exact",
@@ -36,7 +36,7 @@ export function buildPublishedInstallScenarios(version: string): PublishedInstal
   if (parsed.channel === "stable" && parsed.correctionNumber !== undefined) {
     scenarios.push({
       name: "upgrade-from-base-stable",
-      installSpecs: [`openclaw@${parsed.baseVersion}`, exactSpec],
+      installSpecs: [`getkova@${parsed.baseVersion}`, exactSpec],
       expectedVersion: version,
     });
   }
@@ -89,7 +89,7 @@ function installSpec(prefixDir: string, spec: string, cwd: string): void {
 }
 
 function verifyScenario(version: string, scenario: PublishedInstallScenario): void {
-  const workingDir = mkdtempSync(join(tmpdir(), `openclaw-postpublish-${scenario.name}.`));
+  const workingDir = mkdtempSync(join(tmpdir(), `kova-postpublish-${scenario.name}.`));
   const prefixDir = join(workingDir, "prefix");
 
   try {
@@ -98,7 +98,7 @@ function verifyScenario(version: string, scenario: PublishedInstallScenario): vo
     }
 
     const globalRoot = resolveGlobalRoot(prefixDir, workingDir);
-    const packageRoot = join(globalRoot, "openclaw");
+    const packageRoot = join(globalRoot, "getkova");
     const pkg = JSON.parse(
       readFileSync(join(packageRoot, "package.json"), "utf8"),
     ) as InstalledPackageJson;
