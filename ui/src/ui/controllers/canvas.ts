@@ -191,10 +191,10 @@ async function postCanvasAuthToken(
   return await new Promise<boolean>((resolve) => {
     const channel = new MessageChannel();
     const timeoutId = window.setTimeout(() => resolve(false), CANVAS_AUTH_ACK_TIMEOUT_MS);
-    channel.port1.onmessage = () => {
+    channel.port1.addEventListener("message", () => {
       clearTimeout(timeoutId);
       resolve(true);
-    };
+    });
     try {
       target.postMessage(message, [channel.port2]);
     } catch {

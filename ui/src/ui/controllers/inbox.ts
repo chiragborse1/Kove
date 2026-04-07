@@ -99,7 +99,7 @@ export async function loadInbox(state: InboxState) {
       includeGlobal: false,
       includeUnknown: false,
     });
-    const sessions = [...(result?.sessions ?? [])].sort(
+    const sessions = [...(result?.sessions ?? [])].toSorted(
       (left, right) => (right.updatedAt ?? 0) - (left.updatedAt ?? 0),
     );
     state.inboxSessions = sessions;

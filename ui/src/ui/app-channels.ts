@@ -20,7 +20,7 @@ const whatsappPollDeadlines = new WeakMap<OpenClawApp, number>();
 
 function resolveWhatsAppStatus(host: OpenClawApp): WhatsAppStatus | null {
   const channels = host.channelsSnapshot?.channels as Record<string, unknown> | null;
-  return ((channels?.whatsapp as WhatsAppStatus | undefined) ?? null) as WhatsAppStatus | null;
+  return ((channels?.whatsapp as WhatsAppStatus | undefined) ?? null);
 }
 
 function resolveWhatsAppIdentity(status: WhatsAppStatus | null): string | null {

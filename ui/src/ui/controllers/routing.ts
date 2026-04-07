@@ -118,7 +118,7 @@ export function resolveRoutingEmployees(agentsList: AgentsListResult | null): Ro
 
 function resolveBindings(snapshot: ConfigSnapshot | null): unknown[] {
   const config = snapshot?.config;
-  const bindings = config && typeof config === "object" ? (config as Record<string, unknown>).bindings : null;
+  const bindings = config && typeof config === "object" ? config.bindings : null;
   return Array.isArray(bindings) ? bindings : [];
 }
 
@@ -143,7 +143,7 @@ export function serializeRoutingConfig(
   snapshot: ConfigSnapshot | null,
   assignments: RoutingAssignments,
 ): string {
-  const nextConfig = cloneConfigObject((snapshot?.config ?? {}) as Record<string, unknown>);
+  const nextConfig = cloneConfigObject((snapshot?.config ?? {}));
   const currentBindings = resolveBindings(snapshot);
   const preservedBindings = currentBindings.filter((binding) => !isManagedRoutingBinding(binding));
   const managedBindings = ROUTING_CHANNELS.flatMap((channel) => {

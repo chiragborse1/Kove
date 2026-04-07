@@ -7,9 +7,6 @@ import {
   ErrorCodes,
   errorShape,
   formatValidationErrors,
-  type PairingApproveParams,
-  type PairingListParams,
-  type PairingRejectParams,
   validatePairingApproveParams,
   validatePairingListParams,
   validatePairingRejectParams,
@@ -29,7 +26,7 @@ export const pairingHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const { channel, accountId } = params as PairingListParams;
+    const { channel, accountId } = params;
     const requests = await listChannelPairingRequests(channel, process.env, accountId);
     respond(true, { requests }, undefined);
   },
@@ -45,7 +42,7 @@ export const pairingHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const { channel, code, accountId } = params as PairingApproveParams;
+    const { channel, code, accountId } = params;
     const approved = await approveChannelPairingCode({ channel, code, accountId });
     if (!approved) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "unknown pairing code"));
@@ -66,7 +63,7 @@ export const pairingHandlers: GatewayRequestHandlers = {
       );
       return;
     }
-    const { channel, code, accountId } = params as PairingRejectParams;
+    const { channel, code, accountId } = params;
     const rejected = await rejectChannelPairingCode({ channel, code, accountId });
     if (!rejected) {
       respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, "unknown pairing code"));

@@ -152,7 +152,7 @@ function kova_parseMarketplaceRegistry(payload: unknown): KovaMarketplaceSkill[]
   return skills
     .map((entry) => kova_normalizeMarketplaceSkill(entry))
     .filter((entry): entry is KovaMarketplaceSkill => entry !== null)
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .toSorted((left, right) => left.name.localeCompare(right.name));
 }
 
 async function kova_loadMarketplaceRegistry(state: SkillsState) {
@@ -186,7 +186,7 @@ function kova_extractInstalledSkillIds(result: AgentsFilesListResult): string[] 
       ids.add(match[1]);
     }
   }
-  return Array.from(ids).sort((left, right) => left.localeCompare(right));
+  return Array.from(ids).toSorted((left, right) => left.localeCompare(right));
 }
 
 async function kova_requestInstalledFilesList(state: SkillsState): Promise<AgentsFilesListResult> {
@@ -423,7 +423,7 @@ export async function kova_installMarketplaceSkill(
 
     state.kova_installedSkillIds = Array.from(
       new Set([...state.kova_installedSkillIds, skillId]),
-    ).sort((left, right) => left.localeCompare(right));
+    ).toSorted((left, right) => left.localeCompare(right));
 
     await Promise.allSettled([kova_loadInstalledSkills(state), kova_loadSkillsStatus(state)]);
   } catch (err) {
