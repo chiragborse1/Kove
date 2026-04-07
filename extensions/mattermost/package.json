@@ -7,9 +7,6 @@
     "@sinclair/typebox": "0.34.49",
     "ws": "^8.20.0"
   },
-  "devDependencies": {
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },

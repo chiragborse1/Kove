@@ -9,9 +9,6 @@
     "@tloncorp/tlon-skill": "0.3.1",
     "@urbit/aura": "^3.0.0"
   },
-  "devDependencies": {
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },

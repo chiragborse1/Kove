@@ -7,9 +7,6 @@
     "@sinclair/typebox": "0.34.49",
     "zca-js": "2.1.2"
   },
-  "devDependencies": {
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },

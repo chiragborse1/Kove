@@ -6,9 +6,6 @@
   "dependencies": {
     "nostr-tools": "^2.23.3"
   },
-  "devDependencies": {
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },
