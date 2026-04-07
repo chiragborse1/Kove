@@ -1,14 +1,14 @@
 ---
 summary: "TinyFish plugin: hosted browser automation for public multi-step workflows"
 read_when:
-  - You want hosted browser automation from OpenClaw
+  - You want hosted browser automation from Kova
   - You are configuring or developing the TinyFish plugin
 title: "TinyFish"
 ---
 
 # TinyFish
 
-TinyFish adds a hosted browser automation tool to OpenClaw for complex public
+TinyFish adds a hosted browser automation tool to Kova for complex public
 web workflows: multi-step navigation, forms, JS-heavy pages, geo-aware proxy
 routing, and structured extraction.
 

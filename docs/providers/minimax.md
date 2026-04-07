@@ -1,14 +1,14 @@
 ---
-summary: "Use MiniMax models in OpenClaw"
+summary: "Use MiniMax models in Kova"
 read_when:
-  - You want MiniMax models in OpenClaw
+  - You want MiniMax models in Kova
   - You need MiniMax setup guidance
 title: "MiniMax"
 ---
 
 # MiniMax
 
-OpenClaw's MiniMax provider defaults to **MiniMax M2.7**.
+Kova's MiniMax provider defaults to **MiniMax M2.7**.
 
 ## Model lineup
 
@@ -57,7 +57,7 @@ You will be prompted to select an endpoint:
 - **Global** - International users (`api.minimax.io`)
 - **CN** - Users in China (`api.minimaxi.com`)
 
-See the MiniMax plugin package README in the OpenClaw repo for details.
+See the MiniMax plugin package README in the Kova repo for details.
 
 ### MiniMax M2.7 (API key)
 

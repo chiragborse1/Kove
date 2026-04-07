@@ -1,7 +1,7 @@
 ---
-summary: "Synology Chat webhook setup and OpenClaw config"
+summary: "Synology Chat webhook setup and Kova config"
 read_when:
-  - Setting up Synology Chat with OpenClaw
+  - Setting up Synology Chat with Kova
   - Debugging Synology Chat webhook routing
 title: "Synology Chat"
 ---
@@ -32,10 +32,10 @@ Details: [Plugins](/tools/plugin)
 2. In Synology Chat integrations:
    - Create an incoming webhook and copy its URL.
    - Create an outgoing webhook with your secret token.
-3. Point the outgoing webhook URL to your OpenClaw gateway:
+3. Point the outgoing webhook URL to your Kova gateway:
    - `https://gateway-host/webhook/synology` by default.
    - Or your custom `channels.synology-chat.webhookPath`.
-4. Finish setup in OpenClaw.
+4. Finish setup in Kova.
    - Guided: `openclaw onboard`
    - Direct: `openclaw channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
 5. Restart gateway and send a DM to the Synology Chat bot.
@@ -91,7 +91,7 @@ Use numeric Synology Chat user IDs as targets.
 Examples:
 
 ```bash
-openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
+openclaw message send --channel synology-chat --target 123456 --text "Hello from Kova"
 openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
 ```
 
@@ -103,7 +103,7 @@ Multiple Synology Chat accounts are supported under `channels.synology-chat.acco
 Each account can override token, incoming URL, webhook path, DM policy, and limits.
 Direct-message sessions are isolated per account and user, so the same numeric `user_id`
 on two different Synology accounts does not share transcript state.
-Give each enabled account a distinct `webhookPath`. OpenClaw now rejects duplicate exact paths
+Give each enabled account a distinct `webhookPath`. Kova now rejects duplicate exact paths
 and refuses to start named accounts that only inherit a shared webhook path in multi-account setups.
 If you intentionally need legacy inheritance for a named account, set
 `dangerouslyAllowInheritedWebhookPath: true` on that account or at `channels.synology-chat`,

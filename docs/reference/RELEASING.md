@@ -8,7 +8,7 @@ read_when:
 
 # Release Policy
 
-OpenClaw has three public release lanes:
+Kova has three public release lanes:
 
 - stable: tagged releases that publish to npm `latest` and mirror the same version onto `beta` unless `beta` already points at a newer prerelease
 - beta: prerelease tags that publish to npm `beta`
@@ -26,7 +26,7 @@ OpenClaw has three public release lanes:
 - `latest` means the current stable npm release
 - `beta` means the current beta install target, which may point to either the active prerelease or the latest promoted stable build
 - Stable and stable correction releases publish to npm `latest` and also retag npm `beta` to that same non-beta version after promotion, unless `beta` already points at a newer prerelease
-- Every OpenClaw release ships the npm package and macOS app together
+- Every Kova release ships the npm package and macOS app together
 
 ## Release cadence
 

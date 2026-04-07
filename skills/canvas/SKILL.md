@@ -1,6 +1,6 @@
 # Canvas Skill
 
-Display HTML content on connected OpenClaw nodes (Mac app, iOS, Android).
+Display HTML content on connected Kova nodes (Mac app, iOS, Android).
 
 ## Overview
 
@@ -57,7 +57,7 @@ This is why localhost URLs don't work - the node receives the Tailscale hostname
 
 ## Configuration
 
-In the active OpenClaw config file (`$OPENCLAW_CONFIG_PATH`, default `~/.openclaw/openclaw.json`):
+In the active Kova config file (`$OPENCLAW_CONFIG_PATH`, default `~/.kova/openclaw.json`):
 
 ```json
 {

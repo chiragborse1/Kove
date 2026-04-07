@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 你想从机器上移除 OpenClaw
+  - 你想从机器上移除 Kova
   - 卸载后 Gateway 网关服务仍在运行
-summary: 完全卸载 OpenClaw（CLI、服务、状态、工作区）
+summary: 完全卸载 Kova（CLI、服务、状态、工作区）
 title: 卸载
 x-i18n:
   generated_at: "2026-02-03T07:50:10Z"
@@ -60,7 +60,7 @@ rm -rf "${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 4. 删除你的工作区（可选，移除智能体文件）：
 
 ```bash
-rm -rf ~/.openclaw/workspace
+rm -rf ~/.kova/workspace
 ```
 
 5. 移除 CLI 安装（选择你使用的那个）：
@@ -74,7 +74,7 @@ bun remove -g openclaw
 6. 如果你安装了 macOS 应用：
 
 ```bash
-rm -rf /Applications/OpenClaw.app
+rm -rf /Applications/Kova.app
 ```
 
 注意事项：
@@ -109,11 +109,11 @@ systemctl --user daemon-reload
 
 ### Windows（计划任务）
 
-默认任务名称是 `OpenClaw Gateway`（或 `OpenClaw Gateway (<profile>)`）。
+默认任务名称是 `Kova Gateway`（或 `Kova Gateway (<profile>)`）。
 任务脚本位于你的状态目录下。
 
 ```powershell
-schtasks /Delete /F /TN "OpenClaw Gateway"
+schtasks /Delete /F /TN "Kova Gateway"
 Remove-Item -Force "$env:USERPROFILE\.openclaw\gateway.cmd"
 ```
 
@@ -123,7 +123,7 @@ Remove-Item -Force "$env:USERPROFILE\.openclaw\gateway.cmd"
 
 ### 普通安装（install.sh / npm / pnpm / bun）
 
-如果你使用了 `https://openclaw.ai/install.sh` 或 `install.ps1`，CLI 是通过 `npm install -g openclaw@latest` 安装的。
+如果你使用了 `https://kova.ai/install.sh` 或 `install.ps1`，CLI 是通过 `npm install -g openclaw@latest` 安装的。
 使用 `npm rm -g openclaw` 移除（或 `pnpm remove -g` / `bun remove -g`，如果你是用那种方式安装的）。
 
 ### 源码检出（git clone）

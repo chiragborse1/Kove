@@ -1,9 +1,9 @@
 ---
 read_when:
-  - 在 Oracle Cloud 上设置 OpenClaw
-  - 寻找 OpenClaw 的低成本 VPS 托管
-  - 想要在小型服务器上 24/7 运行 OpenClaw
-summary: 在 Oracle Cloud 上运行 OpenClaw（Always Free ARM）
+  - 在 Oracle Cloud 上设置 Kova
+  - 寻找 Kova 的低成本 VPS 托管
+  - 想要在小型服务器上 24/7 运行 Kova
+summary: 在 Oracle Cloud 上运行 Kova（Always Free ARM）
 title: Oracle Cloud
 x-i18n:
   generated_at: "2026-02-03T07:53:25Z"
@@ -14,13 +14,13 @@ x-i18n:
   workflow: 15
 ---
 
-# 在 Oracle Cloud（OCI）上运行 OpenClaw
+# 在 Oracle Cloud（OCI）上运行 Kova
 
 ## 目标
 
-在 Oracle Cloud 的 **Always Free** ARM 层上运行持久化的 OpenClaw Gateway 网关。
+在 Oracle Cloud 的 **Always Free** ARM 层上运行持久化的 Kova Gateway 网关。
 
-Oracle 的免费层非常适合 OpenClaw（特别是如果你已经有 OCI 账户），但有一些权衡：
+Oracle 的免费层非常适合 Kova（特别是如果你已经有 OCI 账户），但有一些权衡：
 
 - ARM 架构（大多数东西都能工作，但某些二进制文件可能仅支持 x86）
 - 容量和注册可能比较麻烦
@@ -103,10 +103,10 @@ tailscale status
 
 **从现在开始，通过 Tailscale 连接：** `ssh ubuntu@openclaw`（或使用 Tailscale IP）。
 
-## 5) 安装 OpenClaw
+## 5) 安装 Kova
 
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://kova.ai/install.sh | bash
 source ~/.bashrc
 ```
 
@@ -290,13 +290,13 @@ uname -m  # 应该显示 aarch64
 
 所有状态存储在：
 
-- `~/.openclaw/` — 配置、凭证、会话数据
-- `~/.openclaw/workspace/` — 工作区（SOUL.md、记忆、产物）
+- `~/.kova/` — 配置、凭证、会话数据
+- `~/.kova/workspace/` — 工作区（SOUL.md、记忆、产物）
 
 定期备份：
 
 ```bash
-tar -czvf openclaw-backup.tar.gz ~/.openclaw ~/.openclaw/workspace
+tar -czvf openclaw-backup.tar.gz ~/.openclaw ~/.kova/workspace
 ```
 
 ---

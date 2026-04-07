@@ -9,7 +9,7 @@ title: "ClawFlow"
 
 # ClawFlow
 
-`ClawFlow` appears in some older OpenClaw release notes and documentation as if it were a user-facing runtime with its own `openclaw flows` command surface.
+`ClawFlow` appears in some older Kova release notes and documentation as if it were a user-facing runtime with its own `openclaw flows` command surface.
 
 That is not the current operator-facing surface in this repository.
 

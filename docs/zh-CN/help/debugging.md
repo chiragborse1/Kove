@@ -65,7 +65,7 @@ pnpm gateway:dev
 OPENCLAW_PROFILE=dev openclaw tui
 ```
 
-如果你还没有全局安装，请通过 `pnpm openclaw ...` 运行 CLI。
+如果你还没有全局安装，请通过 `pnpm kova ...` 运行 CLI。
 
 这会执行：
 
@@ -105,9 +105,9 @@ OPENCLAW_PROFILE=dev openclaw gateway --dev --reset
 openclaw gateway stop
 ```
 
-## 原始流日志（OpenClaw）
+## 原始流日志（Kova）
 
-OpenClaw 可以在任何过滤/格式化之前记录**原始助手流**。
+Kova 可以在任何过滤/格式化之前记录**原始助手流**。
 这是查看推理是否作为纯文本增量到达（或作为单独的思考块）的最佳方式。
 
 通过 CLI 启用：
@@ -119,19 +119,19 @@ pnpm gateway:watch --force --raw-stream
 可选路径覆盖：
 
 ```bash
-pnpm gateway:watch --force --raw-stream --raw-stream-path ~/.openclaw/logs/raw-stream.jsonl
+pnpm gateway:watch --force --raw-stream --raw-stream-path ~/.kova/logs/raw-stream.jsonl
 ```
 
 等效环境变量：
 
 ```bash
 OPENCLAW_RAW_STREAM=1
-OPENCLAW_RAW_STREAM_PATH=~/.openclaw/logs/raw-stream.jsonl
+OPENCLAW_RAW_STREAM_PATH=~/.kova/logs/raw-stream.jsonl
 ```
 
 默认文件：
 
-`~/.openclaw/logs/raw-stream.jsonl`
+`~/.kova/logs/raw-stream.jsonl`
 
 ## 原始块日志（pi-mono）
 

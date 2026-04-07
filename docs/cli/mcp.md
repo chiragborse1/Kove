@@ -1,9 +1,9 @@
 ---
-summary: "Expose OpenClaw channel conversations over MCP and manage saved MCP server definitions"
+summary: "Expose Kova channel conversations over MCP and manage saved MCP server definitions"
 read_when:
-  - Connecting Codex, Claude Code, or another MCP client to OpenClaw-backed channels
+  - Connecting Codex, Claude Code, or another MCP client to Kova-backed channels
   - Running `openclaw mcp serve`
-  - Managing OpenClaw-saved MCP server definitions
+  - Managing Kova-saved MCP server definitions
 title: "mcp"
 ---
 
@@ -11,20 +11,20 @@ title: "mcp"
 
 `openclaw mcp` has two jobs:
 
-- run OpenClaw as an MCP server with `openclaw mcp serve`
-- manage OpenClaw-owned outbound MCP server definitions with `list`, `show`,
+- run Kova as an MCP server with `openclaw mcp serve`
+- manage Kova-owned outbound MCP server definitions with `list`, `show`,
   `set`, and `unset`
 
 In other words:
 
-- `serve` is OpenClaw acting as an MCP server
-- `list` / `show` / `set` / `unset` is OpenClaw acting as an MCP client-side
+- `serve` is Kova acting as an MCP server
+- `list` / `show` / `set` / `unset` is Kova acting as an MCP client-side
   registry for other MCP servers its runtimes may consume later
 
-Use [`openclaw acp`](/cli/acp) when OpenClaw should host a coding harness
+Use [`openclaw acp`](/cli/acp) when Kova should host a coding harness
 session itself and route that runtime through ACP.
 
-## OpenClaw as an MCP server
+## Kova as an MCP server
 
 This is the `openclaw mcp serve` path.
 
@@ -33,19 +33,19 @@ This is the `openclaw mcp serve` path.
 Use `openclaw mcp serve` when:
 
 - Codex, Claude Code, or another MCP client should talk directly to
-  OpenClaw-backed channel conversations
-- you already have a local or remote OpenClaw Gateway with routed sessions
-- you want one MCP server that works across OpenClaw's channel backends instead
+  Kova-backed channel conversations
+- you already have a local or remote Kova Gateway with routed sessions
+- you want one MCP server that works across Kova's channel backends instead
   of running separate per-channel bridges
 
-Use [`openclaw acp`](/cli/acp) instead when OpenClaw should host the coding
-runtime itself and keep the agent session inside OpenClaw.
+Use [`openclaw acp`](/cli/acp) instead when Kova should host the coding
+runtime itself and keep the agent session inside Kova.
 
 ## How it works
 
 `openclaw mcp serve` starts a stdio MCP server. The MCP client owns that
 process. While the client keeps the stdio session open, the bridge connects to a
-local or remote OpenClaw Gateway over WebSocket and exposes routed channel
+local or remote Kova Gateway over WebSocket and exposes routed channel
 conversations over MCP.
 
 Lifecycle:
@@ -80,7 +80,7 @@ yet.
 ## What `serve` exposes
 
 The bridge uses existing Gateway session route metadata to expose channel-backed
-conversations. A conversation appears when OpenClaw already has session state
+conversations. A conversation appears when Kova already has session state
 with a known route such as:
 
 - `channel`
@@ -103,10 +103,10 @@ This gives MCP clients one place to:
 openclaw mcp serve
 
 # Remote Gateway
-openclaw mcp serve --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
+openclaw mcp serve --url wss://gateway-host:18789 --token-file ~/.kova/gateway.token
 
 # Remote Gateway with password auth
-openclaw mcp serve --url wss://gateway-host:18789 --password-file ~/.openclaw/gateway.password
+openclaw mcp serve --url wss://gateway-host:18789 --password-file ~/.kova/gateway.password
 
 # Enable verbose bridge logs
 openclaw mcp serve --verbose
@@ -213,7 +213,7 @@ Important limits:
 ## Claude channel notifications
 
 The bridge can also expose Claude-specific channel notifications. This is the
-OpenClaw equivalent of a Claude Code channel adapter: standard MCP tools remain
+Kova equivalent of a Claude Code channel adapter: standard MCP tools remain
 available, but live inbound messages can also arrive as Claude-specific MCP
 notifications.
 
@@ -290,7 +290,7 @@ already knows how to route.
 That means:
 
 - sender allowlists, pairing, and channel-level trust still belong to the
-  underlying OpenClaw channel configuration
+  underlying Kova channel configuration
 - `messages_send` can only reply through an existing stored route
 - approval state is live/in-memory only for the current bridge session
 - bridge auth should use the same Gateway token or password controls you would
@@ -302,7 +302,7 @@ Gateway session.
 
 ## Testing
 
-OpenClaw ships a deterministic Docker smoke for this bridge:
+Kova ships a deterministic Docker smoke for this bridge:
 
 ```bash
 pnpm test:docker:mcp-channels
@@ -349,21 +349,21 @@ Check all of these:
 `permissions_list_open` only shows approval requests observed while the bridge
 was connected. It is not a durable approval history API.
 
-## OpenClaw as an MCP client registry
+## Kova as an MCP client registry
 
 This is the `openclaw mcp list`, `show`, `set`, and `unset` path.
 
-These commands do not expose OpenClaw over MCP. They manage OpenClaw-owned MCP
-server definitions under `mcp.servers` in OpenClaw config.
+These commands do not expose Kova over MCP. They manage Kova-owned MCP
+server definitions under `mcp.servers` in Kova config.
 
-Those saved definitions are for runtimes that OpenClaw launches or configures
-later, such as embedded Pi and other runtime adapters. OpenClaw stores the
+Those saved definitions are for runtimes that Kova launches or configures
+later, such as embedded Pi and other runtime adapters. Kova stores the
 definitions centrally so those runtimes do not need to keep their own duplicate
 MCP server lists.
 
 Important behavior:
 
-- these commands only read or write OpenClaw config
+- these commands only read or write Kova config
 - they do not connect to the target MCP server
 - they do not validate whether the command, URL, or remote transport is
   reachable right now
@@ -372,8 +372,8 @@ Important behavior:
 
 ## Saved MCP server definitions
 
-OpenClaw also stores a lightweight MCP server registry in config for surfaces
-that want OpenClaw-managed MCP definitions.
+Kova also stores a lightweight MCP server registry in config for surfaces
+that want Kova-managed MCP definitions.
 
 Commands:
 

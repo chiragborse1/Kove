@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 你正在将 OpenClaw 迁移到新的笔记本电脑/服务器
+  - 你正在将 Kova 迁移到新的笔记本电脑/服务器
   - 你想保留会话、认证和渠道登录（WhatsApp 等）
-summary: 将 OpenClaw 安装从一台机器迁移到另一台
+summary: 将 Kova 安装从一台机器迁移到另一台
 title: 迁移指南
 x-i18n:
   generated_at: "2026-02-03T07:49:55Z"
@@ -13,14 +13,14 @@ x-i18n:
   workflow: 15
 ---
 
-# 将 OpenClaw 迁移到新机器
+# 将 Kova 迁移到新机器
 
-本指南将 OpenClaw Gateway 网关从一台机器迁移到另一台，**无需重新进行新手引导**。
+本指南将 Kova Gateway 网关从一台机器迁移到另一台，**无需重新进行新手引导**。
 
 迁移在概念上很简单：
 
-- 复制**状态目录**（`$OPENCLAW_STATE_DIR`，默认：`~/.openclaw/`）— 这包括配置、认证、会话和渠道状态。
-- 复制你的**工作区**（默认 `~/.openclaw/workspace/`）— 这包括你的智能体文件（记忆、提示等）。
+- 复制**状态目录**（`$OPENCLAW_STATE_DIR`，默认：`~/.kova/`）— 这包括配置、认证、会话和渠道状态。
+- 复制你的**工作区**（默认 `~/.kova/workspace/`）— 这包括你的智能体文件（记忆、提示等）。
 
 但在**配置文件**、**权限**和**部分复制**方面有常见的陷阱。
 
@@ -30,7 +30,7 @@ x-i18n:
 
 大多数安装使用默认值：
 
-- **状态目录：** `~/.openclaw/`
+- **状态目录：** `~/.kova/`
 
 但如果你使用以下方式，可能会不同：
 
@@ -49,7 +49,7 @@ openclaw status
 
 常见默认值：
 
-- `~/.openclaw/workspace/`（推荐的工作区）
+- `~/.kova/workspace/`（推荐的工作区）
 - 你创建的自定义文件夹
 
 你的工作区是 `MEMORY.md`、`USER.md` 和 `memory/*.md` 等文件所在的位置。
@@ -94,20 +94,20 @@ tar -czf openclaw-workspace.tgz .openclaw/workspace
 
 如果你有多个配置文件/状态目录（例如 `~/.openclaw-main`、`~/.openclaw-work`），分别归档每个。
 
-### 步骤 1 — 在新机器上安装 OpenClaw
+### 步骤 1 — 在新机器上安装 Kova
 
 在**新**机器上，安装 CLI（如果需要还有 Node）：
 
 - 参见：[安装](/install)
 
-在这个阶段，如果新手引导创建了一个新的 `~/.openclaw/` 也没关系 — 你将在下一步覆盖它。
+在这个阶段，如果新手引导创建了一个新的 `~/.kova/` 也没关系 — 你将在下一步覆盖它。
 
 ### 步骤 2 — 将状态目录 + 工作区复制到新机器
 
 复制**两者**：
 
-- `$OPENCLAW_STATE_DIR`（默认 `~/.openclaw/`）
-- 你的工作区（默认 `~/.openclaw/workspace/`）
+- `$OPENCLAW_STATE_DIR`（默认 `~/.kova/`）
+- 你的工作区（默认 `~/.kova/workspace/`）
 
 常见方法：
 
@@ -196,4 +196,4 @@ openclaw doctor
 
 - [Doctor](/gateway/doctor)
 - [Gateway 网关故障排除](/gateway/troubleshooting)
-- [OpenClaw 在哪里存储数据？](/help/faq#where-does-openclaw-store-its-data)
+- [Kova 在哪里存储数据？](/help/faq#where-does-openclaw-store-its-data)

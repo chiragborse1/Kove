@@ -52,7 +52,7 @@ Minimal config:
 Zalo is a Vietnam-focused messaging app; its Bot API lets the Gateway run a bot for 1:1 conversations.
 It is a good fit for support or notifications where you want deterministic routing back to Zalo.
 
-This page reflects current OpenClaw behavior for **Zalo Bot Creator / Marketplace bots**.
+This page reflects current Kova behavior for **Zalo Bot Creator / Marketplace bots**.
 **Zalo Official Account (OA) bots** are a different Zalo product surface and may behave differently.
 
 - A Zalo Bot API channel owned by the Gateway.
@@ -167,7 +167,7 @@ For a quick support snapshot, see [Capabilities](#capabilities). The notes below
 
 ## Capabilities
 
-This table summarizes current **Zalo Bot Creator / Marketplace bot** behavior in OpenClaw.
+This table summarizes current **Zalo Bot Creator / Marketplace bot** behavior in Kova.
 
 | Feature                     | Status                                  |
 | --------------------------- | --------------------------------------- |

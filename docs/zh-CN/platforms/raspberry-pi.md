@@ -1,9 +1,9 @@
 ---
 read_when:
-  - 在 Raspberry Pi 上设置 OpenClaw
-  - 在 ARM 设备上运行 OpenClaw
+  - 在 Raspberry Pi 上设置 Kova
+  - 在 ARM 设备上运行 Kova
   - 构建一个低成本、始终在线的个人 AI
-summary: 在 Raspberry Pi 上运行 OpenClaw（低预算自托管方案）
+summary: 在 Raspberry Pi 上运行 Kova（低预算自托管方案）
 title: Raspberry Pi
 x-i18n:
   generated_at: "2026-03-16T06:24:58Z"
@@ -14,11 +14,11 @@ x-i18n:
   workflow: 15
 ---
 
-# 在 Raspberry Pi 上运行 OpenClaw
+# 在 Raspberry Pi 上运行 Kova
 
 ## 目标
 
-在 Raspberry Pi 上以 **约 35–80 美元**的一次性成本（无月费）运行一个持久化、始终在线的 OpenClaw Gateway 网关。
+在 Raspberry Pi 上以 **约 35–80 美元**的一次性成本（无月费）运行一个持久化、始终在线的 Kova Gateway 网关。
 
 非常适合：
 
@@ -114,12 +114,12 @@ echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
 
-## 6）安装 OpenClaw
+## 6）安装 Kova
 
 ### 选项 A：标准安装（推荐）
 
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://kova.ai/install.sh | bash
 ```
 
 ### 选项 B：可修改安装（适合折腾）
@@ -160,7 +160,7 @@ sudo systemctl status openclaw
 journalctl -u openclaw -f
 ```
 
-## 9）访问 OpenClaw Dashboard
+## 9）访问 Kova Dashboard
 
 将 `user@gateway-host` 替换为你的 Pi 用户名，以及主机名或 IP 地址。
 
@@ -223,7 +223,7 @@ source ~/.bashrc
 
 ### systemd 启动调优（可选）
 
-如果这台 Pi 主要运行 OpenClaw，可以添加一个服务 drop-in，以减少重启抖动并保持稳定的启动环境：
+如果这台 Pi 主要运行 Kova，可以添加一个服务 drop-in，以减少重启抖动并保持稳定的启动环境：
 
 ```bash
 sudo systemctl edit openclaw
@@ -245,7 +245,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart openclaw
 ```
 
-如果可能，请将 OpenClaw 状态/缓存放在 SSD 支持的存储上，以避免冷启动期间 SD 卡随机 I/O 成为瓶颈。
+如果可能，请将 Kova 状态/缓存放在 SSD 支持的存储上，以避免冷启动期间 SD 卡随机 I/O 成为瓶颈。
 
 关于 `Restart=` 策略如何帮助自动恢复：
 [systemd can automate service recovery](https://www.redhat.com/en/blog/systemd-automate-recovery)。
@@ -279,7 +279,7 @@ htop
 
 ### 二进制兼容性
 
-OpenClaw 的大多数功能都可在 ARM64 上运行，但某些外部二进制文件可能需要 ARM 构建版本：
+Kova 的大多数功能都可在 ARM64 上运行，但某些外部二进制文件可能需要 ARM 构建版本：
 
 | 工具               | ARM64 状态 | 说明                                |
 | ------------------ | ---------- | ----------------------------------- |

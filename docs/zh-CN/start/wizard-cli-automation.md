@@ -3,7 +3,7 @@ read_when:
   - 你正在脚本或 CI 中自动化新手引导
   - 你需要特定提供商的非交互式示例
 sidebarTitle: CLI automation
-summary: 用于 OpenClaw CLI 的脚本化新手引导和智能体设置
+summary: 用于 Kova CLI 的脚本化新手引导和智能体设置
 title: CLI 自动化
 x-i18n:
   generated_at: "2026-03-16T06:28:19Z"
@@ -196,7 +196,7 @@ openclaw onboard --non-interactive \
 
 ```bash
 openclaw agents add work \
-  --workspace ~/.openclaw/workspace-work \
+  --workspace ~/.kova/workspace-work \
   --model openai/gpt-5.2 \
   --bind whatsapp:biz \
   --non-interactive \
@@ -211,7 +211,7 @@ openclaw agents add work \
 
 说明：
 
-- 默认工作区遵循 `~/.openclaw/workspace-<agentId>`。
+- 默认工作区遵循 `~/.kova/workspace-<agentId>`。
 - 添加 `bindings` 以路由入站消息（向导可以完成这项操作）。
 - 非交互式标志：`--model`、`--agent-dir`、`--bind`、`--non-interactive`。
 

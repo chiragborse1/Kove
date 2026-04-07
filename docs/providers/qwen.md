@@ -1,7 +1,7 @@
 ---
 summary: "Use Qwen models via Alibaba Cloud Model Studio"
 read_when:
-  - You want to use Qwen with OpenClaw
+  - You want to use Qwen with Kova
   - You previously used Qwen OAuth
 title: "Qwen"
 ---

@@ -1,7 +1,7 @@
 ---
-summary: "Use Anthropic Claude via API keys, setup-token, or Claude CLI in OpenClaw"
+summary: "Use Anthropic Claude via API keys, setup-token, or Claude CLI in Kova"
 read_when:
-  - You want to use Anthropic models in OpenClaw
+  - You want to use Anthropic models in Kova
   - You want setup-token instead of API keys
   - You want to reuse Claude CLI subscription auth on the gateway host
 title: "Anthropic"
@@ -10,7 +10,7 @@ title: "Anthropic"
 # Anthropic (Claude)
 
 Anthropic builds the **Claude** model family and provides access via an API.
-In OpenClaw you can authenticate with an API key or a **setup-token**.
+In Kova you can authenticate with an API key or a **setup-token**.
 
 ## Option A: Anthropic API key
 
@@ -38,7 +38,7 @@ openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 
 ## Thinking defaults (Claude 4.6)
 
-- Anthropic Claude 4.6 models default to `adaptive` thinking in OpenClaw when no explicit thinking level is set.
+- Anthropic Claude 4.6 models default to `adaptive` thinking in Kova when no explicit thinking level is set.
 - You can override per-message (`/think:<level>`) or in model params:
   `agents.defaults.models["anthropic/<model>"].params.thinking`.
 - Related Anthropic docs:
@@ -47,7 +47,7 @@ openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 
 ## Fast mode (Anthropic API)
 
-OpenClaw's shared `/fast` toggle also supports direct public Anthropic traffic, including API-key and OAuth-authenticated requests sent to `api.anthropic.com`.
+Kova's shared `/fast` toggle also supports direct public Anthropic traffic, including API-key and OAuth-authenticated requests sent to `api.anthropic.com`.
 
 - `/fast on` maps to `service_tier: "auto"`
 - `/fast off` maps to `service_tier: "standard_only"`
@@ -69,13 +69,13 @@ OpenClaw's shared `/fast` toggle also supports direct public Anthropic traffic, 
 
 Important limits:
 
-- OpenClaw only injects Anthropic service tiers for direct `api.anthropic.com` requests. If you route `anthropic/*` through a proxy or gateway, `/fast` leaves `service_tier` untouched.
+- Kova only injects Anthropic service tiers for direct `api.anthropic.com` requests. If you route `anthropic/*` through a proxy or gateway, `/fast` leaves `service_tier` untouched.
 - Explicit Anthropic `serviceTier` or `service_tier` model params override the `/fast` default when both are set.
 - Anthropic reports the effective tier on the response under `usage.service_tier`. On accounts without Priority Tier capacity, `service_tier: "auto"` may still resolve to `standard`.
 
 ## Prompt caching (Anthropic API)
 
-OpenClaw supports Anthropic's prompt caching feature. This is **API-only**; subscription auth does not honor cache settings.
+Kova supports Anthropic's prompt caching feature. This is **API-only**; subscription auth does not honor cache settings.
 
 ### Configuration
 
@@ -103,7 +103,7 @@ Use the `cacheRetention` parameter in your model config:
 
 ### Defaults
 
-When using Anthropic API Key authentication, OpenClaw automatically applies `cacheRetention: "short"` (5-minute cache) for all Anthropic models. You can override this by explicitly setting `cacheRetention` in your config.
+When using Anthropic API Key authentication, Kova automatically applies `cacheRetention: "short"` (5-minute cache) for all Anthropic models. You can override this by explicitly setting `cacheRetention` in your config.
 
 ### Per-agent cacheRetention overrides
 
@@ -150,12 +150,12 @@ The older `cacheControlTtl` parameter is still supported for backwards compatibi
 
 We recommend migrating to the new `cacheRetention` parameter.
 
-OpenClaw includes the `extended-cache-ttl-2025-04-11` beta flag for Anthropic API
+Kova includes the `extended-cache-ttl-2025-04-11` beta flag for Anthropic API
 requests; keep it if you override provider headers (see [/gateway/configuration](/gateway/configuration)).
 
 ## 1M context window (Anthropic beta)
 
-Anthropic's 1M context window is beta-gated. In OpenClaw, enable it per model
+Anthropic's 1M context window is beta-gated. In Kova, enable it per model
 with `params.context1m: true` for supported Opus/Sonnet models.
 
 ```json5
@@ -172,7 +172,7 @@ with `params.context1m: true` for supported Opus/Sonnet models.
 }
 ```
 
-OpenClaw maps this to `anthropic-beta: context-1m-2025-08-07` on Anthropic
+Kova maps this to `anthropic-beta: context-1m-2025-08-07` on Anthropic
 requests.
 
 This only activates when `params.context1m` is explicitly set to `true` for
@@ -185,7 +185,7 @@ enabled). Otherwise Anthropic returns:
 
 Note: Anthropic currently rejects `context-1m-*` beta requests when using
 subscription setup-tokens (`sk-ant-oat-*`). If you configure `context1m: true`
-with subscription auth, OpenClaw logs a warning and falls back to the standard
+with subscription auth, Kova logs a warning and falls back to the standard
 context window by skipping the context1m beta header while keeping the required
 OAuth betas.
 
@@ -195,7 +195,7 @@ OAuth betas.
 and signed in with a Claude subscription.
 
 This path uses the local `claude` binary for model inference instead of calling
-the Anthropic API directly. OpenClaw treats it as a **CLI backend provider**
+the Anthropic API directly. Kova treats it as a **CLI backend provider**
 with model refs like:
 
 - `claude-cli/claude-sonnet-4-6`
@@ -203,11 +203,11 @@ with model refs like:
 
 How it works:
 
-1. OpenClaw launches `claude -p --output-format json ...` on the **gateway
+1. Kova launches `claude -p --output-format json ...` on the **gateway
    host**.
 2. The first turn sends `--session-id <uuid>`.
 3. Follow-up turns reuse the stored Claude session via `--resume <sessionId>`.
-4. Your chat messages still go through the normal OpenClaw message pipeline, but
+4. Your chat messages still go through the normal Kova message pipeline, but
    the actual model reply is produced by Claude CLI.
 
 ### Requirements
@@ -220,7 +220,7 @@ How it works:
 claude auth status
 ```
 
-- OpenClaw auto-loads the bundled Anthropic plugin at gateway startup when your
+- Kova auto-loads the bundled Anthropic plugin at gateway startup when your
   config explicitly references `claude-cli/...` or `claude-cli` backend config.
 
 ### Config snippet
@@ -260,7 +260,7 @@ If the `claude` binary is not on the gateway host PATH:
 ### What you get
 
 - Claude subscription auth reused from the local CLI
-- Normal OpenClaw message/session routing
+- Normal Kova message/session routing
 - Claude CLI session continuity across turns
 
 ### Migrate from Anthropic auth to Claude CLI
@@ -298,8 +298,8 @@ you need to.
 ### Important limits
 
 - This is **not** the Anthropic API provider. It is the local CLI runtime.
-- Tools are disabled on the OpenClaw side for CLI backend runs.
-- Text in, text out. No OpenClaw streaming handoff.
+- Tools are disabled on the Kova side for CLI backend runs.
+- Text in, text out. No Kova streaming handoff.
 - Best fit for a personal gateway host, not shared multi-user billing setups.
 
 More details: [/gateway/cli-backends](/gateway/cli-backends)
@@ -316,7 +316,7 @@ Setup-tokens are created by the **Claude Code CLI**, not the Anthropic Console. 
 claude setup-token
 ```
 
-Paste the token into OpenClaw (wizard: **Anthropic token (paste setup-token)**), or run it on the gateway host:
+Paste the token into Kova (wizard: **Anthropic token (paste setup-token)**), or run it on the gateway host:
 
 ```bash
 openclaw models auth setup-token --provider anthropic

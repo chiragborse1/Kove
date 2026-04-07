@@ -1,7 +1,7 @@
 ---
 summary: "QQ Bot setup, config, and usage"
 read_when:
-  - You want to connect OpenClaw to QQ
+  - You want to connect Kova to QQ
   - You need QQ Bot credential setup
   - You want QQ Bot group or private chat support
 title: QQ Bot
@@ -9,16 +9,16 @@ title: QQ Bot
 
 # QQ Bot
 
-QQ Bot connects to OpenClaw via the official QQ Bot API (WebSocket gateway). The
+QQ Bot connects to Kova via the official QQ Bot API (WebSocket gateway). The
 plugin supports C2C private chat, group @messages, and guild channel messages with
 rich media (images, voice, video, files).
 
 Status: bundled channel plugin. Direct messages, group chats, guild channels, and
 media are supported. Reactions and threads are not supported.
 
-## Bundled with OpenClaw
+## Bundled with Kova
 
-Current OpenClaw installs bundle QQ Bot. You do not need a separate
+Current Kova installs bundle QQ Bot. You do not need a separate
 `openclaw plugins install` step for normal setup.
 
 ## Setup
@@ -90,7 +90,7 @@ Notes:
 
 ### Multi-account setup
 
-Run multiple QQ bots under a single OpenClaw instance:
+Run multiple QQ bots under a single Kova instance:
 
 ```json5
 {
@@ -174,7 +174,7 @@ Built-in commands intercepted before the AI queue:
 | Command        | Description                          |
 | -------------- | ------------------------------------ |
 | `/bot-ping`    | Latency test                         |
-| `/bot-version` | Show the OpenClaw framework version  |
+| `/bot-version` | Show the Kova framework version  |
 | `/bot-help`    | List all commands                    |
 | `/bot-upgrade` | Show the QQBot upgrade guide link    |
 | `/bot-logs`    | Export recent gateway logs as a file |

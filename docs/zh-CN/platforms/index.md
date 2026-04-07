@@ -15,7 +15,7 @@ x-i18n:
 
 # 平台
 
-OpenClaw 核心使用 TypeScript 编写。**Node 是推荐的运行时**。
+Kova 核心使用 TypeScript 编写。**Node 是推荐的运行时**。
 不建议将 Bun 用于 Gateway 网关（存在 WhatsApp/Telegram bug）。
 
 已提供适用于 macOS（菜单栏应用）和移动节点（iOS/Android）的配套应用。Windows 和

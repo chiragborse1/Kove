@@ -1,4 +1,4 @@
-## OpenClaw Android App
+## Kova Android App
 
 Status: **extremely alpha**. The app is actively being rebuilt from the ground up.
 
@@ -140,7 +140,7 @@ Use `adb reverse` so Android `localhost:18789` tunnels to your laptop `localhost
 Terminal A (gateway):
 
 ```bash
-pnpm openclaw gateway --port 18789 --verbose
+pnpm kova gateway --port 18789 --verbose
 ```
 
 Terminal B (USB tunnel):
@@ -169,7 +169,7 @@ This app is native Kotlin + Jetpack Compose.
 1) Start the gateway (on your main machine):
 
 ```bash
-pnpm openclaw gateway --port 18789 --verbose
+pnpm kova gateway --port 18789 --verbose
 ```
 
 2) In the Android app:
@@ -210,7 +210,7 @@ Why these matter:
 - Review usually involves a `Permissions Declaration Form`, policy justification, and demo video evidence in Play Console.
 - If we want a Play-safe build, these should be the first permissions removed behind a dedicated product flavor / variant.
 
-Current OpenClaw Android implication:
+Current Kova Android implication:
 
 - APK / sideload build can keep SMS and Call Log features.
 - Google Play build should exclude SMS send/search and Call Log search unless the product is intentionally positioned and approved as a default-handler exception case.
@@ -267,7 +267,7 @@ pnpm android:test:integration
 
 Optional overrides:
 
-- `OPENCLAW_ANDROID_GATEWAY_URL=ws://...` (default: from your local OpenClaw config)
+- `OPENCLAW_ANDROID_GATEWAY_URL=ws://...` (default: from your local Kova config)
 - `OPENCLAW_ANDROID_GATEWAY_TOKEN=...`
 - `OPENCLAW_ANDROID_GATEWAY_PASSWORD=...`
 - `OPENCLAW_ANDROID_NODE_ID=...` or `OPENCLAW_ANDROID_NODE_NAME=...`

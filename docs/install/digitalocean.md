@@ -1,14 +1,14 @@
 ---
-summary: "Host OpenClaw on a DigitalOcean Droplet"
+summary: "Host Kova on a DigitalOcean Droplet"
 read_when:
-  - Setting up OpenClaw on DigitalOcean
-  - Looking for a simple paid VPS for OpenClaw
+  - Setting up Kova on DigitalOcean
+  - Looking for a simple paid VPS for Kova
 title: "DigitalOcean"
 ---
 
 # DigitalOcean
 
-Run a persistent OpenClaw Gateway on a DigitalOcean Droplet.
+Run a persistent Kova Gateway on a DigitalOcean Droplet.
 
 ## Prerequisites
 
@@ -45,8 +45,8 @@ Run a persistent OpenClaw Gateway on a DigitalOcean Droplet.
     curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
     apt install -y nodejs
 
-    # Install OpenClaw
-    curl -fsSL https://openclaw.ai/install.sh | bash
+    # Install Kova
+    curl -fsSL https://kova.ai/install.sh | bash
     openclaw --version
     ```
 
@@ -126,4 +126,4 @@ Run a persistent OpenClaw Gateway on a DigitalOcean Droplet.
 
 - [Channels](/channels) -- connect Telegram, WhatsApp, Discord, and more
 - [Gateway configuration](/gateway/configuration) -- all config options
-- [Updating](/install/updating) -- keep OpenClaw up to date
+- [Updating](/install/updating) -- keep Kova up to date

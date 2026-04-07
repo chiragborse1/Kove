@@ -1,7 +1,7 @@
 ---
 read_when:
   - 你希望以最快的方式从安装到运行一个可用的 Gateway 网关
-summary: 安装 OpenClaw，完成 Gateway 网关新手引导，并配对你的第一个渠道。
+summary: 安装 Kova，完成 Gateway 网关新手引导，并配对你的第一个渠道。
 title: 快速开始
 x-i18n:
   generated_at: "2026-02-04T17:53:21Z"
@@ -13,7 +13,7 @@ x-i18n:
 ---
 
 <Note>
-OpenClaw 需要 Node 22 或更新版本。
+Kova 需要 Node 22 或更新版本。
 </Note>
 
 ## 安装
@@ -69,12 +69,12 @@ pnpm build
 openclaw onboard --install-daemon
 ```
 
-如果你还没有全局安装，可以在仓库目录中通过 `pnpm openclaw ...` 运行新手引导。
+如果你还没有全局安装，可以在仓库目录中通过 `pnpm kova ...` 运行新手引导。
 
 ## 多实例快速开始（可选）
 
 ```bash
-OPENCLAW_CONFIG_PATH=~/.openclaw/a.json \
+OPENCLAW_CONFIG_PATH=~/.kova/a.json \
 OPENCLAW_STATE_DIR=~/.openclaw-a \
 openclaw gateway --port 19001
 ```
@@ -84,5 +84,5 @@ openclaw gateway --port 19001
 需要一个正在运行的 Gateway 网关。
 
 ```bash
-openclaw message send --target +15555550123 --message "Hello from OpenClaw"
+openclaw message send --target +15555550123 --message "Hello from Kova"
 ```

@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 设置 OpenClaw 与 Synology Chat
+  - 设置 Kova 与 Synology Chat
   - 调试 Synology Chat webhook 路由
-summary: Synology Chat webhook 设置与 OpenClaw 配置
+summary: Synology Chat webhook 设置与 Kova 配置
 title: Synology Chat
 x-i18n:
   generated_at: "2026-03-16T06:20:51Z"
@@ -38,10 +38,10 @@ openclaw plugins install ./extensions/synology-chat
 2. 在 Synology Chat 集成中：
    - 创建一个入站 webhook 并复制其 URL。
    - 使用你的 secret token 创建一个出站 webhook。
-3. 将出站 webhook URL 指向你的 OpenClaw Gateway 网关：
+3. 将出站 webhook URL 指向你的 Kova Gateway 网关：
    - 默认是 `https://gateway-host/webhook/synology`。
    - 或者使用你自定义的 `channels.synology-chat.webhookPath`。
-4. 在 OpenClaw 中完成设置。
+4. 在 Kova 中完成设置。
    - 引导式：`openclaw onboard`
    - 直接设置：`openclaw channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
 5. 重启 Gateway 网关，并向 Synology Chat 机器人发送一条私信。
@@ -96,7 +96,7 @@ openclaw plugins install ./extensions/synology-chat
 示例：
 
 ```bash
-openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
+openclaw message send --channel synology-chat --target 123456 --text "Hello from Kova"
 openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
 ```
 

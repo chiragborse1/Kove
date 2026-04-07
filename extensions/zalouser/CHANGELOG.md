@@ -4,85 +4,85 @@
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.4.1
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.31
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.14
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.13
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.12
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.11
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.10
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.9
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.8-beta.1
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.8
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.7
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.3
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.3.2
 
 ### Changes
 
-- Rebuilt the plugin to use native `zca-js` integration inside OpenClaw (no external `zca` CLI runtime dependency).
+- Rebuilt the plugin to use native `zca-js` integration inside Kova (no external `zca` CLI runtime dependency).
 
 ### Breaking
 
@@ -92,31 +92,31 @@
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.2.26
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.2.25
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.2.24
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.2.22
 
 ### Changes
 
-- Version alignment with core OpenClaw release numbers.
+- Version alignment with core Kova release numbers.
 
 ## 2026.1.17-1
 
