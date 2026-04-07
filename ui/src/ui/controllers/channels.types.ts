@@ -1,5 +1,5 @@
-import type { GatewayBrowserClient } from "../gateway.ts";
-import type { ChannelsStatusSnapshot, ConfigSnapshot } from "../types.ts";
+import type { ChannelsStatusSnapshot } from "../types.ts";
+import type { ConfigState } from "./config.ts";
 
 export type TelegramSetupMessage = {
   kind: "success" | "error";
@@ -9,13 +9,11 @@ export type TelegramSetupMessage = {
 export type TelegramPendingApproval = {
   userId: string;
   code: string;
-  createdAt: string;
-  lastSeenAt: string;
+  createdAt: number;
+  lastSeenAt: number;
 };
 
-export type ChannelsState = {
-  client: GatewayBrowserClient | null;
-  connected: boolean;
+export type ChannelsState = ConfigState & {
   channelsLoading: boolean;
   channelsSnapshot: ChannelsStatusSnapshot | null;
   channelsError: string | null;
@@ -24,8 +22,6 @@ export type ChannelsState = {
   whatsappLoginQrDataUrl: string | null;
   whatsappLoginConnected: boolean | null;
   whatsappBusy: boolean;
-  configSnapshot: ConfigSnapshot | null;
-  configForm: Record<string, unknown> | null;
   telegramSetupToken: string;
   telegramSetupBusy: boolean;
   telegramSetupMessage: TelegramSetupMessage | null;

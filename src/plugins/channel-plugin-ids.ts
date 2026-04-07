@@ -326,7 +326,6 @@ export function resolveGatewayStartupPluginIds(params: {
         return shouldIncludeStartupQrLoginChannelPlugin({
           plugin,
           config: params.config,
-          pluginsConfig,
         });
       }
       if (
@@ -358,7 +357,3 @@ export function resolveGatewayStartupPluginIds(params: {
     })
     .map((plugin) => plugin.id);
 }
-
-
-
-

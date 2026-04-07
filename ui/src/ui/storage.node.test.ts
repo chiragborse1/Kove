@@ -1,6 +1,29 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createStorageMock } from "../test-helpers/storage.ts";
 
+function createSettings(
+  overrides: Partial<import("./storage.ts").UiSettings> = {},
+): import("./storage.ts").UiSettings {
+  return {
+    gatewayUrl: "ws://localhost:18789",
+    token: "",
+    sessionKey: "main",
+    lastActiveSessionKey: "main",
+    theme: "claw",
+    themeMode: "system",
+    chatFocusMode: false,
+    chatShowThinking: true,
+    chatShowToolCalls: true,
+    splitRatio: 0.6,
+    navCollapsed: false,
+    navWidth: 220,
+    navGroupsCollapsed: {},
+    borderRadius: 50,
+    voiceEnabledByAgent: {},
+    ...overrides,
+  };
+}
+
 function setTestLocation(params: { protocol: string; host: string; pathname: string }) {
   vi.stubGlobal("location", {
     protocol: params.protocol,
@@ -137,6 +160,7 @@ describe("loadSettings default gateway URL derivation", () => {
       navWidth: 220,
       navGroupsCollapsed: {},
       borderRadius: 50,
+      voiceEnabledByAgent: {},
       sessionsByGateway: {
         "wss://gateway.example:8443/openclaw": {
           sessionKey: "agent",
@@ -156,22 +180,12 @@ describe("loadSettings default gateway URL derivation", () => {
 
     const gwUrl = expectedGatewayUrl("");
     const { loadSettings, saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "session-token",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        token: "session-token",
+      }),
+    );
 
     expect(loadSettings()).toMatchObject({
       gatewayUrl: gwUrl,
@@ -189,39 +203,14 @@ describe("loadSettings default gateway URL derivation", () => {
     const gwUrl = expectedGatewayUrl("");
     const otherUrl = "wss://other-gateway.example:8443";
     const { loadSettings, saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "gateway-a-token",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        token: "gateway-a-token",
+      }),
+    );
 
-    saveSettings({
-      gatewayUrl: otherUrl,
-      token: "",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(createSettings({ gatewayUrl: otherUrl }));
 
     expect(loadSettings()).toMatchObject({
       gatewayUrl: gwUrl,
@@ -238,22 +227,12 @@ describe("loadSettings default gateway URL derivation", () => {
 
     const gwUrl = expectedGatewayUrl("");
     const { loadSettings, saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "memory-only-token",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        token: "memory-only-token",
+      }),
+    );
     expect(loadSettings()).toMatchObject({
       gatewayUrl: gwUrl,
       token: "memory-only-token",
@@ -272,6 +251,7 @@ describe("loadSettings default gateway URL derivation", () => {
       navWidth: 220,
       navGroupsCollapsed: {},
       borderRadius: 50,
+      voiceEnabledByAgent: {},
       sessionsByGateway: {
         [gwUrl]: {
           sessionKey: "main",
@@ -291,38 +271,13 @@ describe("loadSettings default gateway URL derivation", () => {
 
     const gwUrl = expectedGatewayUrl("");
     const { loadSettings, saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "stale-token",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        token: "stale-token",
+      }),
+    );
+    saveSettings(createSettings({ gatewayUrl: gwUrl }));
 
     expect(loadSettings().token).toBe("");
     expect(sessionStorage.length).toBe(0);
@@ -337,22 +292,14 @@ describe("loadSettings default gateway URL derivation", () => {
 
     const gwUrl = expectedGatewayUrl("");
     const { saveSettings } = await import("./storage.ts");
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "",
-      sessionKey: "main",
-      lastActiveSessionKey: "main",
-      theme: "dash",
-      themeMode: "light",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 320,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        theme: "dash",
+        themeMode: "light",
+        navWidth: 320,
+      }),
+    );
 
     const scopedKey = `openclaw.control.settings.v1:${gwUrl}`;
     expect(JSON.parse(localStorage.getItem(scopedKey) ?? "{}")).toMatchObject({
@@ -372,22 +319,13 @@ describe("loadSettings default gateway URL derivation", () => {
     const gwUrl = expectedGatewayUrl("");
     const { loadSettings, saveSettings } = await import("./storage.ts");
 
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "",
-      sessionKey: "agent:test_old:main",
-      lastActiveSessionKey: "agent:test_old:main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        sessionKey: "agent:test_old:main",
+        lastActiveSessionKey: "agent:test_old:main",
+      }),
+    );
 
     expect(loadSettings()).toMatchObject({
       gatewayUrl: gwUrl,
@@ -418,22 +356,13 @@ describe("loadSettings default gateway URL derivation", () => {
     }
     localStorage.setItem(scopedKey, JSON.stringify({ sessionsByGateway: staleEntries }));
 
-    saveSettings({
-      gatewayUrl: gwUrl,
-      token: "",
-      sessionKey: "agent:current:main",
-      lastActiveSessionKey: "agent:current:main",
-      theme: "claw",
-      themeMode: "system",
-      chatFocusMode: false,
-      chatShowThinking: true,
-      chatShowToolCalls: true,
-      splitRatio: 0.6,
-      navCollapsed: false,
-      navWidth: 220,
-      navGroupsCollapsed: {},
-      borderRadius: 50,
-    });
+    saveSettings(
+      createSettings({
+        gatewayUrl: gwUrl,
+        sessionKey: "agent:current:main",
+        lastActiveSessionKey: "agent:current:main",
+      }),
+    );
 
     const persisted = JSON.parse(localStorage.getItem(scopedKey) ?? "{}");
 

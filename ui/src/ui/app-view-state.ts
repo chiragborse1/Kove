@@ -5,24 +5,28 @@ import type {
   ApiKeyProviderId,
   ApiKeyProviderStatus,
 } from "./controllers/api-keys.ts";
+import type { BriefingFormState, BriefingMessage } from "./controllers/briefing.ts";
+import type { CanvasStatus } from "./controllers/canvas.ts";
 import type {
-  BriefingFormState,
-  BriefingMessage,
-} from "./controllers/briefing.ts";
-import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
+  TelegramPendingApproval,
+  TelegramSetupMessage,
+} from "./controllers/channels.types.ts";
 import type { CronModelSuggestionsState, CronState } from "./controllers/cron.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
+import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { CanvasStatus } from "./controllers/canvas.ts";
-import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { InboxChannelFilter } from "./controllers/inbox.ts";
 import type {
   RoutingAssignments,
   RoutingChannelId,
   RoutingMessage,
 } from "./controllers/routing.ts";
-import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
+import type {
+  KovaMarketplaceCategory,
+  KovaMarketplaceSkill,
+  SkillMessage,
+} from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import type { UiSettings } from "./storage.ts";
@@ -73,6 +77,7 @@ export type AppViewState = {
   briefingSaving: boolean;
   briefingMessage: BriefingMessage | null;
   basePath: string;
+  clientInstanceId: string;
   connected: boolean;
   theme: ThemeName;
   themeMode: ThemeMode;
@@ -297,7 +302,7 @@ export type AppViewState = {
   usageSelectedHours: number[];
   usageChartMode: "tokens" | "cost";
   usageDailyChartMode: "total" | "by-type";
-  usageTimeSeriesMode: "cumulative" | "per-tun";
+  usageTimeSeriesMode: "cumulative" | "per-turn";
   usageTimeSeriesBreakdownMode: "total" | "by-type";
   usageTimeSeries: SessionUsageTimeSeries | null;
   usageTimeSeriesLoading: boolean;
@@ -446,6 +451,7 @@ export type AppViewState = {
     createEmployee: (params: AgentCreatorDraft) => Promise<void>;
     saveBriefing: () => Promise<void>;
     handleWhatsAppStart: (force: boolean) => Promise<void>;
+    handleWhatsAppRelink: () => Promise<void>;
     handleWhatsAppWait: () => Promise<void>;
     handleWhatsAppLogout: () => Promise<void>;
     handleChannelConfigSave: () => Promise<void>;
@@ -491,6 +497,8 @@ export type AppViewState = {
     handleAbortChat: () => Promise<void>;
     removeQueuedMessage: (id: string) => void;
     handleChatScroll: (event: Event) => void;
+    toggleVoiceForCurrentAgent: () => void;
+    stopVoicePlayback: (options?: { silent?: boolean }) => void;
     resetToolStream: () => void;
     resetChatScroll: () => void;
     exportLogs: (lines: string[], label: string) => void;

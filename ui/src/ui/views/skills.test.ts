@@ -57,6 +57,12 @@ function createProps(overrides: Partial<SkillsProps> = {}): SkillsProps {
     busyKey: null,
     messages: {},
     detailKey: null,
+    kova_marketplaceLoading: false,
+    kova_marketplaceSkills: [],
+    kova_marketplaceError: null,
+    kova_marketplaceCategory: "all",
+    kova_marketplaceInstalledIds: [],
+    kova_marketplaceBusyId: null,
     onFilterChange: () => undefined,
     onStatusFilterChange: () => undefined,
     onRefresh: () => undefined,
@@ -66,6 +72,8 @@ function createProps(overrides: Partial<SkillsProps> = {}): SkillsProps {
     onInstall: () => undefined,
     onDetailOpen: () => undefined,
     onDetailClose: () => undefined,
+    onKovaMarketplaceCategoryChange: () => undefined,
+    onKovaMarketplaceInstall: () => undefined,
     ...overrides,
   };
 }

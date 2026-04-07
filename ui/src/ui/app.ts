@@ -58,13 +58,12 @@ import type { AppViewState } from "./app-view-state.ts";
 import { normalizeAssistantIdentity } from "./assistant-identity.ts";
 import { exportChatMarkdown } from "./chat/export.ts";
 import { extractText } from "./chat/message-extract.ts";
+import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import {
   loadAgents,
   loadToolsEffective as loadToolsEffectiveInternal,
   refreshVisibleToolsEffectiveForCurrentSession as refreshVisibleToolsEffectiveForCurrentSessionInternal,
 } from "./controllers/agents.ts";
-import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
-import { loadAgentSoulContents } from "./controllers/agent-soul.ts";
 import {
   createApiKeyInputRecord,
   createApiKeyMessageRecord,
@@ -74,6 +73,7 @@ import {
   type ApiKeyProviderId,
   type ApiKeyProviderStatus,
 } from "./controllers/api-keys.ts";
+import { loadAssistantIdentity as loadAssistantIdentityInternal } from "./controllers/assistant-identity.ts";
 import {
   buildBriefingDescription,
   buildBriefingPrompt,
@@ -88,17 +88,24 @@ import {
   type BriefingChannelId,
   type BriefingMessage,
 } from "./controllers/briefing.ts";
-import type { TelegramPendingApproval, TelegramSetupMessage } from "./controllers/channels.types.ts";
+import {
+  buildCanvasUrl,
+  ensureCanvasAuthWorker,
+  probeCanvasUrl,
+  resolveCanvasAuthToken,
+  resolveCanvasBaseUrl,
+} from "./controllers/canvas.ts";
 import { loadChannels } from "./controllers/channels.ts";
+import type {
+  TelegramPendingApproval,
+  TelegramSetupMessage,
+} from "./controllers/channels.types.ts";
 import { loadConfig } from "./controllers/config.ts";
 import type { DevicePairingList } from "./controllers/devices.ts";
+import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
 import type { ExecApprovalRequest } from "./controllers/exec-approval.ts";
 import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "./controllers/exec-approvals.ts";
-import type { EmployeesDashboardResult, KovaEmployeeId } from "./controllers/employees.ts";
-import {
-  loadInbox as loadInboxInternal,
-  type InboxChannelFilter,
-} from "./controllers/inbox.ts";
+import { loadInbox as loadInboxInternal, type InboxChannelFilter } from "./controllers/inbox.ts";
 import {
   buildMeetingAnalysisPrompt,
   clearMeetingHistoryStorage,
@@ -117,7 +124,11 @@ import {
   type RoutingChannelId,
   type RoutingMessage,
 } from "./controllers/routing.ts";
-import type { KovaMarketplaceCategory, KovaMarketplaceSkill, SkillMessage } from "./controllers/skills.ts";
+import type {
+  KovaMarketplaceCategory,
+  KovaMarketplaceSkill,
+  SkillMessage,
+} from "./controllers/skills.ts";
 import type { GatewayBrowserClient, GatewayHelloOk } from "./gateway.ts";
 import type { Tab } from "./navigation.ts";
 import { loadSettings, type UiSettings } from "./storage.ts";
@@ -153,13 +164,6 @@ import type {
 import { type ChatAttachment, type ChatQueueItem, type CronFormState } from "./ui-types.ts";
 import { generateUUID } from "./uuid.ts";
 import type { NostrProfileFormState } from "./views/channels.nostr-profile-form.ts";
-import {
-  buildCanvasUrl,
-  ensureCanvasAuthWorker,
-  probeCanvasUrl,
-  resolveCanvasAuthToken,
-  resolveCanvasBaseUrl,
-} from "./controllers/canvas.ts";
 import {
   getCachedElevenLabsApiKey,
   isKovaEmployeeVoiceAgent,
@@ -236,7 +240,10 @@ function resolveAgentWorkspaceBaseDir(agentsList: AgentsListResult | null): stri
   return "~/.openclaw/";
 }
 
-function resolveEmployeeWorkspacePath(agentsList: AgentsListResult | null, agentId: string): string {
+function resolveEmployeeWorkspacePath(
+  agentsList: AgentsListResult | null,
+  agentId: string,
+): string {
   return `${resolveAgentWorkspaceBaseDir(agentsList)}workspace-${agentId}`;
 }
 
@@ -632,7 +639,7 @@ export class OpenClawApp extends LitElement {
   @state() usageSelectedHours: number[] = [];
   @state() usageChartMode: "tokens" | "cost" = "tokens";
   @state() usageDailyChartMode: "total" | "by-type" = "by-type";
-  @state() usageTimeSeriesMode: "cumulative" | "per-tun" = "per-tun";
+  @state() usageTimeSeriesMode: "cumulative" | "per-turn" = "per-turn";
   @state() usageTimeSeriesBreakdownMode: "total" | "by-type" = "by-type";
   @state() usageTimeSeries: import("./types.js").SessionUsageTimeSeries | null = null;
   @state() usageTimeSeriesLoading = false;
@@ -1011,7 +1018,9 @@ export class OpenClawApp extends LitElement {
   }
 
   private resolveCurrentVoiceApiKey(): string {
-    return this.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(this.settings.gatewayUrl);
+    return (
+      this.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(this.settings.gatewayUrl)
+    );
   }
 
   private isVoiceEnabledForAgent(agentId: string): boolean {
@@ -1550,10 +1559,9 @@ export class OpenClawApp extends LitElement {
       };
       return;
     }
-    const channel =
-      availableChannels.includes(this.briefingForm.channel as BriefingChannelId)
-        ? this.briefingForm.channel
-        : availableChannels[0];
+    const channel = availableChannels.includes(this.briefingForm.channel as BriefingChannelId)
+      ? this.briefingForm.channel
+      : availableChannels[0];
     const timezone = getLocalBriefingTimeZone();
     const jobPatch = {
       name: DAILY_BRIEFING_JOB_NAME,
@@ -1783,7 +1791,7 @@ export class OpenClawApp extends LitElement {
       schedule:
         job?.schedule.kind === "cron"
           ? `${job.schedule.expr}|${job.schedule.tz ?? ""}`
-          : job?.schedule.kind ?? null,
+          : (job?.schedule.kind ?? null),
       deliveryChannel: job?.delivery?.channel ?? null,
       availableChannels,
     });
@@ -1829,7 +1837,10 @@ export class OpenClawApp extends LitElement {
     }
 
     if (this.tab === "onboarding") {
-      if (this.hasCompletedOnboarding() || (this.hasSavedProviderKey() && !this.onboardingInteracted)) {
+      if (
+        this.hasCompletedOnboarding() ||
+        (this.hasSavedProviderKey() && !this.onboardingInteracted)
+      ) {
         this.setTab("employees");
         return true;
       }

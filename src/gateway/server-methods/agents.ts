@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import {
@@ -122,7 +123,7 @@ function resolveAgentWorkspaceFileOrRespondError(
   const name = (
     typeof rawName === "string" || typeof rawName === "number" ? String(rawName) : ""
   ).trim();
-  if (!ALLOWED_FILE_NAMES.has(name) && !name.startsWith('skills/')) {
+  if (!ALLOWED_FILE_NAMES.has(name) && !name.startsWith("skills/")) {
     respond(false, undefined, errorShape(ErrorCodes.INVALID_REQUEST, `unsupported file "${name}"`));
     return null;
   }
@@ -309,19 +310,21 @@ type AgentFilesListEntry = {
   updatedAtMs?: number;
 };
 
-async function kova_listMarketplaceSkillFiles(workspaceDir: string): Promise<AgentFilesListEntry[]> {
+async function kova_listMarketplaceSkillFiles(
+  workspaceDir: string,
+): Promise<AgentFilesListEntry[]> {
   const skillFiles: AgentFilesListEntry[] = [];
   const workspaceReal = await resolveWorkspaceRealPath(workspaceDir);
   const skillsDir = path.join(workspaceReal, "skills");
 
-  let entries: fs.Dirent[];
+  let entries: Dirent[];
   try {
     entries = await fs.readdir(skillsDir, { withFileTypes: true });
   } catch {
     return skillFiles;
   }
 
-  const sortedEntries = [...entries].sort((left, right) => left.name.localeCompare(right.name));
+  const sortedEntries = [...entries].toSorted((left, right) => left.name.localeCompare(right.name));
   for (const entry of sortedEntries) {
     if (!entry.isDirectory()) {
       continue;
@@ -927,4 +930,3 @@ export const agentsHandlers: GatewayRequestHandlers = {
     );
   },
 };
-

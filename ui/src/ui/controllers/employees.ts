@@ -1,4 +1,4 @@
-﻿import type { GatewayBrowserClient } from "../gateway.ts";
+import type { GatewayBrowserClient } from "../gateway.ts";
 import type { AgentsListResult } from "../types.ts";
 import type { GatewaySessionRow, SessionsListResult, SessionsUsageResult } from "../types.ts";
 import {
@@ -103,8 +103,7 @@ export async function loadEmployeesDashboard(state: EmployeesState) {
   state.employeesError = null;
   try {
     const agentsList =
-      state.agentsList ??
-      (await state.client.request<AgentsListResult>("agents.list", {}));
+      state.agentsList ?? (await state.client.request<AgentsListResult>("agents.list", {}));
     const employeeMeta = resolveKovaEmployeeMeta(agentsList);
     const sessionsByAgentEntries = await Promise.all(
       employeeMeta.map(async (employee) => {
@@ -188,7 +187,11 @@ function buildEmployeesDashboard(
     const liveRowsByKey = new Map(liveRows.map((row) => [row.key, row] as const));
     const lastActiveAt = resolveLastActiveAt(agentSessions, liveRows);
     const sessionsToday = new Set(
-      agentSessions.filter((session) => session.updatedAt >= todayStartMs).map((session) => session.key),
+      agentSessions
+        .filter(
+          (session) => typeof session.updatedAt === "number" && session.updatedAt >= todayStartMs,
+        )
+        .map((session) => session.key),
     ).size;
     const totalMessages = agentSessions.reduce(
       (sum, session) => sum + (session.usage?.messageCounts?.total ?? 0),
@@ -241,7 +244,9 @@ function resolveLastActiveAt(
   const candidates = [
     ...usageSessions.map((session) => session.updatedAt),
     ...liveRows.map((row) => row.updatedAt ?? 0),
-  ].filter((value): value is number => Number.isFinite(value) && value > 0);
+  ].filter(
+    (value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0,
+  );
   return candidates.length > 0 ? Math.max(...candidates) : null;
 }
 

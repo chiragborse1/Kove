@@ -74,6 +74,7 @@ function createProps(overrides: Partial<AgentsProps> = {}): AgentsProps {
     agentIdentityLoading: false,
     agentIdentityError: null,
     agentIdentityById: {},
+    agentSoulContentById: {},
     agentSkills: {
       report: null,
       loading: false,
@@ -94,7 +95,9 @@ function createProps(overrides: Partial<AgentsProps> = {}): AgentsProps {
     runtimeSessionKey: "main",
     runtimeSessionMatchesSelectedAgent: false,
     modelCatalog: [],
+    agentCreatorSuccess: null,
     onRefresh: () => undefined,
+    onOpenAgentCreator: () => undefined,
     onSelectAgent: () => undefined,
     onSelectPanel: () => undefined,
     onLoadFiles: () => undefined,
@@ -117,6 +120,8 @@ function createProps(overrides: Partial<AgentsProps> = {}): AgentsProps {
     onAgentSkillsClear: () => undefined,
     onAgentSkillsDisableAll: () => undefined,
     onSetDefault: () => undefined,
+    onNavigateToChat: () => undefined,
+    onNavigateToActivity: () => undefined,
     ...overrides,
   };
 }

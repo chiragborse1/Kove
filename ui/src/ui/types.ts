@@ -729,10 +729,3 @@ export type AttentionItem = {
   href?: string;
   external?: boolean;
 };
-
-export type MeetingAnalysisResult = {
-  summary: string;
-  actionItems: string;
-  decisions: string;
-  followUpEmail: string;
-};

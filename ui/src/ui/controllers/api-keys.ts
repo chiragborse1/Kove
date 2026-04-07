@@ -31,6 +31,19 @@ export type ApiKeyProviderDefinition = {
   popularModels: readonly string[];
 };
 
+function buildProviderRecord<T>(
+  createValue: (providerId: ApiKeyProviderId) => T,
+): Record<ApiKeyProviderId, T> {
+  return {
+    openrouter: createValue("openrouter"),
+    anthropic: createValue("anthropic"),
+    openai: createValue("openai"),
+    google: createValue("google"),
+    groq: createValue("groq"),
+    huggingface: createValue("huggingface"),
+  };
+}
+
 export const API_KEY_PROVIDER_DEFINITIONS = [
   {
     id: "openrouter",
@@ -53,10 +66,7 @@ export const API_KEY_PROVIDER_DEFINITIONS = [
     keyUrl: "https://console.anthropic.com",
     keyPlaceholder: "sk-ant-...",
     recommendedModel: "anthropic/claude-sonnet-4-5",
-    popularModels: [
-      "anthropic/claude-sonnet-4-5",
-      "anthropic/claude-opus-4",
-    ],
+    popularModels: ["anthropic/claude-sonnet-4-5", "anthropic/claude-opus-4"],
   },
   {
     id: "openai",
@@ -96,11 +106,15 @@ export const API_KEY_PROVIDER_DEFINITIONS = [
   },
 ] as const satisfies readonly ApiKeyProviderDefinition[];
 
-const PROVIDER_BY_ID = Object.fromEntries(
-  API_KEY_PROVIDER_DEFINITIONS.map((provider) => [provider.id, provider]),
-) as Record<ApiKeyProviderId, ApiKeyProviderDefinition>;
+const PROVIDER_BY_ID = buildProviderRecord((providerId) => {
+  const provider = API_KEY_PROVIDER_DEFINITIONS.find((entry) => entry.id === providerId);
+  if (!provider) {
+    throw new Error(`Unknown API key provider: ${providerId}`);
+  }
+  return provider;
+});
 
-const POPULAR_MODELS = new Set(
+const POPULAR_MODELS = new Set<string>(
   API_KEY_PROVIDER_DEFINITIONS.flatMap((provider) => provider.popularModels),
 );
 
@@ -155,14 +169,7 @@ const ELEVENLABS_TEST_TEXT = "Hello, I am Alex, your AI researcher.";
 const ELEVENLABS_CONFIG_PATH = ["messages", "tts", "providers", "elevenlabs", "apiKey"] as const;
 
 function createProviderRecord<T>(createValue: () => T): Record<ApiKeyProviderId, T> {
-  return {
-    openrouter: createValue(),
-    anthropic: createValue(),
-    openai: createValue(),
-    google: createValue(),
-    groq: createValue(),
-    huggingface: createValue(),
-  };
+  return buildProviderRecord(() => createValue());
 }
 
 export function createApiKeyInputRecord(): Record<ApiKeyProviderId, string> {
@@ -218,7 +225,11 @@ function syncModelDraft(state: ApiKeysState, currentModel: string) {
   state.apiKeysCustomModelInput = currentModel;
 }
 
-function applySnapshot(state: ApiKeysState, snapshot: ApiKeysSnapshot, options?: { resetInputs?: boolean }) {
+function applySnapshot(
+  state: ApiKeysState,
+  snapshot: ApiKeysSnapshot,
+  options?: { resetInputs?: boolean },
+) {
   const nextStatuses = createApiKeyStatusRecord();
   for (const status of snapshot.providers) {
     nextStatuses[status.provider] = status;
@@ -298,7 +309,9 @@ async function ensureElevenLabsConfigHash(state: ApiKeysState): Promise<string> 
 }
 
 function resolveElevenLabsApiKey(state: ApiKeysState): string {
-  return state.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(state.settings.gatewayUrl);
+  return (
+    state.apiKeysElevenLabsInput.trim() || getCachedElevenLabsApiKey(state.settings.gatewayUrl)
+  );
 }
 
 async function applyActiveModel(state: ApiKeysState, provider: ApiKeyProviderId, model: string) {

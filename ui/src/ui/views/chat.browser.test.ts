@@ -70,7 +70,13 @@ function createProps(overrides: Partial<ChatProps> = {}): ChatProps {
     onNewSession: () => undefined,
     agentsList: null,
     currentAgentId: "",
+    voiceEnabled: false,
+    voiceSupported: false,
+    voiceSpeaking: false,
+    voiceMessage: null,
     onAgentChange: () => undefined,
+    onToggleVoice: () => undefined,
+    onStopVoice: () => undefined,
     ...overrides,
   };
 }

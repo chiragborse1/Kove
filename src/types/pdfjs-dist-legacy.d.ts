@@ -25,9 +25,19 @@ declare module "pdfjs-dist/legacy/build/pdf.mjs" {
   export type PDFDocumentProxy = {
     numPages: number;
     getPage(pageNumber: number): Promise<PDFPageProxy>;
+    destroy(): void | Promise<void>;
+  };
+
+  export const GlobalWorkerOptions: {
+    workerSrc: string;
   };
 
   export function getDocument(params: { data: Uint8Array; disableWorker?: boolean }): {
     promise: Promise<PDFDocumentProxy>;
   };
+}
+
+declare module "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url" {
+  const workerSrc: string;
+  export default workerSrc;
 }
