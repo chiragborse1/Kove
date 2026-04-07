@@ -8,7 +8,7 @@
     "jimp": "^1.6.0"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "getkova": "workspace:*"
   },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"

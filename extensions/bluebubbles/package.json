@@ -4,7 +4,7 @@
   "description": "OpenClaw BlueBubbles channel plugin",
   "type": "module",
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "getkova": "workspace:*"
   },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"

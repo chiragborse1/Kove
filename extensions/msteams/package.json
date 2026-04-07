@@ -9,7 +9,7 @@
     "express": "^5.2.1"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "getkova": "workspace:*"
   },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"

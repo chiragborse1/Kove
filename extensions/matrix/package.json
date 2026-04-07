@@ -12,7 +12,7 @@
     "music-metadata": "^11.12.3"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+    "getkova": "workspace:*"
   },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"

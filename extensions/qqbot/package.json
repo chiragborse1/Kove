@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@types/ws": "^8.18.1",
-    "openclaw": "workspace:*"
+    "getkova": "workspace:*"
   },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
