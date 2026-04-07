@@ -92,6 +92,9 @@ jobs:
       - name: Build Control UI
         run: pnpm ui:build
 
+      - name: Remove source maps
+        run: find dist/control-ui/assets -name "*.map" -delete
+
       - name: Validate release tag and package metadata
         if: ${{ inputs.preflight_run_id == '' }}
         env:
