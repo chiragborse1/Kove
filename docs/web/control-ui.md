@@ -84,7 +84,7 @@ The Control UI can localize itself on first load based on your browser locale, a
 - Skills: status, enable/disable, install, API key updates (`skills.*`)
 - Nodes: list + caps (`node.list`)
 - Exec approvals: edit gateway or node allowlists + ask policy for `exec host=gateway/node` (`exec.approvals.*`)
-- Config: view/edit `~/.openclaw/openclaw.json` (`config.get`, `config.set`)
+- Config: view/edit `~/.kova/openclaw.json` (`config.get`, `config.set`)
 - Config: apply + restart with validation (`config.apply`) and wake the last active session
 - Config writes include a base-hash guard to prevent clobbering concurrent edits
 - Config writes (`config.set`/`config.apply`/`config.patch`) also preflight active SecretRef resolution for refs in the submitted config payload; unresolved active submitted refs are rejected before write
@@ -137,7 +137,7 @@ Open:
 - `https://<magicdns>/` (or your configured `gateway.controlUi.basePath`)
 
 By default, Control UI/WebSocket Serve requests can authenticate via Tailscale identity headers
-(`tailscale-user-login`) when `gateway.auth.allowTailscale` is `true`. OpenClaw
+(`tailscale-user-login`) when `gateway.auth.allowTailscale` is `true`. Kova
 verifies the identity by resolving the `x-forwarded-for` address with
 `tailscale whois` and matching it to the header, and only accepts these when the
 request hits loopback with Tailscale’s `x-forwarded-*` headers. Set
@@ -162,7 +162,7 @@ Paste the token into the UI settings (sent as `connect.params.auth.token`).
 
 If you open the dashboard over plain HTTP (`http://<lan-ip>` or `http://<tailscale-ip>`),
 the browser runs in a **non-secure context** and blocks WebCrypto. By default,
-OpenClaw **blocks** Control UI connections without device identity.
+Kova **blocks** Control UI connections without device identity.
 
 **Recommended fix:** use HTTPS (Tailscale Serve) or open the UI locally:
 

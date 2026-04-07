@@ -1,9 +1,9 @@
 ---
 name: openclaw-parallels-smoke
-description: End-to-end Parallels smoke, upgrade, and rerun workflow for OpenClaw across macOS, Windows, and Linux guests. Use when Codex needs to run, rerun, debug, or interpret VM-based install, onboarding, gateway smoke tests, latest-release-to-main upgrade checks, fresh snapshot retests, or optional Discord roundtrip verification under Parallels.
+description: End-to-end Parallels smoke, upgrade, and rerun workflow for Kova across macOS, Windows, and Linux guests. Use when Codex needs to run, rerun, debug, or interpret VM-based install, onboarding, gateway smoke tests, latest-release-to-main upgrade checks, fresh snapshot retests, or optional Discord roundtrip verification under Parallels.
 ---
 
-# OpenClaw Parallels Smoke
+# Kova Parallels Smoke
 
 Use this skill for Parallels guest workflows and smoke interpretation. Do not load it for normal repo work.
 
@@ -18,7 +18,7 @@ Use this skill for Parallels guest workflows and smoke interpretation. Do not lo
 - Do not run local and gateway agent turns in parallel on the same fresh workspace or session.
 - If `main` is moving under active multi-agent work, prefer a detached worktree pinned to one commit for long Parallels suites. The smoke scripts now verify the packed tgz commit instead of live `git rev-parse HEAD`, but a pinned worktree still avoids noisy rebuild/version drift during reruns.
 - For `prlctl exec`, pass the VM name before `--current-user` (`prlctl exec "$VM" --current-user ...`), not the other way around.
-- If the workflow installs OpenClaw from a repo checkout instead of the site installer/npm release, finish by installing a real guest CLI shim and verifying it in a fresh guest shell. `pnpm openclaw ...` inside the repo is not enough for handoff parity.
+- If the workflow installs Kova from a repo checkout instead of the site installer/npm release, finish by installing a real guest CLI shim and verifying it in a fresh guest shell. `pnpm kova ...` inside the repo is not enough for handoff parity.
 - On macOS guests, prefer a user-global install plus a stable PATH-visible shim:
   - install with `NPM_CONFIG_PREFIX="$HOME/.npm-global" npm install -g .`
   - make sure `~/.local/bin/openclaw` exists or `~/.npm-global/bin` is on PATH
@@ -66,7 +66,7 @@ Use this skill for Parallels guest workflows and smoke interpretation. Do not lo
 - Windows global `npm install -g` phases can stay quiet for a minute or more even when healthy; inspect the phase log before calling it hung, and only treat it as a regression once the retry wrapper or timeout trips.
 - Fresh Windows ref-mode onboard should use the same background PowerShell runner plus done-file/log-drain pattern as the npm-update helper, including startup materialization checks, host-side timeouts on short poll `prlctl exec` calls, and retry-on-poll-failure behavior for transient transport flakes.
 - Fresh Windows ref-mode agent verification should set `OPENAI_API_KEY` in the PowerShell environment before invoking `openclaw.cmd agent`, for the same pairing-required fallback reason as macOS.
-- The standalone Windows upgrade smoke lane should stop the managed gateway after `upgrade.install-main` and before `upgrade.onboard-ref`. Restarting before onboard can leave the old process alive on the pre-onboard token while onboard rewrites `~/.openclaw/openclaw.json`, which then fails `gateway-health` with `unauthorized: gateway token mismatch`.
+- The standalone Windows upgrade smoke lane should stop the managed gateway after `upgrade.install-main` and before `upgrade.onboard-ref`. Restarting before onboard can leave the old process alive on the pre-onboard token while onboard rewrites `~/.kova/openclaw.json`, which then fails `gateway-health` with `unauthorized: gateway token mismatch`.
 - If standalone Windows upgrade fails with a gateway token mismatch but `pnpm test:parallels:npm-update` passes, trust the mismatch as a standalone ref-onboard ordering bug first; the npm-update helper does not re-run ref-mode onboard on the same guest.
 - Keep onboarding and status output ASCII-clean in logs; fancy punctuation becomes mojibake in current capture paths.
 - If you hit an older run with `rc=255` plus an empty `fresh.install-main.log` or `upgrade.install-main.log`, treat it as a likely `prlctl exec` transport drop after guest start-up, not immediate proof of an npm/package failure.

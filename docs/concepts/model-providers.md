@@ -17,7 +17,7 @@ For model selection rules, see [/concepts/models](/concepts/models).
 - If you set `agents.defaults.models`, it becomes the allowlist.
 - CLI helpers: `openclaw onboard`, `openclaw models list`, `openclaw models set <provider/model>`.
 - Provider plugins can inject model catalogs via `registerProvider({ catalog })`;
-  OpenClaw merges that output into `models.providers` before writing
+  Kova merges that output into `models.providers` before writing
   `models.json`.
 - Provider manifests can declare `providerAuthEnvVars` so generic env-based
   auth probes do not need to load plugin runtime. The remaining core env-var
@@ -39,7 +39,7 @@ For model selection rules, see [/concepts/models](/concepts/models).
 
 ## Plugin-owned provider behavior
 
-Provider plugins can now own most provider-specific logic while OpenClaw keeps
+Provider plugins can now own most provider-specific logic while Kova keeps
 the generic inference loop.
 
 Typical split:
@@ -113,7 +113,7 @@ Current bundled examples:
 The bundled `openai` plugin now owns both provider ids: `openai` and
 `openai-codex`.
 
-That covers providers that still fit OpenClaw's normal transports. A provider
+That covers providers that still fit Kova's normal transports. A provider
 that needs a totally custom request executor is a separate, deeper extension
 surface.
 
@@ -133,7 +133,7 @@ surface.
 
 ## Built-in providers (pi-ai catalog)
 
-OpenClaw ships with the pi‑ai catalog. These providers require **no**
+Kova ships with the pi‑ai catalog. These providers require **no**
 `models.providers` config; just set auth + pick a model.
 
 ### OpenAI
@@ -149,7 +149,7 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 - OpenAI priority processing can be enabled via `agents.defaults.models["openai/<model>"].params.serviceTier`
 - `/fast` and `params.fastMode` map direct `openai/*` Responses requests to `service_tier=priority` on `api.openai.com`
 - Use `params.serviceTier` when you want an explicit tier instead of the shared `/fast` toggle
-- `openai/gpt-5.3-codex-spark` is intentionally suppressed in OpenClaw because the live OpenAI API rejects it; Spark is treated as Codex-only
+- `openai/gpt-5.3-codex-spark` is intentionally suppressed in Kova because the live OpenAI API rejects it; Spark is treated as Codex-only
 
 ```json5
 {
@@ -164,7 +164,7 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 - Optional rotation: `ANTHROPIC_API_KEYS`, `ANTHROPIC_API_KEY_1`, `ANTHROPIC_API_KEY_2`, plus `OPENCLAW_LIVE_ANTHROPIC_KEY` (single override)
 - Example model: `anthropic/claude-opus-4-6`
 - CLI: `openclaw onboard --auth-choice token` (paste setup-token) or `openclaw models auth paste-token --provider anthropic`
-- Direct public Anthropic requests support the shared `/fast` toggle and `params.fastMode`, including API-key and OAuth-authenticated traffic sent to `api.anthropic.com`; OpenClaw maps that to Anthropic `service_tier` (`auto` vs `standard_only`)
+- Direct public Anthropic requests support the shared `/fast` toggle and `params.fastMode`, including API-key and OAuth-authenticated traffic sent to `api.anthropic.com`; Kova maps that to Anthropic `service_tier` (`auto` vs `standard_only`)
 - Policy note: setup-token support is technical compatibility; Anthropic has blocked some subscription usage outside Claude Code in the past. Verify current Anthropic terms and decide based on your risk tolerance.
 - Recommendation: Anthropic API key auth is the safer, recommended path over subscription setup-token auth.
 
@@ -183,9 +183,9 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 - Default transport is `auto` (WebSocket-first, SSE fallback)
 - Override per model via `agents.defaults.models["openai-codex/<model>"].params.transport` (`"sse"`, `"websocket"`, or `"auto"`)
 - `params.serviceTier` is also forwarded on native Codex Responses requests (`chatgpt.com/backend-api`)
-- Shares the same `/fast` toggle and `params.fastMode` config as direct `openai/*`; OpenClaw maps that to `service_tier=priority`
+- Shares the same `/fast` toggle and `params.fastMode` config as direct `openai/*`; Kova maps that to `service_tier=priority`
 - `openai-codex/gpt-5.3-codex-spark` remains available when the Codex OAuth catalog exposes it; entitlement-dependent
-- Policy note: OpenAI Codex OAuth is explicitly supported for external tools/workflows like OpenClaw.
+- Policy note: OpenAI Codex OAuth is explicitly supported for external tools/workflows like Kova.
 
 ```json5
 {
@@ -213,14 +213,14 @@ OpenClaw ships with the pi‑ai catalog. These providers require **no**
 - Auth: `GEMINI_API_KEY`
 - Optional rotation: `GEMINI_API_KEYS`, `GEMINI_API_KEY_1`, `GEMINI_API_KEY_2`, `GOOGLE_API_KEY` fallback, and `OPENCLAW_LIVE_GEMINI_KEY` (single override)
 - Example models: `google/gemini-3.1-pro-preview`, `google/gemini-3-flash-preview`
-- Compatibility: legacy OpenClaw config using `google/gemini-3.1-flash-preview` is normalized to `google/gemini-3-flash-preview`
+- Compatibility: legacy Kova config using `google/gemini-3.1-flash-preview` is normalized to `google/gemini-3-flash-preview`
 - CLI: `openclaw onboard --auth-choice gemini-api-key`
 
 ### Google Vertex and Gemini CLI
 
 - Providers: `google-vertex`, `google-gemini-cli`
 - Auth: Vertex uses gcloud ADC; Gemini CLI uses its OAuth flow
-- Caution: Gemini CLI OAuth in OpenClaw is an unofficial integration. Some users have reported Google account restrictions after using third-party clients. Review Google terms and use a non-critical account if you choose to proceed.
+- Caution: Gemini CLI OAuth in Kova is an unofficial integration. Some users have reported Google account restrictions after using third-party clients. Review Google terms and use a non-critical account if you choose to proceed.
 - Gemini CLI OAuth is shipped as part of the bundled `google` plugin.
   - Enable: `openclaw plugins enable google`
   - Login: `openclaw models auth login --provider google-gemini-cli --set-default`
@@ -570,15 +570,15 @@ Example (OpenAI‑compatible):
 Notes:
 
 - For custom providers, `reasoning`, `input`, `cost`, `contextWindow`, and `maxTokens` are optional.
-  When omitted, OpenClaw defaults to:
+  When omitted, Kova defaults to:
   - `reasoning: false`
   - `input: ["text"]`
   - `cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }`
   - `contextWindow: 200000`
   - `maxTokens: 8192`
 - Recommended: set explicit values that match your proxy/model limits.
-- For `api: "openai-completions"` on non-native endpoints (any non-empty `baseUrl` whose host is not `api.openai.com`), OpenClaw forces `compat.supportsDeveloperRole: false` to avoid provider 400 errors for unsupported `developer` roles.
-- If `baseUrl` is empty/omitted, OpenClaw keeps the default OpenAI behavior (which resolves to `api.openai.com`).
+- For `api: "openai-completions"` on non-native endpoints (any non-empty `baseUrl` whose host is not `api.openai.com`), Kova forces `compat.supportsDeveloperRole: false` to avoid provider 400 errors for unsupported `developer` roles.
+- If `baseUrl` is empty/omitted, Kova keeps the default OpenAI behavior (which resolves to `api.openai.com`).
 - For safety, an explicit `compat.supportsDeveloperRole: true` is still overridden on non-native `openai-completions` endpoints.
 
 ## CLI examples

@@ -24,7 +24,7 @@ x-i18n:
 - 如果你设置了 `agents.defaults.models`，它就会成为 allowlist。
 - CLI 辅助命令：`openclaw onboard`、`openclaw models list`、`openclaw models set <provider/model>`。
 - 提供商插件可以通过 `registerProvider({ catalog })` 注入模型目录；
-  OpenClaw 会在写入
+  Kova 会在写入
   `models.json` 之前将该输出合并到 `models.providers` 中。
 - 提供商清单可以声明 `providerAuthEnvVars`，这样基于通用环境变量的
   身份验证探测就不需要加载插件运行时。其余的核心环境变量映射
@@ -42,7 +42,7 @@ x-i18n:
 
 ## 插件接管的提供商行为
 
-提供商插件现在可以接管大多数提供商特定逻辑，而 OpenClaw 保留
+提供商插件现在可以接管大多数提供商特定逻辑，而 Kova 保留
 通用推理循环。
 
 典型划分：
@@ -114,7 +114,7 @@ x-i18n:
 内置的 `openai` 插件现在接管两个提供商 ID：`openai` 和
 `openai-codex`。
 
-以上涵盖了仍适合 OpenClaw 常规传输的提供商。若某个提供商
+以上涵盖了仍适合 Kova 常规传输的提供商。若某个提供商
 需要完全自定义的请求执行器，那就是另一个更深层的扩展接口。
 
 ## API 密钥轮换
@@ -133,7 +133,7 @@ x-i18n:
 
 ## 内置提供商（pi-ai 目录）
 
-OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
+Kova 附带 pi‑ai 目录。这些提供商**不需要**
 `models.providers` 配置；只需设置身份验证 + 选择一个模型。
 
 ### OpenAI
@@ -148,7 +148,7 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - OpenAI Responses WebSocket 预热默认通过 `params.openaiWsWarmup` 启用（`true`/`false`）
 - 可通过 `agents.defaults.models["openai/<model>"].params.serviceTier` 启用 OpenAI 优先处理
 - 可通过 `agents.defaults.models["<provider>/<model>"].params.fastMode` 为每个模型启用 OpenAI 快速模式
-- `openai/gpt-5.3-codex-spark` 在 OpenClaw 中被有意抑制，因为 live OpenAI API 会拒绝它；Spark 被视为仅限 Codex
+- `openai/gpt-5.3-codex-spark` 在 Kova 中被有意抑制，因为 live OpenAI API 会拒绝它；Spark 被视为仅限 Codex
 
 ```json5
 {
@@ -163,7 +163,7 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - 可选轮换：`ANTHROPIC_API_KEYS`、`ANTHROPIC_API_KEY_1`、`ANTHROPIC_API_KEY_2`，以及 `OPENCLAW_LIVE_ANTHROPIC_KEY`（单个覆盖）
 - 示例模型：`anthropic/claude-opus-4-6`
 - CLI：`openclaw onboard --auth-choice token`（粘贴 setup-token）或 `openclaw models auth paste-token --provider anthropic`
-- 直接 API 密钥模型支持共享的 `/fast` 开关和 `params.fastMode`；OpenClaw 会将其映射到 Anthropic `service_tier`（`auto` 与 `standard_only`）
+- 直接 API 密钥模型支持共享的 `/fast` 开关和 `params.fastMode`；Kova 会将其映射到 Anthropic `service_tier`（`auto` 与 `standard_only`）
 - 策略说明：setup-token 支持属于技术兼容性；Anthropic 过去曾阻止某些在 Claude Code 之外的订阅用法。请核实当前 Anthropic 条款，并根据你的风险承受能力做出决定。
 - 建议：相比订阅 setup-token 身份验证，Anthropic API 密钥身份验证是更安全、也更推荐的路径。
 
@@ -183,7 +183,7 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - 通过 `agents.defaults.models["openai-codex/<model>"].params.transport` 按模型覆盖（`"sse"`、`"websocket"` 或 `"auto"`）
 - 与直接 `openai/*` 共享相同的 `/fast` 开关和 `params.fastMode` 配置
 - 当 Codex OAuth 目录暴露它时，`openai-codex/gpt-5.3-codex-spark` 仍然可用；取决于 entitlement
-- 策略说明：OpenAI Codex OAuth 明确支持 OpenClaw 这样的外部工具/工作流。
+- 策略说明：OpenAI Codex OAuth 明确支持 Kova 这样的外部工具/工作流。
 
 ```json5
 {
@@ -211,14 +211,14 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - 身份验证：`GEMINI_API_KEY`
 - 可选轮换：`GEMINI_API_KEYS`、`GEMINI_API_KEY_1`、`GEMINI_API_KEY_2`、`GOOGLE_API_KEY` 回退，以及 `OPENCLAW_LIVE_GEMINI_KEY`（单个覆盖）
 - 示例模型：`google/gemini-3.1-pro-preview`、`google/gemini-3-flash-preview`
-- 兼容性：使用 `google/gemini-3.1-flash-preview` 的旧版 OpenClaw 配置会被标准化为 `google/gemini-3-flash-preview`
+- 兼容性：使用 `google/gemini-3.1-flash-preview` 的旧版 Kova 配置会被标准化为 `google/gemini-3-flash-preview`
 - CLI：`openclaw onboard --auth-choice gemini-api-key`
 
 ### Google Vertex 和 Gemini CLI
 
 - 提供商：`google-vertex`、`google-gemini-cli`
 - 身份验证：Vertex 使用 gcloud ADC；Gemini CLI 使用其 OAuth 流程
-- 注意：OpenClaw 中的 Gemini CLI OAuth 是非官方集成。一些用户报告在使用第三方客户端后遭遇 Google 账号限制。请查看 Google 条款，如果你决定继续，建议使用非关键账号。
+- 注意：Kova 中的 Gemini CLI OAuth 是非官方集成。一些用户报告在使用第三方客户端后遭遇 Google 账号限制。请查看 Google 条款，如果你决定继续，建议使用非关键账号。
 - Gemini CLI OAuth 作为内置 `google` 插件的一部分提供。
   - 启用：`openclaw plugins enable google`
   - 登录：`openclaw models auth login --provider google-gemini-cli --set-default`
@@ -567,15 +567,15 @@ export SGLANG_API_KEY="sglang-local"
 说明：
 
 - 对于自定义提供商，`reasoning`、`input`、`cost`、`contextWindow` 和 `maxTokens` 是可选的。
-  如果省略，OpenClaw 默认使用：
+  如果省略，Kova 默认使用：
   - `reasoning: false`
   - `input: ["text"]`
   - `cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }`
   - `contextWindow: 200000`
   - `maxTokens: 8192`
 - 建议：设置与你的代理/模型限制匹配的显式值。
-- 对于非原生端点上的 `api: "openai-completions"`（任何主机不是 `api.openai.com` 的非空 `baseUrl`），OpenClaw 会强制设置 `compat.supportsDeveloperRole: false`，以避免提供商因不支持 `developer` 角色而返回 400 错误。
-- 如果 `baseUrl` 为空/省略，OpenClaw 会保留默认 OpenAI 行为（即解析为 `api.openai.com`）。
+- 对于非原生端点上的 `api: "openai-completions"`（任何主机不是 `api.openai.com` 的非空 `baseUrl`），Kova 会强制设置 `compat.supportsDeveloperRole: false`，以避免提供商因不支持 `developer` 角色而返回 400 错误。
+- 如果 `baseUrl` 为空/省略，Kova 会保留默认 OpenAI 行为（即解析为 `api.openai.com`）。
 - 出于安全考虑，在非原生 `openai-completions` 端点上，显式的 `compat.supportsDeveloperRole: true` 仍会被覆盖。
 
 ## CLI 示例

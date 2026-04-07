@@ -1,14 +1,14 @@
 ---
-summary: "Use xAI Grok models in OpenClaw"
+summary: "Use xAI Grok models in Kova"
 read_when:
-  - You want to use Grok models in OpenClaw
+  - You want to use Grok models in Kova
   - You are configuring xAI auth or model ids
 title: "xAI"
 ---
 
 # xAI
 
-OpenClaw ships a bundled `xai` provider plugin for Grok models.
+Kova ships a bundled `xai` provider plugin for Grok models.
 
 ## Setup
 
@@ -27,7 +27,7 @@ openclaw onboard --auth-choice xai-api-key
 }
 ```
 
-OpenClaw now uses the xAI Responses API as the bundled xAI transport. The same
+Kova now uses the xAI Responses API as the bundled xAI transport. The same
 `XAI_API_KEY` can also power Grok-backed `web_search`, first-class `x_search`,
 and remote `code_execution`.
 If you store an xAI key under `plugins.entries.xai.config.webSearch.apiKey`,
@@ -36,7 +36,7 @@ the bundled xAI model provider now reuses that key as a fallback too.
 
 ## Current bundled model catalog
 
-OpenClaw now includes these xAI model families out of the box:
+Kova now includes these xAI model families out of the box:
 
 - `grok-4`, `grok-4-0709`
 - `grok-4-fast-reasoning`, `grok-4-fast-non-reasoning`
@@ -57,13 +57,13 @@ openclaw config set tools.web.search.provider grok
 
 ## Known limits
 
-- Auth is API-key only today. There is no xAI OAuth/device-code flow in OpenClaw yet.
-- `grok-4.20-multi-agent-experimental-beta-0304` is not supported on the normal xAI provider path because it requires a different upstream API surface than the standard OpenClaw xAI transport.
+- Auth is API-key only today. There is no xAI OAuth/device-code flow in Kova yet.
+- `grok-4.20-multi-agent-experimental-beta-0304` is not supported on the normal xAI provider path because it requires a different upstream API surface than the standard Kova xAI transport.
 
 ## Notes
 
-- OpenClaw applies xAI-specific tool-schema and tool-call compatibility fixes automatically on the shared runner path.
-- `web_search`, `x_search`, and `code_execution` are exposed as OpenClaw tools. OpenClaw enables the specific xAI built-in it needs inside each tool request instead of attaching all native tools to every chat turn.
+- Kova applies xAI-specific tool-schema and tool-call compatibility fixes automatically on the shared runner path.
+- `web_search`, `x_search`, and `code_execution` are exposed as Kova tools. Kova enables the specific xAI built-in it needs inside each tool request instead of attaching all native tools to every chat turn.
 - `x_search` and `code_execution` are owned by the bundled xAI plugin rather than hardcoded into the core model runtime.
 - `code_execution` is remote xAI sandbox execution, not local [`exec`](/tools/exec).
 - For the broader provider overview, see [Model providers](/providers/index).

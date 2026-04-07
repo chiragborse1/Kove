@@ -3,7 +3,7 @@ read_when:
   - 你需要一种不同于“入门指南”快速开始的安装方式
   - 你想部署到云平台
   - 你需要更新、迁移或卸载
-summary: 安装 OpenClaw —— 安装脚本、npm/pnpm、从源码、Docker 等
+summary: 安装 Kova —— 安装脚本、npm/pnpm、从源码、Docker 等
 title: 安装
 x-i18n:
   generated_at: "2026-03-16T06:23:36Z"
@@ -25,17 +25,17 @@ x-i18n:
 - 仅当你从源码构建时需要 `pnpm`
 
 <Note>
-在 Windows 上，我们强烈建议你在 [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) 下运行 OpenClaw。
+在 Windows 上，我们强烈建议你在 [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) 下运行 Kova。
 </Note>
 
 ## 安装方法
 
 <Tip>
-**安装脚本** 是安装 OpenClaw 的推荐方式。它会一步完成 Node 检测、安装和新手引导。
+**安装脚本** 是安装 Kova 的推荐方式。它会一步完成 Node 检测、安装和新手引导。
 </Tip>
 
 <Warning>
-对于 VPS/云主机，尽量避免使用第三方“一键式”市场镜像。优先选择干净的基础 OS 镜像（例如 Ubuntu LTS），然后使用安装脚本自行安装 OpenClaw。
+对于 VPS/云主机，尽量避免使用第三方“一键式”市场镜像。优先选择干净的基础 OS 镜像（例如 Ubuntu LTS），然后使用安装脚本自行安装 Kova。
 </Warning>
 
 <AccordionGroup>
@@ -45,12 +45,12 @@ x-i18n:
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
         ```bash
-        curl -fsSL https://openclaw.ai/install.sh | bash
+        curl -fsSL https://kova.ai/install.sh | bash
         ```
       </Tab>
       <Tab title="Windows (PowerShell)">
         ```powershell
-        iwr -useb https://openclaw.ai/install.ps1 | iex
+        iwr -useb https://kova.ai/install.ps1 | iex
         ```
       </Tab>
     </Tabs>
@@ -62,12 +62,12 @@ x-i18n:
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
         ```bash
-        curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
+        curl -fsSL https://kova.ai/install.sh | bash -s -- --no-onboard
         ```
       </Tab>
       <Tab title="Windows (PowerShell)">
         ```powershell
-        & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -NoOnboard
+        & ([scriptblock]::Create((iwr -useb https://kova.ai/install.ps1))) -NoOnboard
         ```
       </Tab>
     </Tabs>
@@ -77,7 +77,7 @@ x-i18n:
   </Accordion>
 
   <Accordion title="npm / pnpm" icon="package">
-    如果你已经自行管理 Node，我们推荐使用 Node 24。出于兼容性考虑，OpenClaw 仍支持 Node 22 LTS，目前为 `22.16+`：
+    如果你已经自行管理 Node，我们推荐使用 Node 24。出于兼容性考虑，Kova 仍支持 Node 22 LTS，目前为 `22.16+`：
 
     <Tabs>
       <Tab title="npm">
@@ -126,7 +126,7 @@ x-i18n:
 
     <Steps>
       <Step title="克隆并构建">
-        克隆 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 并构建：
+        克隆 [Kova 仓库](https://github.com/openclaw/openclaw) 并构建：
 
         ```bash
         git clone https://github.com/openclaw/openclaw.git
@@ -143,7 +143,7 @@ x-i18n:
         pnpm link --global
         ```
 
-        或者，你也可以跳过链接，直接在仓库内通过 `pnpm openclaw ...` 运行命令。
+        或者，你也可以跳过链接，直接在仓库内通过 `pnpm kova ...` 运行命令。
       </Step>
       <Step title="运行新手引导">
         ```bash
@@ -224,12 +224,12 @@ export PATH="$(npm prefix -g)/bin:$PATH"
 
 <CardGroup cols={3}>
   <Card title="更新" href="/install/updating" icon="refresh-cw">
-    让 OpenClaw 保持最新。
+    让 Kova 保持最新。
   </Card>
   <Card title="迁移" href="/install/migrating" icon="arrow-right">
     迁移到新机器。
   </Card>
   <Card title="卸载" href="/install/uninstall" icon="trash-2">
-    完全移除 OpenClaw。
+    完全移除 Kova。
   </Card>
 </CardGroup>

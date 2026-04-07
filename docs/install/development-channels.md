@@ -10,7 +10,7 @@ sidebarTitle: "Release Channels"
 
 # Development channels
 
-OpenClaw ships three update channels:
+Kova ships three update channels:
 
 - **stable**: npm dist-tag `latest`. Recommended for most users.
 - **beta**: npm dist-tag `beta` (builds under test).
@@ -66,7 +66,7 @@ Notes:
 - The tag is not persisted. Your next `openclaw update` uses your configured
   channel as usual.
 - Downgrade protection: if the target version is older than your current version,
-  OpenClaw prompts for confirmation (skip with `--yes`).
+  Kova prompts for confirmation (skip with `--yes`).
 
 ## Dry run
 
@@ -84,7 +84,7 @@ whether a downgrade confirmation would be required.
 
 ## Plugins and channels
 
-When you switch channels with `openclaw update`, OpenClaw also syncs plugin
+When you switch channels with `openclaw update`, Kova also syncs plugin
 sources:
 
 - `dev` prefers bundled plugins from the git checkout.

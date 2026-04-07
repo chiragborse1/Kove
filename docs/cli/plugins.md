@@ -32,10 +32,10 @@ openclaw plugins update --all
 openclaw plugins marketplace list <marketplace>
 ```
 
-Bundled plugins ship with OpenClaw but start disabled. Use `plugins enable` to
+Bundled plugins ship with Kova but start disabled. Use `plugins enable` to
 activate them.
 
-Native OpenClaw plugins must ship `openclaw.plugin.json` with an inline JSON
+Native Kova plugins must ship `openclaw.plugin.json` with an inline JSON
 Schema (`configSchema`, even if empty). Compatible bundles use their own bundle
 manifests instead.
 
@@ -70,7 +70,7 @@ override, while `openclaw skills install` remains a separate ClawHub skill
 download/install flow.
 
 `plugins install` is also the install surface for hook packs that expose
-`openclaw.hooks` in `package.json`. Use `openclaw hooks` for filtered hook
+`openclaw.hooks` in `package.json`. Use `kova hooks` for filtered hook
 visibility and per-hook enablement, not package installation.
 
 Npm specs are **registry-only** (package name + optional **exact version** or
@@ -78,11 +78,11 @@ Npm specs are **registry-only** (package name + optional **exact version** or
 installs run with `--ignore-scripts` for safety.
 
 Bare specs and `@latest` stay on the stable track. If npm resolves either of
-those to a prerelease, OpenClaw stops and asks you to opt in explicitly with a
+those to a prerelease, Kova stops and asks you to opt in explicitly with a
 prerelease tag such as `@beta`/`@rc` or an exact prerelease version such as
 `@1.2.3-beta.4`.
 
-If a bare install spec matches a bundled plugin id (for example `diffs`), OpenClaw
+If a bare install spec matches a bundled plugin id (for example `diffs`), Kova
 installs the bundled plugin directly. To install an npm package with the same
 name, use an explicit scoped spec (for example `@scope/diffs`).
 
@@ -97,14 +97,14 @@ openclaw plugins install clawhub:openclaw-codex-app-server
 openclaw plugins install clawhub:openclaw-codex-app-server@1.2.3
 ```
 
-OpenClaw now also prefers ClawHub for bare npm-safe plugin specs. It only falls
+Kova now also prefers ClawHub for bare npm-safe plugin specs. It only falls
 back to npm if ClawHub does not have that package or version:
 
 ```bash
 openclaw plugins install openclaw-codex-app-server
 ```
 
-OpenClaw downloads the package archive from ClawHub, checks the advertised
+Kova downloads the package archive from ClawHub, checks the advertised
 plugin API / minimum gateway compatibility, then installs it through the normal
 archive path. Recorded installs keep their ClawHub source metadata for later
 updates.
@@ -133,13 +133,13 @@ Marketplace sources can be:
 - a git URL
 
 For remote marketplaces loaded from GitHub or git, plugin entries must stay
-inside the cloned marketplace repo. OpenClaw accepts relative path sources from
+inside the cloned marketplace repo. Kova accepts relative path sources from
 that repo and rejects external git, GitHub, URL/archive, and absolute-path
 plugin sources from remote manifests.
 
-For local paths and archives, OpenClaw auto-detects:
+For local paths and archives, Kova auto-detects:
 
-- native OpenClaw plugins (`openclaw.plugin.json`)
+- native Kova plugins (`openclaw.plugin.json`)
 - Codex-compatible bundles (`.codex-plugin/plugin.json`)
 - Claude-compatible bundles (`.claude-plugin/plugin.json` or the default Claude
   component layout)
@@ -190,17 +190,17 @@ openclaw plugins update @openclaw/voice-call@beta
 Updates apply to tracked installs in `plugins.installs` and tracked hook-pack
 installs in `hooks.internal.installs`.
 
-When you pass a plugin id, OpenClaw reuses the recorded install spec for that
+When you pass a plugin id, Kova reuses the recorded install spec for that
 plugin. That means previously stored dist-tags such as `@beta` and exact pinned
 versions continue to be used on later `update <id>` runs.
 
 For npm installs, you can also pass an explicit npm package spec with a dist-tag
-or exact version. OpenClaw resolves that package name back to the tracked plugin
+or exact version. Kova resolves that package name back to the tracked plugin
 record, updates that installed plugin, and records the new npm spec for future
 id-based updates.
 
 When a stored integrity hash exists and the fetched artifact hash changes,
-OpenClaw prints a warning and asks for confirmation before proceeding. Use
+Kova prints a warning and asks for confirmation before proceeding. Use
 global `--yes` to bypass prompts in CI/non-interactive runs.
 
 ### Inspect

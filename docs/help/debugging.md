@@ -69,7 +69,7 @@ pnpm gateway:dev
 OPENCLAW_PROFILE=dev openclaw tui
 ```
 
-If you don’t have a global install yet, run the CLI via `pnpm openclaw ...`.
+If you don’t have a global install yet, run the CLI via `pnpm kova ...`.
 
 What this does:
 
@@ -110,9 +110,9 @@ Tip: if a non‑dev gateway is already running (launchd/systemd), stop it first:
 openclaw gateway stop
 ```
 
-## Raw stream logging (OpenClaw)
+## Raw stream logging (Kova)
 
-OpenClaw can log the **raw assistant stream** before any filtering/formatting.
+Kova can log the **raw assistant stream** before any filtering/formatting.
 This is the best way to see whether reasoning is arriving as plain text deltas
 (or as separate thinking blocks).
 
@@ -125,19 +125,19 @@ pnpm gateway:watch --raw-stream
 Optional path override:
 
 ```bash
-pnpm gateway:watch --raw-stream --raw-stream-path ~/.openclaw/logs/raw-stream.jsonl
+pnpm gateway:watch --raw-stream --raw-stream-path ~/.kova/logs/raw-stream.jsonl
 ```
 
 Equivalent env vars:
 
 ```bash
 OPENCLAW_RAW_STREAM=1
-OPENCLAW_RAW_STREAM_PATH=~/.openclaw/logs/raw-stream.jsonl
+OPENCLAW_RAW_STREAM_PATH=~/.kova/logs/raw-stream.jsonl
 ```
 
 Default file:
 
-`~/.openclaw/logs/raw-stream.jsonl`
+`~/.kova/logs/raw-stream.jsonl`
 
 ## Raw chunk logging (pi-mono)
 

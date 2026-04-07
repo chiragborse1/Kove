@@ -2,7 +2,7 @@
 
 Stop typing `docker-compose` commands. Just type `clawdock-start`.
 
-Inspired by Simon Willison's [Running OpenClaw in Docker](https://til.simonwillison.net/llms/openclaw-docker).
+Inspired by Simon Willison's [Running Kova in Docker](https://til.simonwillison.net/llms/openclaw-docker).
 
 - [Quickstart](#quickstart)
 - [Available Commands](#available-commands)
@@ -39,7 +39,7 @@ mkdir -p ~/.clawdock && curl -sL https://raw.githubusercontent.com/openclaw/open
 echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
 ```
 
-Canonical docs page: https://docs.openclaw.ai/install/clawdock
+Canonical docs page: https://docs.kova.ai/install/clawdock
 
 If you previously installed ClawDock from `scripts/shell-helpers/clawdock-helpers.sh`, rerun the install command above. The old raw GitHub path has been removed.
 
@@ -49,7 +49,7 @@ If you previously installed ClawDock from `scripts/shell-helpers/clawdock-helper
 clawdock-help
 ```
 
-On first command, ClawDock auto-detects your OpenClaw directory:
+On first command, ClawDock auto-detects your Kova directory:
 
 - Checks common paths (`~/openclaw`, `~/workspace/openclaw`, etc.)
 - If found, asks you to confirm
@@ -98,7 +98,7 @@ clawdock-approve <request-id>
 | Command                   | Description                                    |
 | ------------------------- | ---------------------------------------------- |
 | `clawdock-shell`          | Interactive shell inside the gateway container |
-| `clawdock-cli <command>`  | Run OpenClaw CLI commands                      |
+| `clawdock-cli <command>`  | Run Kova CLI commands                      |
 | `clawdock-exec <command>` | Execute arbitrary commands in the container    |
 
 ### Web UI & Devices
@@ -129,8 +129,8 @@ clawdock-approve <request-id>
 | ---------------------- | ----------------------------------------- |
 | `clawdock-health`      | Run gateway health check                  |
 | `clawdock-token`       | Display the gateway authentication token  |
-| `clawdock-cd`          | Jump to the OpenClaw project directory    |
-| `clawdock-config`      | Open the OpenClaw config directory        |
+| `clawdock-cd`          | Jump to the Kova project directory    |
+| `clawdock-config`      | Open the Kova config directory        |
 | `clawdock-show-config` | Print config files with redacted values   |
 | `clawdock-workspace`   | Open the workspace directory              |
 | `clawdock-help`        | Show all available commands with examples |
@@ -154,10 +154,10 @@ The Docker setup uses three config files on the host. The container never stores
 | File                        | Purpose                                          | Examples                                                            |
 | --------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
 | `<project>/.env`            | **Docker infra** — image, ports, gateway token   | `OPENCLAW_GATEWAY_TOKEN`, `OPENCLAW_IMAGE`, `OPENCLAW_GATEWAY_PORT` |
-| `~/.openclaw/.env`          | **Secrets** — API keys and bot tokens            | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN`         |
-| `~/.openclaw/openclaw.json` | **Behavior config** — models, channels, policies | Model selection, WhatsApp allowlists, agent settings                |
+| `~/.kova/.env`          | **Secrets** — API keys and bot tokens            | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `TELEGRAM_BOT_TOKEN`         |
+| `~/.kova/openclaw.json` | **Behavior config** — models, channels, policies | Model selection, WhatsApp allowlists, agent settings                |
 
-**Do NOT** put API keys or bot tokens in `openclaw.json`. Use `~/.openclaw/.env` for all secrets.
+**Do NOT** put API keys or bot tokens in `openclaw.json`. Use `~/.kova/.env` for all secrets.
 
 ### Initial Setup
 
@@ -174,7 +174,7 @@ The Docker setup uses three config files on the host. The container never stores
 After setup, add your API keys:
 
 ```bash
-vim ~/.openclaw/.env
+vim ~/.kova/.env
 ```
 
 See `.env.example` for all supported keys.
@@ -196,14 +196,14 @@ volumes:
 
 This means:
 
-- `~/.openclaw/.env` is available inside the container at `/home/node/.openclaw/.env` — OpenClaw loads it automatically as the global env fallback
-- `~/.openclaw/openclaw.json` is available at `/home/node/.openclaw/openclaw.json` — the gateway watches it and hot-reloads most changes
+- `~/.kova/.env` is available inside the container at `/home/node/.openclaw/.env` — Kova loads it automatically as the global env fallback
+- `~/.kova/openclaw.json` is available at `/home/node/.openclaw/openclaw.json` — the gateway watches it and hot-reloads most changes
 - No need to add API keys to `docker-compose.yml` or configure anything inside the container
 - Keys survive `clawdock-update`, `clawdock-rebuild`, and `clawdock-clean` because they live on the host
 
-The project `.env` feeds Docker Compose directly (gateway token, image name, ports). The `~/.openclaw/.env` feeds the OpenClaw process inside the container.
+The project `.env` feeds Docker Compose directly (gateway token, image name, ports). The `~/.kova/.env` feeds the Kova process inside the container.
 
-### Example `~/.openclaw/.env`
+### Example `~/.kova/.env`
 
 ```bash
 OPENAI_API_KEY=sk-...
@@ -225,17 +225,17 @@ OPENCLAW_IMAGE=openclaw:local
 
 ### Env Precedence
 
-OpenClaw loads env vars in this order (highest wins, never overrides existing):
+Kova loads env vars in this order (highest wins, never overrides existing):
 
 1. **Process environment** — `docker-compose.yml` `environment:` block (gateway token, session keys)
 2. **`.env` in CWD** — project root `.env` (Docker infra vars)
-3. **`~/.openclaw/.env`** — global secrets (API keys, bot tokens)
+3. **`~/.kova/.env`** — global secrets (API keys, bot tokens)
 4. **`openclaw.json` `env` block** — inline vars, applied only if still missing
 5. **Shell env import** — optional login-shell scrape (`OPENCLAW_LOAD_SHELL_ENV=1`)
 
 ## Common Workflows
 
-### Update OpenClaw
+### Update Kova
 
 > **Important:** `openclaw update` does not work inside Docker.
 > The container runs as a non-root user with a source-built image, so `npm i -g` fails with EACCES.
@@ -322,7 +322,7 @@ clawdock-fix-token
 This will:
 
 1. Read the token from your `.env` file
-2. Configure it in the OpenClaw config
+2. Configure it in the Kova config
 3. Restart the gateway
 4. Verify the configuration
 
@@ -338,7 +338,7 @@ docker ps
 
 - Docker and Docker Compose installed
 - Bash or Zsh shell
-- OpenClaw project (run `scripts/docker/setup.sh`)
+- Kova project (run `scripts/docker/setup.sh`)
 
 ## Development
 

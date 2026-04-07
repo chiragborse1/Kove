@@ -1,6 +1,6 @@
 ---
 read_when:
-  - 你想让 OpenClaw 通过 Nostr 接收私信
+  - 你想让 Kova 通过 Nostr 接收私信
   - 你正在设置去中心化消息传递
 summary: 通过 NIP-04 加密消息实现的 Nostr 私信渠道
 title: Nostr
@@ -17,7 +17,7 @@ x-i18n:
 
 **状态：** 可选插件（默认禁用）。
 
-Nostr 是一种用于社交网络的去中心化协议。此渠道使 OpenClaw 能够通过 NIP-04 接收并回复加密私信。
+Nostr 是一种用于社交网络的去中心化协议。此渠道使 Kova 能够通过 NIP-04 接收并回复加密私信。
 
 ## 安装（按需）
 
@@ -110,7 +110,7 @@ export NOSTR_PRIVATE_KEY="nsec1..."
       "privateKey": "${NOSTR_PRIVATE_KEY}",
       "profile": {
         "name": "openclaw",
-        "displayName": "OpenClaw",
+        "displayName": "Kova",
         "about": "Personal assistant DM bot",
         "picture": "https://example.com/avatar.png",
         "banner": "https://example.com/banner.png",

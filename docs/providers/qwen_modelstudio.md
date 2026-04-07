@@ -2,7 +2,7 @@
 title: "Qwen / Model Studio"
 summary: "Alibaba Cloud Model Studio setup (Standard pay-as-you-go and Coding Plan, dual region endpoints)"
 read_when:
-  - You want to use Qwen (Alibaba Cloud Model Studio) with OpenClaw
+  - You want to use Qwen (Alibaba Cloud Model Studio) with Kova
   - You need the API key env var for Model Studio
   - You want to use the Standard (pay-as-you-go) or Coding Plan endpoint
 ---
@@ -82,4 +82,4 @@ Some models (qwen3.5-plus, kimi-k2.5) support image input. Context windows range
 
 If the Gateway runs as a daemon (launchd/systemd), make sure
 `MODELSTUDIO_API_KEY` is available to that process (for example, in
-`~/.openclaw/.env` or via `env.shellEnv`).
+`~/.kova/.env` or via `env.shellEnv`).

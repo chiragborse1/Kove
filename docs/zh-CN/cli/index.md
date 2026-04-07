@@ -2,7 +2,7 @@
 read_when:
   - 添加或修改 CLI 命令或选项时
   - 为新的命令界面编写文档时
-summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
+summary: "`openclaw` 命令、子命令和选项的 Kova CLI 参考"
 title: CLI 参考
 x-i18n:
   generated_at: "2026-03-16T06:22:35Z"
@@ -84,7 +84,7 @@ x-i18n:
 
 ## 调色板
 
-OpenClaw 在 CLI 输出中使用龙虾色调调色板。
+Kova 在 CLI 输出中使用龙虾色调调色板。
 
 - `accent` (#FF5A2D)：标题、标签、主要高亮。
 - `accentBright` (#FF7A3D)：命令名称、强调。
@@ -323,7 +323,7 @@ openclaw [--dev] [--profile <name>] <command>
 
 选项：
 
-- `--workspace <dir>`：智能体工作区路径（默认 `~/.openclaw/workspace`）。
+- `--workspace <dir>`：智能体工作区路径（默认 `~/.kova/workspace`）。
 - `--wizard`：运行新手引导。
 - `--non-interactive`：无提示运行新手引导。
 - `--mode <local|remote>`：新手引导模式。
@@ -429,7 +429,7 @@ openclaw [--dev] [--profile <name>] <command>
 - 提示：如果能够检测到常见配置错误，`channels status` 会打印带建议修复方式的警告（随后指向 `openclaw doctor`）。
 - `channels logs`：显示 gateway 日志文件中的最近渠道日志。
 - `channels add`：未传入任何标志时为向导式设置；传入标志后切换为非交互模式。
-  - 当向仍使用单账户顶层配置的渠道添加非默认账户时，OpenClaw 会先将账户作用域值移动到 `channels.<channel>.accounts.default`，再写入新账户。
+  - 当向仍使用单账户顶层配置的渠道添加非默认账户时，Kova 会先将账户作用域值移动到 `channels.<channel>.accounts.default`，再写入新账户。
   - 非交互式 `channels add` 不会自动创建 / 升级绑定；仅渠道绑定会继续匹配默认账户。
 - `channels remove`：默认执行禁用；传入 `--delete` 可在无提示下删除配置项。
 - `channels login`：交互式渠道登录（仅 WhatsApp Web）。
@@ -605,7 +605,7 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 - `--non-interactive`
 - `--json`
 
-绑定规范使用 `channel[:accountId]`。省略 `accountId` 时，OpenClaw 可能通过渠道默认值 / 插件 hook 解析账户作用域；否则这就是不带显式账户作用域的渠道绑定。
+绑定规范使用 `channel[:accountId]`。省略 `accountId` 时，Kova 可能通过渠道默认值 / 插件 hook 解析账户作用域；否则这就是不带显式账户作用域的渠道绑定。
 
 #### `agents bindings`
 
@@ -672,7 +672,7 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 
 ### 用量跟踪
 
-在 OAuth / API 凭据可用时，OpenClaw 可以显示提供商用量 / 配额。
+在 OAuth / API 凭据可用时，Kova 可以显示提供商用量 / 配额。
 
 展示位置：
 
@@ -788,7 +788,7 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 
 - `gateway status` 默认使用服务解析出的端口 / 配置来探测 Gateway 网关 RPC（可用 `--url/--token/--password` 覆盖）。
 - `gateway status` 支持 `--no-probe`、`--deep`、`--require-rpc` 和 `--json`，便于脚本化。
-- `gateway status` 还能在检测到时显示旧版或额外的 gateway 服务（`--deep` 会增加系统级扫描）。带 profile 名称的 OpenClaw 服务会被视为一等公民，不会标记为“额外”。
+- `gateway status` 还能在检测到时显示旧版或额外的 gateway 服务（`--deep` 会增加系统级扫描）。带 profile 名称的 Kova 服务会被视为一等公民，不会标记为“额外”。
 - `gateway status` 会打印 CLI 使用的是哪个配置路径、服务可能使用的是哪个配置（服务环境），以及解析出的探测目标 URL。
 - 如果 gateway 认证 SecretRef 在当前命令路径中未解析，`gateway status --json` 仅会在探测连接 / 认证失败时报告 `rpc.authWarning`（探测成功时会抑制警告）。
 - 在 Linux systemd 安装中，状态 token 漂移检查同时包括 `Environment=` 和 `EnvironmentFile=` 单元来源。

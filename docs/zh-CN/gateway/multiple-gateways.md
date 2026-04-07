@@ -2,7 +2,7 @@
 read_when:
   - 在同一台机器上运行多个 Gateway 网关
   - 你需要为每个 Gateway 网关隔离配置/状态/端口
-summary: 在一台主机上运行多个 OpenClaw Gateway 网关（隔离、端口和配置档案）
+summary: 在一台主机上运行多个 Kova Gateway 网关（隔离、端口和配置档案）
 title: 多个 Gateway 网关
 x-i18n:
   generated_at: "2026-03-16T06:23:07Z"
@@ -101,11 +101,11 @@ openclaw --profile rescue gateway install
 ## 手动环境变量示例
 
 ```bash
-OPENCLAW_CONFIG_PATH=~/.openclaw/main.json \
+OPENCLAW_CONFIG_PATH=~/.kova/main.json \
 OPENCLAW_STATE_DIR=~/.openclaw-main \
 openclaw gateway --port 18789
 
-OPENCLAW_CONFIG_PATH=~/.openclaw/rescue.json \
+OPENCLAW_CONFIG_PATH=~/.kova/rescue.json \
 OPENCLAW_STATE_DIR=~/.openclaw-rescue \
 openclaw gateway --port 19001
 ```

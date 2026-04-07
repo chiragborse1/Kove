@@ -15,13 +15,13 @@ x-i18n:
 
 # 飞书机器人
 
-飞书（Lark）是企业用于消息沟通与协作的团队聊天平台。此插件通过平台的 WebSocket 事件订阅将 OpenClaw 连接到飞书/Lark 机器人，因此无需暴露公共 webhook URL 即可接收消息。
+飞书（Lark）是企业用于消息沟通与协作的团队聊天平台。此插件通过平台的 WebSocket 事件订阅将 Kova 连接到飞书/Lark 机器人，因此无需暴露公共 webhook URL 即可接收消息。
 
 ---
 
 ## 捆绑插件
 
-飞书随当前的 OpenClaw 版本一同捆绑提供，因此无需单独安装插件。
+飞书随当前的 Kova 版本一同捆绑提供，因此无需单独安装插件。
 
 如果你使用的是较旧版本，或使用了不包含捆绑飞书的自定义安装，请手动安装：
 
@@ -37,7 +37,7 @@ openclaw plugins install @openclaw/feishu
 
 ### 方法 1：设置向导（推荐）
 
-如果你刚安装 OpenClaw，请运行设置向导：
+如果你刚安装 Kova，请运行设置向导：
 
 ```bash
 openclaw onboard
@@ -46,7 +46,7 @@ openclaw onboard
 向导会引导你完成以下步骤：
 
 1. 创建飞书应用并收集凭证
-2. 在 OpenClaw 中配置应用凭证
+2. 在 Kova 中配置应用凭证
 3. 启动 Gateway 网关
 
 ✅ **配置完成后**，检查 Gateway 网关状态：
@@ -166,7 +166,7 @@ Lark（国际版）租户应使用 [https://open.larksuite.com/app](https://open
 
 ---
 
-## 第 2 步：配置 OpenClaw
+## 第 2 步：配置 Kova
 
 ### 使用向导配置（推荐）
 
@@ -178,7 +178,7 @@ openclaw channels add
 
 ### 通过配置文件进行配置
 
-编辑 `~/.openclaw/openclaw.json`：
+编辑 `~/.kova/openclaw.json`：
 
 ```json5
 {

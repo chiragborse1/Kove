@@ -15,7 +15,7 @@ x-i18n:
 
 # 认证
 
-OpenClaw 支持模型提供商使用 OAuth 和 API key。对于始终在线的 Gateway 网关
+Kova 支持模型提供商使用 OAuth 和 API key。对于始终在线的 Gateway 网关
 主机，API key 通常是最可预测的选项。当它们与你的提供商账号模型匹配时，
 也支持订阅/OAuth 流程。
 
@@ -40,10 +40,10 @@ openclaw models status
 ```
 
 3. 如果 Gateway 通过 systemd/launchd 运行，建议将 key 放入
-   `~/.openclaw/.env`，这样守护进程就可以读取它：
+   `~/.kova/.env`，这样守护进程就可以读取它：
 
 ```bash
-cat >> ~/.openclaw/.env <<'EOF'
+cat >> ~/.kova/.env <<'EOF'
 <PROVIDER>_API_KEY=...
 EOF
 ```
@@ -59,7 +59,7 @@ openclaw doctor
 API key：`openclaw onboard`。
 
 有关环境继承（`env.shellEnv`、
-`~/.openclaw/.env`、systemd/launchd）的详细信息，请参阅 [Help](/help)。
+`~/.kova/.env`、systemd/launchd）的详细信息，请参阅 [Help](/help)。
 
 ## Anthropic：setup-token（订阅认证）
 
@@ -70,7 +70,7 @@ API key：`openclaw onboard`。
 claude setup-token
 ```
 
-然后将它粘贴到 OpenClaw 中：
+然后将它粘贴到 Kova 中：
 
 ```bash
 openclaw models auth setup-token --provider anthropic
@@ -137,7 +137,7 @@ openclaw doctor
   - `<PROVIDER>_API_KEY_*`
 - Google 提供商还将 `GOOGLE_API_KEY` 作为额外回退项。
 - 使用前会对同一组 key 列表去重。
-- 仅当出现限流错误时，OpenClaw 才会使用下一个 key 重试（例如
+- 仅当出现限流错误时，Kova 才会使用下一个 key 重试（例如
   `429`、`rate_limit`、`quota`、`resource exhausted`）。
 - 非限流错误不会使用替代 key 重试。
 - 如果所有 key 都失败，则返回最后一次尝试的最终错误。

@@ -8,7 +8,7 @@ title: "flows"
 
 # `openclaw flows`
 
-`openclaw flows` is **not** a current OpenClaw CLI command.
+`openclaw flows` is **not** a current Kova CLI command.
 
 Some older release notes and docs mistakenly documented a `flows` command surface. The supported operator surface is [`openclaw tasks`](/automation/tasks).
 

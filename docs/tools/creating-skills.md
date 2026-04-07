@@ -20,7 +20,7 @@ For how skills are loaded and prioritized, see [Skills](/tools/skills).
     Skills live in your workspace. Create a new folder:
 
     ```bash
-    mkdir -p ~/.openclaw/workspace/skills/hello-world
+    mkdir -p ~/.kova/workspace/skills/hello-world
     ```
 
   </Step>
@@ -51,7 +51,7 @@ For how skills are loaded and prioritized, see [Skills](/tools/skills).
   </Step>
 
   <Step title="Load the skill">
-    Start a new session so OpenClaw picks up the skill:
+    Start a new session so Kova picks up the skill:
 
     ```bash
     # From chat
@@ -105,8 +105,8 @@ The YAML frontmatter supports these fields:
 | Location                        | Precedence | Scope                 |
 | ------------------------------- | ---------- | --------------------- |
 | `\<workspace\>/skills/`         | Highest    | Per-agent             |
-| `~/.openclaw/skills/`           | Medium     | Shared (all agents)   |
-| Bundled (shipped with OpenClaw) | Lowest     | Global                |
+| `~/.kova/skills/`           | Medium     | Shared (all agents)   |
+| Bundled (shipped with Kova) | Lowest     | Global                |
 | `skills.load.extraDirs`         | Lowest     | Custom shared folders |
 
 ## Related

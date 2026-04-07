@@ -1,10 +1,10 @@
 ---
 read_when:
-  - 你希望 OpenClaw 与你的主 macOS 环境隔离
+  - 你希望 Kova 与你的主 macOS 环境隔离
   - 你希望在沙箱中集成 iMessage（BlueBubbles）
   - 你希望拥有一个可重置且可克隆的 macOS 环境
   - 你希望比较本地与托管 macOS VM 选项
-summary: 在沙箱化的 macOS VM（本地或托管）中运行 OpenClaw，适用于你需要隔离或 iMessage 的场景
+summary: 在沙箱化的 macOS VM（本地或托管）中运行 Kova，适用于你需要隔离或 iMessage 的场景
 title: macOS VM
 x-i18n:
   generated_at: "2026-03-16T06:23:59Z"
@@ -15,7 +15,7 @@ x-i18n:
   workflow: 15
 ---
 
-# 在 macOS VM 上运行 OpenClaw（沙箱隔离）
+# 在 macOS VM 上运行 Kova（沙箱隔离）
 
 ## 推荐默认方案（适用于大多数用户）
 
@@ -29,7 +29,7 @@ x-i18n:
 
 ### 在你的 Apple Silicon Mac 上运行本地 VM（Lume）
 
-使用 [Lume](https://cua.ai/docs/lume) 在你现有的 Apple Silicon Mac 上的沙箱化 macOS VM 中运行 OpenClaw。
+使用 [Lume](https://cua.ai/docs/lume) 在你现有的 Apple Silicon Mac 上的沙箱化 macOS VM 中运行 Kova。
 
 这样你将获得：
 
@@ -55,7 +55,7 @@ x-i18n:
 2. `lume create openclaw --os macos --ipsw latest`
 3. 完成设置助理，启用远程登录（SSH）
 4. `lume run openclaw --no-display`
-5. SSH 登录，安装 OpenClaw，配置渠道
+5. SSH 登录，安装 Kova，配置渠道
 6. 完成
 
 ---
@@ -139,7 +139,7 @@ ssh youruser@192.168.64.X
 
 ---
 
-## 6）安装 OpenClaw
+## 6）安装 Kova
 
 在 VM 内：
 
@@ -157,7 +157,7 @@ openclaw onboard --install-daemon
 编辑配置文件：
 
 ```bash
-nano ~/.openclaw/openclaw.json
+nano ~/.kova/openclaw.json
 ```
 
 添加你的渠道：
@@ -193,7 +193,7 @@ lume stop openclaw
 lume run openclaw --no-display
 ```
 
-VM 会在后台运行。OpenClaw 的守护进程会保持 Gateway 网关持续运行。
+VM 会在后台运行。Kova 的守护进程会保持 Gateway 网关持续运行。
 
 检查状态：
 
@@ -205,7 +205,7 @@ ssh youruser@192.168.64.X "openclaw status"
 
 ## 加分项：iMessage 集成
 
-这是在 macOS 上运行的杀手级特性。使用 [BlueBubbles](https://bluebubbles.app) 将 iMessage 添加到 OpenClaw。
+这是在 macOS 上运行的杀手级特性。使用 [BlueBubbles](https://bluebubbles.app) 将 iMessage 添加到 Kova。
 
 在 VM 内：
 
@@ -214,7 +214,7 @@ ssh youruser@192.168.64.X "openclaw status"
 3. 启用 Web API 并设置一个密码
 4. 将 BlueBubbles webhook 指向你的 gateway（示例：`https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`）
 
-添加到你的 OpenClaw 配置中：
+添加到你的 Kova 配置中：
 
 ```json
 {

@@ -1,18 +1,18 @@
 ---
-summary: "Move (migrate) an OpenClaw install from one machine to another"
+summary: "Move (migrate) an Kova install from one machine to another"
 read_when:
-  - You are moving OpenClaw to a new laptop/server
+  - You are moving Kova to a new laptop/server
   - You want to preserve sessions, auth, and channel logins (WhatsApp, etc.)
 title: "Migration Guide"
 ---
 
-# Migrating OpenClaw to a New Machine
+# Migrating Kova to a New Machine
 
-This guide moves an OpenClaw gateway to a new machine without redoing onboarding.
+This guide moves an Kova gateway to a new machine without redoing onboarding.
 
 ## What Gets Migrated
 
-When you copy the **state directory** (`~/.openclaw/` by default) and your **workspace**, you preserve:
+When you copy the **state directory** (`~/.kova/` by default) and your **workspace**, you preserve:
 
 - **Config** -- `openclaw.json` and all gateway settings
 - **Auth** -- API keys, OAuth tokens, credential profiles
@@ -41,9 +41,9 @@ Custom profiles use `~/.openclaw-<profile>/` or a path set via `OPENCLAW_STATE_D
 
   </Step>
 
-  <Step title="Install OpenClaw on the new machine">
+  <Step title="Install Kova on the new machine">
     [Install](/install) the CLI (and Node if needed) on the new machine.
-    It is fine if onboarding creates a fresh `~/.openclaw/` -- you will overwrite it next.
+    It is fine if onboarding creates a fresh `~/.kova/` -- you will overwrite it next.
   </Step>
 
   <Step title="Copy state directory and workspace">

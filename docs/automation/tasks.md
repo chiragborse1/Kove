@@ -97,7 +97,7 @@ Transitions happen automatically — when the associated agent run ends, the tas
 
 ## Delivery and notifications
 
-When a task reaches a terminal state, OpenClaw notifies you. There are two delivery paths:
+When a task reaches a terminal state, Kova notifies you. There are two delivery paths:
 
 **Direct delivery** — if the task has a channel target (the `requesterOrigin`), the completion message goes straight to that channel (Telegram, Discord, Slack, etc.).
 
@@ -226,13 +226,13 @@ A sweeper runs every **60 seconds** and handles three things:
 
 ### Tasks and older flow references
 
-Some older OpenClaw release notes and docs referred to task management as `ClawFlow` and documented an `openclaw flows` command surface.
+Some older Kova release notes and docs referred to task management as `ClawFlow` and documented an `openclaw flows` command surface.
 
 In the current codebase, the supported operator surface is `openclaw tasks`. See [ClawFlow](/automation/clawflow) and [CLI: flows](/cli/flows) for compatibility notes that map those older references to the current task commands.
 
 ### Tasks and cron
 
-A cron job **definition** lives in `~/.openclaw/cron/jobs.json`. **Every** cron execution creates a task record — both main-session and isolated. Main-session cron tasks default to `silent` notify policy so they track without generating notifications.
+A cron job **definition** lives in `~/.kova/cron/jobs.json`. **Every** cron execution creates a task record — both main-session and isolated. Main-session cron tasks default to `silent` notify policy so they track without generating notifications.
 
 See [Cron Jobs](/automation/cron-jobs).
 

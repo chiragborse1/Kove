@@ -1,5 +1,5 @@
 ---
-summary: "Optional Docker-based setup and onboarding for OpenClaw"
+summary: "Optional Docker-based setup and onboarding for Kova"
 read_when:
   - You want a containerized gateway instead of local installs
   - You are validating the Docker flow
@@ -12,7 +12,7 @@ Docker is **optional**. Use it only if you want a containerized gateway or to va
 
 ## Is Docker right for me?
 
-- **Yes**: you want an isolated, throwaway gateway environment or to run OpenClaw on a host without local installs.
+- **Yes**: you want an isolated, throwaway gateway environment or to run Kova on a host without local installs.
 - **No**: you are running on your own machine and just want the fastest dev loop. Use the normal install flow instead.
 - **Sandboxing note**: agent sandboxing uses Docker too, but it does **not** require the full gateway to run in Docker. See [Sandboxing](/gateway/sandboxing).
 
@@ -361,7 +361,7 @@ scripts/sandbox-setup.sh
   </Accordion>
 
   <Accordion title="Custom tools not found in sandbox">
-    OpenClaw runs commands with `sh -lc` (login shell), which sources
+    Kova runs commands with `sh -lc` (login shell), which sources
     `/etc/profile` and may reset PATH. Set `docker.env.PATH` to prepend your
     custom tool paths, or add a script under `/etc/profile.d/` in your Dockerfile.
   </Accordion>
@@ -400,5 +400,5 @@ scripts/sandbox-setup.sh
 - [Install Overview](/install) — all installation methods
 - [Podman](/install/podman) — Podman alternative to Docker
 - [ClawDock](/install/clawdock) — Docker Compose community setup
-- [Updating](/install/updating) — keeping OpenClaw up to date
+- [Updating](/install/updating) — keeping Kova up to date
 - [Configuration](/gateway/configuration) — gateway configuration after install

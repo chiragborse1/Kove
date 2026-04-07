@@ -31,7 +31,7 @@ Notes:
 
 - `host` defaults to `auto`: sandbox when sandbox runtime is active for the session, otherwise gateway.
 - `elevated` forces `host=gateway`; it is only available when elevated access is enabled for the current session/provider.
-- `gateway`/`node` approvals are controlled by `~/.openclaw/exec-approvals.json`.
+- `gateway`/`node` approvals are controlled by `~/.kova/exec-approvals.json`.
 - `node` requires a paired node (companion app or headless node host).
 - If multiple nodes are available, set `exec.node` or `tools.exec.node` to select one.
 - `exec host=node` is the only shell-execution path for nodes; the legacy `nodes.run` wrapper has been removed.
@@ -41,7 +41,7 @@ Notes:
   then falls back to Windows PowerShell 5.1.
 - Host execution (`gateway`/`node`) rejects `env.PATH` and loader overrides (`LD_*`/`DYLD_*`) to
   prevent binary hijacking or injected code.
-- OpenClaw sets `OPENCLAW_SHELL=exec` in the spawned command environment (including PTY and sandbox execution) so shell/profile rules can detect exec-tool context.
+- Kova sets `OPENCLAW_SHELL=exec` in the spawned command environment (including PTY and sandbox execution) so shell/profile rules can detect exec-tool context.
 - Important: sandboxing is **off by default**. If sandboxing is off, implicit `host=auto`
   resolves to `gateway`. Explicit `host=sandbox` still fails closed instead of silently
   running on the gateway host. Enable sandboxing or use `host=gateway` with approvals.
@@ -82,7 +82,7 @@ Example:
   - macOS: `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`, `/bin`
   - Linux: `/usr/local/bin`, `/usr/bin`, `/bin`
 - `host=sandbox`: runs `sh -lc` (login shell) inside the container, so `/etc/profile` may reset `PATH`.
-  OpenClaw prepends `env.PATH` after profile sourcing via an internal env var (no shell interpolation);
+  Kova prepends `env.PATH` after profile sourcing via an internal env var (no shell interpolation);
   `tools.exec.pathPrepend` applies here too.
 - `host=node`: only non-blocked env overrides you pass are sent to the node. `env.PATH` overrides are
   rejected for host execution and ignored by node hosts. If you need additional PATH entries on a node,

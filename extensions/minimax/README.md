@@ -1,4 +1,4 @@
-# MiniMax (OpenClaw plugin)
+# MiniMax (Kova plugin)
 
 Bundled MiniMax plugin for both:
 

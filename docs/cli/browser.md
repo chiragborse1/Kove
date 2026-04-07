@@ -9,7 +9,7 @@ title: "browser"
 
 # `openclaw browser`
 
-Manage OpenClaw’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
+Manage Kova’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
 
 Related:
 
@@ -35,7 +35,7 @@ openclaw browser --browser-profile openclaw snapshot
 ## If the command is missing
 
 If `openclaw browser` is an unknown command, check `plugins.allow` in
-`~/.openclaw/openclaw.json`.
+`~/.kova/openclaw.json`.
 
 When `plugins.allow` is present, the bundled browser plugin must be listed
 explicitly:
@@ -57,7 +57,7 @@ Related: [Browser tool](/tools/browser#missing-browser-command-or-tool)
 
 Profiles are named browser routing configs. In practice:
 
-- `openclaw`: launches or attaches to a dedicated OpenClaw-managed Chrome instance (isolated user data dir).
+- `openclaw`: launches or attaches to a dedicated Kova-managed Chrome instance (isolated user data dir).
 - `user`: controls your existing signed-in Chrome session via Chrome DevTools MCP.
 - custom CDP profiles: point at a local or remote CDP endpoint.
 
@@ -78,7 +78,7 @@ openclaw browser --browser-profile work tabs
 
 ```bash
 openclaw browser tabs
-openclaw browser open https://docs.openclaw.ai
+openclaw browser open https://docs.kova.ai
 openclaw browser focus <targetId>
 openclaw browser close <targetId>
 ```

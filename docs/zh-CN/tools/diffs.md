@@ -187,7 +187,7 @@ x-i18n:
 
 ## 插件默认值
 
-在 `~/.openclaw/openclaw.json` 中设置插件全局默认值：
+在 `~/.kova/openclaw.json` 中设置插件全局默认值：
 
 ```json5
 {
@@ -326,7 +326,7 @@ URL 构建行为：
 
 解析顺序：
 
-1. OpenClaw 配置中的 `browser.executablePath`。
+1. Kova 配置中的 `browser.executablePath`。
 2. 环境变量：
    - `OPENCLAW_BROWSER_EXECUTABLE_PATH`
    - `BROWSER_EXECUTABLE_PATH`

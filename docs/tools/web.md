@@ -14,7 +14,7 @@ read_when:
 The `web_search` tool searches the web using your configured provider and
 returns results. Results are cached by query for 15 minutes (configurable).
 
-OpenClaw also includes `x_search` for X (formerly Twitter) posts and
+Kova also includes `x_search` for X (formerly Twitter) posts and
 `web_fetch` for lightweight URL fetching. In this phase, `web_fetch` stays
 local while `web_search` and `x_search` can use xAI Responses under the hood.
 
@@ -42,7 +42,7 @@ local while `web_search` and `x_search` can use xAI Responses under the hood.
     The agent can now call `web_search`:
 
     ```javascript
-    await web_search({ query: "OpenClaw plugin SDK" });
+    await web_search({ query: "Kova plugin SDK" });
     ```
 
     For X posts, use:
@@ -108,7 +108,7 @@ local while `web_search` and `x_search` can use xAI Responses under the hood.
 
 ## Native Codex web search
 
-Codex-capable models can optionally use the provider-native Responses `web_search` tool instead of OpenClaw's managed `web_search` function.
+Codex-capable models can optionally use the provider-native Responses `web_search` tool instead of Kova's managed `web_search` function.
 
 - Configure it under `tools.web.search.openaiCodex`
 - It only activates for Codex-capable models (`openai-codex/*` or providers using `api: "openai-codex-responses"`)
@@ -139,14 +139,14 @@ Codex-capable models can optionally use the provider-native Responses `web_searc
 }
 ```
 
-If native Codex search is enabled but the current model is not Codex-capable, OpenClaw keeps the normal managed `web_search` behavior.
+If native Codex search is enabled but the current model is not Codex-capable, Kova keeps the normal managed `web_search` behavior.
 
 ## Setting up web search
 
 Provider lists in docs and setup flows are alphabetical. Auto-detection keeps a
 separate precedence order:
 
-If no `provider` is set, OpenClaw checks for API keys in this order and uses
+If no `provider` is set, Kova checks for API keys in this order and uses
 the first one found:
 
 1. **Brave** -- `BRAVE_API_KEY` or `plugins.entries.brave.config.webSearch.apiKey`
@@ -167,7 +167,7 @@ error prompting you to configure one).
 
 <Note>
   All provider key fields support SecretRef objects. In auto-detect mode,
-  OpenClaw resolves only the selected provider key -- non-selected SecretRefs
+  Kova resolves only the selected provider key -- non-selected SecretRefs
   stay inactive.
 </Note>
 
@@ -196,9 +196,9 @@ examples.
 For `x_search`, configure `tools.web.x_search.*` directly. It uses the same
 `XAI_API_KEY` fallback as Grok web search.
 When you choose Grok during `openclaw onboard` or `openclaw configure --section web`,
-OpenClaw can also offer optional `x_search` setup with the same key.
+Kova can also offer optional `x_search` setup with the same key.
 This is a separate follow-up step inside the Grok path, not a separate top-level
-web-search provider choice. If you pick another provider, OpenClaw does not
+web-search provider choice. If you pick another provider, Kova does not
 show the `x_search` prompt.
 
 ### Storing API keys
@@ -231,7 +231,7 @@ show the `x_search` prompt.
     export BRAVE_API_KEY="YOUR_KEY"
     ```
 
-    For a gateway install, put it in `~/.openclaw/.env`.
+    For a gateway install, put it in `~/.kova/.env`.
     See [Env vars](/help/faq#env-vars-and-env-loading).
 
   </Tab>
@@ -264,7 +264,7 @@ show the `x_search` prompt.
 
 `x_search` queries X (formerly Twitter) posts using xAI and returns
 AI-synthesized answers with citations. It accepts natural-language queries and
-optional structured filters. OpenClaw only enables the built-in xAI `x_search`
+optional structured filters. Kova only enables the built-in xAI `x_search`
 tool on the request that serves this tool call.
 
 <Note>
@@ -329,7 +329,7 @@ await x_search({
 
 ```javascript
 // Basic search
-await web_search({ query: "OpenClaw plugin SDK" });
+await web_search({ query: "Kova plugin SDK" });
 
 // German-specific search
 await web_search({ query: "TV online schauen", country: "DE", language: "de" });

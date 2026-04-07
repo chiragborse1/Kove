@@ -9,10 +9,6 @@
     "silk-wasm": "^3.7.1",
     "ws": "^8.20.0"
   },
-  "devDependencies": {
-    "@types/ws": "^8.18.1",
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },

@@ -78,7 +78,7 @@ After the first successful load, the running process serves the active in-memory
 
 ## OpenAI-compatible endpoints
 
-OpenClaw’s highest-leverage compatibility surface is now:
+Kova’s highest-leverage compatibility surface is now:
 
 - `GET /v1/models`
 - `GET /v1/models/{id}`
@@ -208,8 +208,8 @@ Checklist per instance:
 Example:
 
 ```bash
-OPENCLAW_CONFIG_PATH=~/.openclaw/a.json OPENCLAW_STATE_DIR=~/.openclaw-a openclaw gateway --port 19001
-OPENCLAW_CONFIG_PATH=~/.openclaw/b.json OPENCLAW_STATE_DIR=~/.openclaw-b openclaw gateway --port 19002
+OPENCLAW_CONFIG_PATH=~/.kova/a.json OPENCLAW_STATE_DIR=~/.openclaw-a openclaw gateway --port 19001
+OPENCLAW_CONFIG_PATH=~/.kova/b.json OPENCLAW_STATE_DIR=~/.openclaw-b openclaw gateway --port 19002
 ```
 
 See: [Multiple gateways](/gateway/multiple-gateways).

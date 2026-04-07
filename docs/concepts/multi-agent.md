@@ -15,12 +15,12 @@ An **agent** is a fully scoped brain with its own:
 
 - **Workspace** (files, AGENTS.md/SOUL.md/USER.md, local notes, persona rules).
 - **State directory** (`agentDir`) for auth profiles, model registry, and per-agent config.
-- **Session store** (chat history + routing state) under `~/.openclaw/agents/<agentId>/sessions`.
+- **Session store** (chat history + routing state) under `~/.kova/agents/<agentId>/sessions`.
 
 Auth profiles are **per-agent**. Each agent reads from its own:
 
 ```text
-~/.openclaw/agents/<agentId>/agent/auth-profiles.json
+~/.kova/agents/<agentId>/agent/auth-profiles.json
 ```
 
 Main agent credentials are **not** shared automatically. Never reuse `agentDir`
@@ -28,7 +28,7 @@ across agents (it causes auth/session collisions). If you want to share creds,
 copy `auth-profiles.json` into the other agent's `agentDir`.
 
 Skills are per-agent via each workspace’s `skills/` folder, with shared skills
-available from `~/.openclaw/skills`. See [Skills: per-agent vs shared](/tools/skills#per-agent-vs-shared-skills).
+available from `~/.kova/skills`. See [Skills: per-agent vs shared](/tools/skills#per-agent-vs-shared-skills).
 
 The Gateway can host **one agent** (default) or **many agents** side-by-side.
 
@@ -39,20 +39,20 @@ reach other host locations unless sandboxing is enabled. See
 
 ## Paths (quick map)
 
-- Config: `~/.openclaw/openclaw.json` (or `OPENCLAW_CONFIG_PATH`)
+- Config: `~/.kova/openclaw.json` (or `OPENCLAW_CONFIG_PATH`)
 - State dir: `~/.openclaw` (or `OPENCLAW_STATE_DIR`)
-- Workspace: `~/.openclaw/workspace` (or `~/.openclaw/workspace-<agentId>`)
-- Agent dir: `~/.openclaw/agents/<agentId>/agent` (or `agents.list[].agentDir`)
-- Sessions: `~/.openclaw/agents/<agentId>/sessions`
+- Workspace: `~/.kova/workspace` (or `~/.kova/workspace-<agentId>`)
+- Agent dir: `~/.kova/agents/<agentId>/agent` (or `agents.list[].agentDir`)
+- Sessions: `~/.kova/agents/<agentId>/sessions`
 
 ### Single-agent mode (default)
 
-If you do nothing, OpenClaw runs a single agent:
+If you do nothing, Kova runs a single agent:
 
 - `agentId` defaults to **`main`**.
 - Sessions are keyed as `agent:main:<mainKey>`.
-- Workspace defaults to `~/.openclaw/workspace` (or `~/.openclaw/workspace-<profile>` when `OPENCLAW_PROFILE` is set).
-- State defaults to `~/.openclaw/agents/main/agent`.
+- Workspace defaults to `~/.kova/workspace` (or `~/.kova/workspace-<profile>` when `OPENCLAW_PROFILE` is set).
+- State defaults to `~/.kova/agents/main/agent`.
 
 ## Agent helper
 
@@ -82,7 +82,7 @@ openclaw agents add coding
 openclaw agents add social
 ```
 
-Each agent gets its own workspace with `SOUL.md`, `AGENTS.md`, and optional `USER.md`, plus a dedicated `agentDir` and session store under `~/.openclaw/agents/<agentId>`.
+Each agent gets its own workspace with `SOUL.md`, `AGENTS.md`, and optional `USER.md`, plus a dedicated `agentDir` and session store under `~/.kova/agents/<agentId>`.
 
   </Step>
 
@@ -183,8 +183,8 @@ Example:
 {
   agents: {
     list: [
-      { id: "alex", workspace: "~/.openclaw/workspace-alex" },
-      { id: "mia", workspace: "~/.openclaw/workspace-mia" },
+      { id: "alex", workspace: "~/.kova/workspace-alex" },
+      { id: "mia", workspace: "~/.kova/workspace-mia" },
     ],
   },
   bindings: [
@@ -231,7 +231,7 @@ Important account-scope detail:
 
 - A binding that omits `accountId` matches the default account only.
 - Use `accountId: "*"` for a channel-wide fallback across all accounts.
-- If you later add the same binding for the same agent with an explicit account id, OpenClaw upgrades the existing channel-only binding to account-scoped instead of duplicating it.
+- If you later add the same binding for the same agent with an explicit account id, Kova upgrades the existing channel-only binding to account-scoped instead of duplicating it.
 
 ## Multiple accounts / phone numbers
 
@@ -240,7 +240,7 @@ each login. Each `accountId` can be routed to a different agent, so one server c
 multiple phone numbers without mixing sessions.
 
 If you want a channel-wide default account when `accountId` is omitted, set
-`channels.<channel>.defaultAccount` (optional). When unset, OpenClaw falls back
+`channels.<channel>.defaultAccount` (optional). When unset, Kova falls back
 to `default` if present, otherwise the first configured account id (sorted).
 
 Common channels supporting this pattern include:
@@ -266,8 +266,8 @@ Each Discord bot account maps to a unique `accountId`. Bind each account to an a
 {
   agents: {
     list: [
-      { id: "main", workspace: "~/.openclaw/workspace-main" },
-      { id: "coding", workspace: "~/.openclaw/workspace-coding" },
+      { id: "main", workspace: "~/.kova/workspace-main" },
+      { id: "coding", workspace: "~/.kova/workspace-coding" },
     ],
   },
   bindings: [
@@ -315,8 +315,8 @@ Notes:
 {
   agents: {
     list: [
-      { id: "main", workspace: "~/.openclaw/workspace-main" },
-      { id: "alerts", workspace: "~/.openclaw/workspace-alerts" },
+      { id: "main", workspace: "~/.kova/workspace-main" },
+      { id: "alerts", workspace: "~/.kova/workspace-alerts" },
     ],
   },
   bindings: [
@@ -355,7 +355,7 @@ openclaw channels login --channel whatsapp --account personal
 openclaw channels login --channel whatsapp --account biz
 ```
 
-`~/.openclaw/openclaw.json` (JSON5):
+`~/.kova/openclaw.json` (JSON5):
 
 ```js
 {
@@ -365,14 +365,14 @@ openclaw channels login --channel whatsapp --account biz
         id: "home",
         default: true,
         name: "Home",
-        workspace: "~/.openclaw/workspace-home",
-        agentDir: "~/.openclaw/agents/home/agent",
+        workspace: "~/.kova/workspace-home",
+        agentDir: "~/.kova/agents/home/agent",
       },
       {
         id: "work",
         name: "Work",
-        workspace: "~/.openclaw/workspace-work",
-        agentDir: "~/.openclaw/agents/work/agent",
+        workspace: "~/.kova/workspace-work",
+        agentDir: "~/.kova/agents/work/agent",
       },
     ],
   },
@@ -405,12 +405,12 @@ openclaw channels login --channel whatsapp --account biz
     whatsapp: {
       accounts: {
         personal: {
-          // Optional override. Default: ~/.openclaw/credentials/whatsapp/personal
-          // authDir: "~/.openclaw/credentials/whatsapp/personal",
+          // Optional override. Default: ~/.kova/credentials/whatsapp/personal
+          // authDir: "~/.kova/credentials/whatsapp/personal",
         },
         biz: {
-          // Optional override. Default: ~/.openclaw/credentials/whatsapp/biz
-          // authDir: "~/.openclaw/credentials/whatsapp/biz",
+          // Optional override. Default: ~/.kova/credentials/whatsapp/biz
+          // authDir: "~/.kova/credentials/whatsapp/biz",
         },
       },
     },
@@ -429,13 +429,13 @@ Split by channel: route WhatsApp to a fast everyday agent and Telegram to an Opu
       {
         id: "chat",
         name: "Everyday",
-        workspace: "~/.openclaw/workspace-chat",
+        workspace: "~/.kova/workspace-chat",
         model: "anthropic/claude-sonnet-4-6",
       },
       {
         id: "opus",
         name: "Deep Work",
-        workspace: "~/.openclaw/workspace-opus",
+        workspace: "~/.kova/workspace-opus",
         model: "anthropic/claude-opus-4-6",
       },
     ],
@@ -463,13 +463,13 @@ Keep WhatsApp on the fast agent, but route one DM to Opus:
       {
         id: "chat",
         name: "Everyday",
-        workspace: "~/.openclaw/workspace-chat",
+        workspace: "~/.kova/workspace-chat",
         model: "anthropic/claude-sonnet-4-6",
       },
       {
         id: "opus",
         name: "Deep Work",
-        workspace: "~/.openclaw/workspace-opus",
+        workspace: "~/.kova/workspace-opus",
         model: "anthropic/claude-opus-4-6",
       },
     ],
@@ -498,7 +498,7 @@ and a tighter tool policy:
       {
         id: "family",
         name: "Family",
-        workspace: "~/.openclaw/workspace-family",
+        workspace: "~/.kova/workspace-family",
         identity: { name: "Family Bot" },
         groupChat: {
           mentionPatterns: ["@family", "@familybot", "@Family Bot"],
@@ -551,7 +551,7 @@ Each agent can have its own sandbox and tool restrictions:
     list: [
       {
         id: "personal",
-        workspace: "~/.openclaw/workspace-personal",
+        workspace: "~/.kova/workspace-personal",
         sandbox: {
           mode: "off",  // No sandbox for personal agent
         },
@@ -559,7 +559,7 @@ Each agent can have its own sandbox and tool restrictions:
       },
       {
         id: "family",
-        workspace: "~/.openclaw/workspace-family",
+        workspace: "~/.kova/workspace-family",
         sandbox: {
           mode: "all",     // Always sandboxed
           scope: "agent",  // One container per agent

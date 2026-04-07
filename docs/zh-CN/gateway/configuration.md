@@ -1,6 +1,6 @@
 ---
 read_when:
-  - 首次设置 OpenClaw
+  - 首次设置 Kova
   - 查找常见配置模式
   - 导航到特定配置部分
 summary: 配置概览：常见任务、快速设置，以及完整参考的链接
@@ -16,9 +16,9 @@ x-i18n:
 
 # 配置
 
-OpenClaw 会从 `~/.openclaw/openclaw.json` 读取可选的 <Tooltip tip="JSON5 supports comments and trailing commas">**JSON5**</Tooltip> 配置。
+Kova 会从 `~/.kova/openclaw.json` 读取可选的 <Tooltip tip="JSON5 supports comments and trailing commas">**JSON5**</Tooltip> 配置。
 
-如果该文件缺失，OpenClaw 会使用安全的默认值。添加配置的常见原因包括：
+如果该文件缺失，Kova 会使用安全的默认值。添加配置的常见原因包括：
 
 - 连接渠道并控制谁可以向 bot 发消息
 - 设置模型、工具、沙箱隔离或自动化（cron、hooks）
@@ -33,9 +33,9 @@ OpenClaw 会从 `~/.openclaw/openclaw.json` 读取可选的 <Tooltip tip="JSON5 
 ## 最小配置
 
 ```json5
-// ~/.openclaw/openclaw.json
+// ~/.kova/openclaw.json
 {
-  agents: { defaults: { workspace: "~/.openclaw/workspace" } },
+  agents: { defaults: { workspace: "~/.kova/workspace" } },
   channels: { whatsapp: { allowFrom: ["+15555550123"] } },
 }
 ```
@@ -61,14 +61,14 @@ OpenClaw 会从 `~/.openclaw/openclaw.json` 读取可选的 <Tooltip tip="JSON5 
     Control UI 会根据配置 schema 渲染表单，并提供 **Raw JSON** 编辑器作为后备方式。
   </Tab>
   <Tab title="Direct edit">
-    直接编辑 `~/.openclaw/openclaw.json`。Gateway 网关会监视该文件并自动应用更改（参见[热重载](#config-hot-reload)）。
+    直接编辑 `~/.kova/openclaw.json`。Gateway 网关会监视该文件并自动应用更改（参见[热重载](#config-hot-reload)）。
   </Tab>
 </Tabs>
 
 ## 严格校验
 
 <Warning>
-OpenClaw 只接受完全符合 schema 的配置。未知键、类型格式错误或无效值都会导致 Gateway 网关**拒绝启动**。唯一的根级例外是 `$schema`（字符串），这样编辑器就可以附加 JSON Schema 元数据。
+Kova 只接受完全符合 schema 的配置。未知键、类型格式错误或无效值都会导致 Gateway 网关**拒绝启动**。唯一的根级例外是 `$schema`（字符串），这样编辑器就可以附加 JSON Schema 元数据。
 </Warning>
 
 当校验失败时：
@@ -401,8 +401,8 @@ OpenClaw 只接受完全符合 schema 的配置。未知键、类型格式错误
     {
       agents: {
         list: [
-          { id: "home", default: true, workspace: "~/.openclaw/workspace-home" },
-          { id: "work", workspace: "~/.openclaw/workspace-work" },
+          { id: "home", default: true, workspace: "~/.kova/workspace-home" },
+          { id: "work", workspace: "~/.kova/workspace-work" },
         ],
       },
       bindings: [
@@ -420,7 +420,7 @@ OpenClaw 只接受完全符合 schema 的配置。未知键、类型格式错误
     使用 `$include` 组织大型配置：
 
     ```json5
-    // ~/.openclaw/openclaw.json
+    // ~/.kova/openclaw.json
     {
       gateway: { port: 18789 },
       agents: { $include: "./agents.json5" },
@@ -442,7 +442,7 @@ OpenClaw 只接受完全符合 schema 的配置。未知键、类型格式错误
 
 ## 配置热重载
 
-Gateway 网关会监视 `~/.openclaw/openclaw.json` 并自动应用更改 —— 对于大多数设置，无需手动重启。
+Gateway 网关会监视 `~/.kova/openclaw.json` 并自动应用更改 —— 对于大多数设置，无需手动重启。
 
 ### 重载模式
 
@@ -507,7 +507,7 @@ Gateway 网关会监视 `~/.openclaw/openclaw.json` 并自动应用更改 ——
     ```bash
     openclaw gateway call config.get --params '{}'  # 捕获 payload.hash
     openclaw gateway call config.apply --params '{
-      "raw": "{ agents: { defaults: { workspace: \"~/.openclaw/workspace\" } } }",
+      "raw": "{ agents: { defaults: { workspace: \"~/.kova/workspace\" } } }",
       "baseHash": "<hash>",
       "sessionKey": "agent:main:whatsapp:direct:+15555550123"
     }'
@@ -542,10 +542,10 @@ Gateway 网关会监视 `~/.openclaw/openclaw.json` 并自动应用更改 ——
 
 ## 环境变量
 
-OpenClaw 会从父进程读取环境变量，另外还会读取：
+Kova 会从父进程读取环境变量，另外还会读取：
 
 - 当前工作目录中的 `.env`（如果存在）
-- `~/.openclaw/.env`（全局回退）
+- `~/.kova/.env`（全局回退）
 
 这两个文件都不会覆盖现有环境变量。你也可以在配置中设置内联环境变量：
 
@@ -559,7 +559,7 @@ OpenClaw 会从父进程读取环境变量，另外还会读取：
 ```
 
 <Accordion title="Shell 环境变量导入（可选）">
-  如果启用，并且预期键名尚未设置，OpenClaw 会运行你的登录 shell，并且只导入缺失的键：
+  如果启用，并且预期键名尚未设置，Kova 会运行你的登录 shell，并且只导入缺失的键：
 
 ```json5
 {

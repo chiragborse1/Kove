@@ -1,5 +1,5 @@
 ---
-summary: "Frequently asked questions about OpenClaw setup, configuration, and usage"
+summary: "Frequently asked questions about Kova setup, configuration, and usage"
 read_when:
   - Answering common setup, install, onboarding, or runtime support questions
   - Triaging user-reported issues before deeper debugging
@@ -91,10 +91,10 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     the hackable (git) install:
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL https://kova.ai/install.sh | bash -s -- --install-method git
     ```
 
-    This installs OpenClaw **from a git checkout**, so the agent can read the code + docs and
+    This installs Kova **from a git checkout**, so the agent can read the code + docs and
     reason about the exact version you are running. You can always switch back to stable later
     by re-running the installer without `--install-method git`.
 
@@ -127,11 +127,11 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
 
   </Accordion>
 
-  <Accordion title="Recommended way to install and set up OpenClaw">
+  <Accordion title="Recommended way to install and set up Kova">
     The repo recommends running from source and using onboarding:
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash
+    curl -fsSL https://kova.ai/install.sh | bash
     openclaw onboard --install-daemon
     ```
 
@@ -148,7 +148,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     openclaw onboard
     ```
 
-    If you don't have a global install yet, run it via `pnpm openclaw onboard`.
+    If you don't have a global install yet, run it via `pnpm kova onboard`.
 
   </Accordion>
 
@@ -236,9 +236,9 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     keeps your bot "exactly the same" (memory, session history, auth, and channel
     state) as long as you copy **both** locations:
 
-    1. Install OpenClaw on the new machine.
+    1. Install Kova on the new machine.
     2. Copy `$OPENCLAW_STATE_DIR` (default: `~/.openclaw`) from the old machine.
-    3. Copy your workspace (default: `~/.openclaw/workspace`).
+    3. Copy your workspace (default: `~/.kova/workspace`).
     4. Run `openclaw doctor` and restart the Gateway service.
 
     That preserves config, auth profiles, WhatsApp creds, sessions, and memory. If you're in
@@ -246,7 +246,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
 
     **Important:** if you only commit/push your workspace to GitHub, you're backing
     up **memory + bootstrap files**, but **not** session history or auth. Those live
-    under `~/.openclaw/` (for example `~/.openclaw/agents/<agentId>/sessions/`).
+    under `~/.kova/` (for example `~/.kova/agents/<agentId>/sessions/`).
 
     Related: [Migrating](/install/migrating), [Where things live on disk](#where-things-live-on-disk),
     [Agent workspace](/concepts/agent-workspace), [Doctor](/gateway/doctor),
@@ -264,9 +264,9 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
 
   </Accordion>
 
-  <Accordion title="Cannot access docs.openclaw.ai (SSL error)">
-    Some Comcast/Xfinity connections incorrectly block `docs.openclaw.ai` via Xfinity
-    Advanced Security. Disable it or allowlist `docs.openclaw.ai`, then retry.
+  <Accordion title="Cannot access docs.kova.ai (SSL error)">
+    Some Comcast/Xfinity connections incorrectly block `docs.kova.ai` via Xfinity
+    Advanced Security. Disable it or allowlist `docs.kova.ai`, then retry.
     Please help us unblock it by reporting here: [https://spa.xfinity.com/check_url_status](https://spa.xfinity.com/check_url_status).
 
     If you still can't reach the site, the docs are mirrored on GitHub:
@@ -298,15 +298,15 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     One-liners (macOS/Linux):
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --beta
+    curl -fsSL --proto '=https' --tlsv1.2 https://kova.ai/install.sh | bash -s -- --beta
     ```
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL --proto '=https' --tlsv1.2 https://kova.ai/install.sh | bash -s -- --install-method git
     ```
 
     Windows installer (PowerShell):
-    [https://openclaw.ai/install.ps1](https://openclaw.ai/install.ps1)
+    [https://kova.ai/install.ps1](https://kova.ai/install.ps1)
 
     More detail: [Development channels](/install/development-channels) and [Installer flags](/install/installer).
 
@@ -326,7 +326,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     2. **Hackable install (from the installer site):**
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL https://kova.ai/install.sh | bash -s -- --install-method git
     ```
 
     That gives you a local repo you can edit, then update via git.
@@ -360,19 +360,19 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     Re-run the installer with **verbose output**:
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --verbose
+    curl -fsSL https://kova.ai/install.sh | bash -s -- --verbose
     ```
 
     Beta install with verbose:
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --beta --verbose
+    curl -fsSL https://kova.ai/install.sh | bash -s -- --beta --verbose
     ```
 
     For a hackable (git) install:
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git --verbose
+    curl -fsSL https://kova.ai/install.sh | bash -s -- --install-method git --verbose
     ```
 
     Windows (PowerShell) equivalent:
@@ -380,7 +380,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     ```powershell
     # install.ps1 has no dedicated -Verbose flag yet.
     Set-PSDebug -Trace 1
-    & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -NoOnboard
+    & ([scriptblock]::Create((iwr -useb https://kova.ai/install.ps1))) -NoOnboard
     Set-PSDebug -Trace 0
     ```
 
@@ -436,7 +436,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     openclaw gateway restart
     ```
 
-    If you still reproduce this on latest OpenClaw, track/report it in:
+    If you still reproduce this on latest Kova, track/report it in:
 
     - [Issue #30640](https://github.com/openclaw/openclaw/issues/30640)
 
@@ -447,14 +447,14 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
     your bot (or Claude/Codex) _from that folder_ so it can read the repo and answer precisely.
 
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL https://kova.ai/install.sh | bash -s -- --install-method git
     ```
 
     More detail: [Install](/install) and [Installer flags](/install/installer).
 
   </Accordion>
 
-  <Accordion title="How do I install OpenClaw on Linux?">
+  <Accordion title="How do I install Kova on Linux?">
     Short answer: follow the Linux guide, then run onboarding.
 
     - Linux quick path + service install: [Linux](/platforms/linux).
@@ -463,7 +463,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
 
   </Accordion>
 
-  <Accordion title="How do I install OpenClaw on a VPS?">
+  <Accordion title="How do I install Kova on a VPS?">
     Any Linux VPS works. Install on the server, then use SSH/Tailscale to reach the Gateway.
 
     Guides: [exe.dev](/install/exe-dev), [Hetzner](/install/hetzner), [Fly.io](/install/fly).
@@ -492,7 +492,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
 
   </Accordion>
 
-  <Accordion title="Can I ask OpenClaw to update itself?">
+  <Accordion title="Can I ask Kova to update itself?">
     Short answer: **possible, not recommended**. The update flow can restart the
     Gateway (which drops the active session), may need a clean git checkout, and
     can prompt for confirmation. Safer: run updates from a shell as the operator.
@@ -533,13 +533,13 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
   </Accordion>
 
   <Accordion title="Do I need a Claude or OpenAI subscription to run this?">
-    No. You can run OpenClaw with **API keys** (Anthropic/OpenAI/others) or with
+    No. You can run Kova with **API keys** (Anthropic/OpenAI/others) or with
     **local-only models** so your data stays on your device. Subscriptions (Claude
     Pro/Max or OpenAI Codex) are optional ways to authenticate those providers.
 
     If you choose Anthropic subscription auth, decide for yourself whether to use it:
     Anthropic has blocked some subscription usage outside Claude Code in the past.
-    OpenAI Codex OAuth is explicitly supported for external tools like OpenClaw.
+    OpenAI Codex OAuth is explicitly supported for external tools like Kova.
 
     Docs: [Anthropic](/providers/anthropic), [OpenAI](/providers/openai),
     [Local models](/gateway/local-models), [Models](/concepts/models).
@@ -600,7 +600,7 @@ for usage/billing and raise limits as needed.
     credential is eligible for long-context billing (API key billing or subscription
     with Extra Usage enabled).
 
-    Tip: set a **fallback model** so OpenClaw can keep replying while a provider is rate-limited.
+    Tip: set a **fallback model** so Kova can keep replying while a provider is rate-limited.
     See [Models](/cli/models), [OAuth](/concepts/oauth), and
     [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context).
 
@@ -611,13 +611,13 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="How does Codex auth work?">
-    OpenClaw supports **OpenAI Code (Codex)** via OAuth (ChatGPT sign-in). Onboarding can run the OAuth flow and will set the default model to `openai-codex/gpt-5.4` when appropriate. See [Model providers](/concepts/model-providers) and [Onboarding (CLI)](/start/wizard).
+    Kova supports **OpenAI Code (Codex)** via OAuth (ChatGPT sign-in). Onboarding can run the OAuth flow and will set the default model to `openai-codex/gpt-5.4` when appropriate. See [Model providers](/concepts/model-providers) and [Onboarding (CLI)](/start/wizard).
   </Accordion>
 
   <Accordion title="Do you support OpenAI subscription auth (Codex OAuth)?">
-    Yes. OpenClaw fully supports **OpenAI Code (Codex) subscription OAuth**.
+    Yes. Kova fully supports **OpenAI Code (Codex) subscription OAuth**.
     OpenAI explicitly allows subscription OAuth usage in external tools/workflows
-    like OpenClaw. Onboarding can run the OAuth flow for you.
+    like Kova. Onboarding can run the OAuth flow for you.
 
     See [OAuth](/concepts/oauth), [Model providers](/concepts/model-providers), and [Onboarding (CLI)](/start/wizard).
 
@@ -636,7 +636,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="Is a local model OK for casual chats?">
-    Usually no. OpenClaw needs large context + strong safety; small cards truncate and leak. If you must, run the **largest** model build you can locally (LM Studio) and see [/gateway/local-models](/gateway/local-models). Smaller/quantized models increase prompt-injection risk - see [Security](/gateway/security).
+    Usually no. Kova needs large context + strong safety; small cards truncate and leak. If you must, run the **largest** model build you can locally (LM Studio) and see [/gateway/local-models](/gateway/local-models). Smaller/quantized models increase prompt-injection risk - see [Security](/gateway/security).
   </Accordion>
 
   <Accordion title="How do I keep hosted model traffic in a specific region?">
@@ -644,7 +644,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="Do I have to buy a Mac Mini to install this?">
-    No. OpenClaw runs on macOS or Linux (Windows via WSL2). A Mac mini is optional - some people
+    No. Kova runs on macOS or Linux (Windows via WSL2). A Mac mini is optional - some people
     buy one as an always-on host, but a small VPS, home server, or Raspberry Pi-class box works too.
 
     You only need a Mac **for macOS-only tools**. For iMessage, use [BlueBubbles](/channels/bluebubbles) (recommended) - the BlueBubbles server runs on any Mac, and the Gateway can run on Linux or elsewhere. If you want other macOS-only tools, run the Gateway on a Mac or pair a macOS node.
@@ -667,7 +667,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="If I buy a Mac mini to run OpenClaw, can I connect it to my MacBook Pro?">
+  <Accordion title="If I buy a Mac mini to run Kova, can I connect it to my MacBook Pro?">
     Yes. The **Mac mini can run the Gateway**, and your MacBook Pro can connect as a
     **node** (companion device). Nodes don't run the Gateway - they provide extra
     capabilities like screen/camera/canvas and `system.run` on that device.
@@ -694,7 +694,7 @@ for usage/billing and raise limits as needed.
   <Accordion title="Telegram: what goes in allowFrom?">
     `channels.telegram.allowFrom` is **the human sender's Telegram user ID** (numeric). It is not the bot username.
 
-    Onboarding accepts `@username` input and resolves it to a numeric ID, but OpenClaw authorization uses numeric IDs only.
+    Onboarding accepts `@username` input and resolves it to a numeric ID, but Kova authorization uses numeric IDs only.
 
     Safer (no third-party bot):
 
@@ -712,7 +712,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Can multiple people use one WhatsApp number with different OpenClaw instances?">
+  <Accordion title="Can multiple people use one WhatsApp number with different Kova instances?">
     Yes, via **multi-agent routing**. Bind each sender's WhatsApp **DM** (peer `kind: "direct"`, sender E.164 like `+15551234567`) to a different `agentId`, so each person gets their own workspace and session store. Replies still come from the **same WhatsApp account**, and DM access control (`channels.whatsapp.dmPolicy` / `channels.whatsapp.allowFrom`) is global per WhatsApp account. See [Multi-Agent Routing](/concepts/multi-agent) and [WhatsApp](/channels/whatsapp).
   </Accordion>
 
@@ -730,7 +730,7 @@ for usage/billing and raise limits as needed.
     brew install <formula>
     ```
 
-    If you run OpenClaw via systemd, ensure the service PATH includes `/home/linuxbrew/.linuxbrew/bin` (or your brew prefix) so `brew`-installed tools resolve in non-login shells.
+    If you run Kova via systemd, ensure the service PATH includes `/home/linuxbrew/.linuxbrew/bin` (or your brew prefix) so `brew`-installed tools resolve in non-login shells.
     Recent builds also prepend common user bin dirs on Linux systemd services (for example `~/.local/bin`, `~/.npm-global/bin`, `~/.local/share/pnpm`, `~/.bun/bin`) and honor `PNPM_HOME`, `NPM_CONFIG_PREFIX`, `BUN_INSTALL`, `VOLTA_HOME`, `ASDF_DATA_DIR`, `NVM_DIR`, and `FNM_DIR` when set.
 
   </Accordion>
@@ -747,8 +747,8 @@ for usage/billing and raise limits as needed.
 
   <Accordion title="Can I switch between npm and git installs later?">
     Yes. Install the other flavor, then run Doctor so the gateway service points at the new entrypoint.
-    This **does not delete your data** - it only changes the OpenClaw code install. Your state
-    (`~/.openclaw`) and workspace (`~/.openclaw/workspace`) stay untouched.
+    This **does not delete your data** - it only changes the Kova code install. Your state
+    (`~/.openclaw`) and workspace (`~/.kova/workspace`) stay untouched.
 
     From npm to git:
 
@@ -789,13 +789,13 @@ for usage/billing and raise limits as needed.
     - **Pros:** always-on, stable network, no laptop sleep issues, easier to keep running.
     - **Cons:** often run headless (use screenshots), remote file access only, you must SSH for updates.
 
-    **OpenClaw-specific note:** WhatsApp/Telegram/Slack/Mattermost (plugin)/Discord all work fine from a VPS. The only real trade-off is **headless browser** vs a visible window. See [Browser](/tools/browser).
+    **Kova-specific note:** WhatsApp/Telegram/Slack/Mattermost (plugin)/Discord all work fine from a VPS. The only real trade-off is **headless browser** vs a visible window. See [Browser](/tools/browser).
 
     **Recommended default:** VPS if you had gateway disconnects before. Local is great when you're actively using the Mac and want local file access or UI automation with a visible browser.
 
   </Accordion>
 
-  <Accordion title="How important is it to run OpenClaw on a dedicated machine?">
+  <Accordion title="How important is it to run Kova on a dedicated machine?">
     Not required, but **recommended for reliability and isolation**.
 
     - **Dedicated host (VPS/Mac mini/Pi):** always-on, fewer sleep/reboot interruptions, cleaner permissions, easier to keep running.
@@ -807,7 +807,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="What are the minimum VPS requirements and recommended OS?">
-    OpenClaw is lightweight. For a basic Gateway + one chat channel:
+    Kova is lightweight. For a basic Gateway + one chat channel:
 
     - **Absolute minimum:** 1 vCPU, 1GB RAM, ~500MB disk.
     - **Recommended:** 1-2 vCPU, 2GB RAM or more for headroom (logs, media, multiple channels). Node tools and browser automation can be resource hungry.
@@ -818,7 +818,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Can I run OpenClaw in a VM and what are the requirements?">
+  <Accordion title="Can I run Kova in a VM and what are the requirements?">
     Yes. Treat a VM the same as a VPS: it needs to be always on, reachable, and have enough
     RAM for the Gateway and any channels you enable.
 
@@ -835,15 +835,15 @@ for usage/billing and raise limits as needed.
   </Accordion>
 </AccordionGroup>
 
-## What is OpenClaw?
+## What is Kova?
 
 <AccordionGroup>
-  <Accordion title="What is OpenClaw, in one paragraph?">
-    OpenClaw is a personal AI assistant you run on your own devices. It replies on the messaging surfaces you already use (WhatsApp, Telegram, Slack, Mattermost (plugin), Discord, Google Chat, Signal, iMessage, WebChat) and can also do voice + a live Canvas on supported platforms. The **Gateway** is the always-on control plane; the assistant is the product.
+  <Accordion title="What is Kova, in one paragraph?">
+    Kova is a personal AI assistant you run on your own devices. It replies on the messaging surfaces you already use (WhatsApp, Telegram, Slack, Mattermost (plugin), Discord, Google Chat, Signal, iMessage, WebChat) and can also do voice + a live Canvas on supported platforms. The **Gateway** is the always-on control plane; the assistant is the product.
   </Accordion>
 
   <Accordion title="Value proposition">
-    OpenClaw is not "just a Claude wrapper." It's a **local-first control plane** that lets you run a
+    Kova is not "just a Claude wrapper." It's a **local-first control plane** that lets you run a
     capable assistant on **your own hardware**, reachable from the chat apps you already use, with
     stateful sessions, memory, and tools - without handing control of your workflows to a hosted
     SaaS.
@@ -879,7 +879,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="What are the top five everyday use cases for OpenClaw?">
+  <Accordion title="What are the top five everyday use cases for Kova?">
     Everyday wins usually look like:
 
     - **Personal briefings:** summaries of inbox, calendar, and news you care about.
@@ -890,21 +890,21 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Can OpenClaw help with lead gen, outreach, ads, and blogs for a SaaS?">
+  <Accordion title="Can Kova help with lead gen, outreach, ads, and blogs for a SaaS?">
     Yes for **research, qualification, and drafting**. It can scan sites, build shortlists,
     summarize prospects, and write outreach or ad copy drafts.
 
     For **outreach or ad runs**, keep a human in the loop. Avoid spam, follow local laws and
     platform policies, and review anything before it is sent. The safest pattern is to let
-    OpenClaw draft and you approve.
+    Kova draft and you approve.
 
     Docs: [Security](/gateway/security).
 
   </Accordion>
 
   <Accordion title="What are the advantages vs Claude Code for web development?">
-    OpenClaw is a **personal assistant** and coordination layer, not an IDE replacement. Use
-    Claude Code or Codex for the fastest direct coding loop inside a repo. Use OpenClaw when you
+    Kova is a **personal assistant** and coordination layer, not an IDE replacement. Use
+    Claude Code or Codex for the fastest direct coding loop inside a repo. Use Kova when you
     want durable memory, cross-device access, and tool orchestration.
 
     Advantages:
@@ -915,7 +915,7 @@ for usage/billing and raise limits as needed.
     - **Always-on Gateway** (run on a VPS, interact from anywhere)
     - **Nodes** for local browser/screen/camera/exec
 
-    Showcase: [https://openclaw.ai/showcase](https://openclaw.ai/showcase)
+    Showcase: [https://kova.ai/showcase](https://kova.ai/showcase)
 
   </Accordion>
 </AccordionGroup>
@@ -924,11 +924,11 @@ for usage/billing and raise limits as needed.
 
 <AccordionGroup>
   <Accordion title="How do I customize skills without keeping the repo dirty?">
-    Use managed overrides instead of editing the repo copy. Put your changes in `~/.openclaw/skills/<name>/SKILL.md` (or add a folder via `skills.load.extraDirs` in `~/.openclaw/openclaw.json`). Precedence is `<workspace>/skills` > `~/.openclaw/skills` > bundled, so managed overrides win without touching git. Only upstream-worthy edits should live in the repo and go out as PRs.
+    Use managed overrides instead of editing the repo copy. Put your changes in `~/.kova/skills/<name>/SKILL.md` (or add a folder via `skills.load.extraDirs` in `~/.kova/openclaw.json`). Precedence is `<workspace>/skills` > `~/.kova/skills` > bundled, so managed overrides win without touching git. Only upstream-worthy edits should live in the repo and go out as PRs.
   </Accordion>
 
   <Accordion title="Can I load skills from a custom folder?">
-    Yes. Add extra directories via `skills.load.extraDirs` in `~/.openclaw/openclaw.json` (lowest precedence). Default precedence remains: `<workspace>/skills` → `~/.openclaw/skills` → bundled → `skills.load.extraDirs`. `clawhub` installs into `./skills` by default, which OpenClaw treats as `<workspace>/skills` on the next session.
+    Yes. Add extra directories via `skills.load.extraDirs` in `~/.kova/openclaw.json` (lowest precedence). Default precedence remains: `<workspace>/skills` → `~/.kova/skills` → bundled → `skills.load.extraDirs`. `clawhub` installs into `./skills` by default, which Kova treats as `<workspace>/skills` on the next session.
   </Accordion>
 
   <Accordion title="How can I use different models for different tasks?">
@@ -1012,7 +1012,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Can OpenClaw run tasks on a schedule or continuously in the background?">
+  <Accordion title="Can Kova run tasks on a schedule or continuously in the background?">
     Yes. Use the Gateway scheduler:
 
     - **Cron jobs** for scheduled or recurring tasks (persist across restarts).
@@ -1033,7 +1033,7 @@ for usage/billing and raise limits as needed.
     Run the Gateway where the macOS binaries exist, then connect from Linux in [remote mode](#gateway-ports-already-running-and-remote-mode) or over Tailscale. The skills load normally because the Gateway host is macOS.
 
     **Option B - use a macOS node (no SSH).**
-    Run the Gateway on Linux, pair a macOS node (menubar app), and set **Node Run Commands** to "Always Ask" or "Always Allow" on the Mac. OpenClaw can treat macOS-only skills as eligible when the required binaries exist on the node. The agent runs those skills via the `nodes` tool. If you choose "Always Ask", approving "Always Allow" in the prompt adds that command to the allowlist.
+    Run the Gateway on Linux, pair a macOS node (menubar app), and set **Node Run Commands** to "Always Ask" or "Always Allow" on the Mac. Kova can treat macOS-only skills as eligible when the required binaries exist on the node. The agent runs those skills via the `nodes` tool. If you choose "Always Ask", approving "Always Allow" in the prompt adds that command to the allowlist.
 
     **Option C - proxy macOS binaries over SSH (advanced).**
     Keep the Gateway on Linux, but make the required CLI binaries resolve to SSH wrappers that run on a Mac. Then override the skill to allow Linux so it stays eligible.
@@ -1047,7 +1047,7 @@ for usage/billing and raise limits as needed.
        ```
 
     2. Put the wrapper on `PATH` on the Linux host (for example `~/bin/memo`).
-    3. Override the skill metadata (workspace or `~/.openclaw/skills`) to allow Linux:
+    3. Override the skill metadata (workspace or `~/.kova/skills`) to allow Linux:
 
        ```markdown
        ---
@@ -1084,11 +1084,11 @@ for usage/billing and raise limits as needed.
     openclaw skills update --all
     ```
 
-    Native installs land in the active workspace `skills/` directory. For shared skills across agents, place them in `~/.openclaw/skills/<name>/SKILL.md`. Some skills expect binaries installed via Homebrew; on Linux that means Linuxbrew (see the Homebrew Linux FAQ entry above). See [Skills](/tools/skills) and [ClawHub](/tools/clawhub).
+    Native installs land in the active workspace `skills/` directory. For shared skills across agents, place them in `~/.kova/skills/<name>/SKILL.md`. Some skills expect binaries installed via Homebrew; on Linux that means Linuxbrew (see the Homebrew Linux FAQ entry above). See [Skills](/tools/skills) and [ClawHub](/tools/clawhub).
 
   </Accordion>
 
-  <Accordion title="How do I use my existing signed-in Chrome with OpenClaw?">
+  <Accordion title="How do I use my existing signed-in Chrome with Kova?">
     Use the built-in `user` browser profile, which attaches through Chrome DevTools MCP:
 
     ```bash
@@ -1145,12 +1145,12 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="How does memory work?">
-    OpenClaw memory is just Markdown files in the agent workspace:
+    Kova memory is just Markdown files in the agent workspace:
 
     - Daily notes in `memory/YYYY-MM-DD.md`
     - Curated long-term notes in `MEMORY.md` (main/private sessions only)
 
-    OpenClaw also runs a **silent pre-compaction memory flush** to remind the model
+    Kova also runs a **silent pre-compaction memory flush** to remind the model
     to write durable notes before auto-compaction. This only runs when the workspace
     is writable (read-only sandboxes skip it). See [Memory](/concepts/memory).
 
@@ -1184,12 +1184,12 @@ for usage/billing and raise limits as needed.
     Codex CLI login)** does not help for semantic memory search. OpenAI embeddings
     still need a real API key (`OPENAI_API_KEY` or `models.providers.openai.apiKey`).
 
-    If you don't set a provider explicitly, OpenClaw auto-selects a provider when it
+    If you don't set a provider explicitly, Kova auto-selects a provider when it
     can resolve an API key (auth profiles, `models.providers.*.apiKey`, or env vars).
     It prefers OpenAI if an OpenAI key resolves, otherwise Gemini if a Gemini key
     resolves, then Voyage, then Mistral. If no remote key is available, memory
     search stays disabled until you configure it. If you have a local model path
-    configured and present, OpenClaw
+    configured and present, Kova
     prefers `local`. Ollama is supported when you explicitly set
     `memorySearch.provider = "ollama"`.
 
@@ -1205,8 +1205,8 @@ for usage/billing and raise limits as needed.
 ## Where things live on disk
 
 <AccordionGroup>
-  <Accordion title="Is all data used with OpenClaw saved locally?">
-    No - **OpenClaw's state is local**, but **external services still see what you send them**.
+  <Accordion title="Is all data used with Kova saved locally?">
+    No - **Kova's state is local**, but **external services still see what you send them**.
 
     - **Local by default:** sessions, memory files, config, and workspace live on the Gateway host
       (`~/.openclaw` + your workspace directory).
@@ -1220,7 +1220,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Where does OpenClaw store its data?">
+  <Accordion title="Where does Kova store its data?">
     Everything lives under `$OPENCLAW_STATE_DIR` (default: `~/.openclaw`):
 
     | Path                                                            | Purpose                                                            |
@@ -1235,9 +1235,9 @@ for usage/billing and raise limits as needed.
     | `$OPENCLAW_STATE_DIR/agents/<agentId>/sessions/`                | Conversation history & state (per agent)                           |
     | `$OPENCLAW_STATE_DIR/agents/<agentId>/sessions/sessions.json`   | Session metadata (per agent)                                       |
 
-    Legacy single-agent path: `~/.openclaw/agent/*` (migrated by `openclaw doctor`).
+    Legacy single-agent path: `~/.kova/agent/*` (migrated by `openclaw doctor`).
 
-    Your **workspace** (AGENTS.md, memory files, skills, etc.) is separate and configured via `agents.defaults.workspace` (default: `~/.openclaw/workspace`).
+    Your **workspace** (AGENTS.md, memory files, skills, etc.) is separate and configured via `agents.defaults.workspace` (default: `~/.kova/workspace`).
 
   </Accordion>
 
@@ -1248,13 +1248,13 @@ for usage/billing and raise limits as needed.
       `MEMORY.md` (or legacy fallback `memory.md` when `MEMORY.md` is absent),
       `memory/YYYY-MM-DD.md`, optional `HEARTBEAT.md`.
     - **State dir (`~/.openclaw`)**: config, credentials, auth profiles, sessions, logs,
-      and shared skills (`~/.openclaw/skills`).
+      and shared skills (`~/.kova/skills`).
 
-    Default workspace is `~/.openclaw/workspace`, configurable via:
+    Default workspace is `~/.kova/workspace`, configurable via:
 
     ```json5
     {
-      agents: { defaults: { workspace: "~/.openclaw/workspace" } },
+      agents: { defaults: { workspace: "~/.kova/workspace" } },
     }
     ```
 
@@ -1282,7 +1282,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="How do I completely uninstall OpenClaw?">
+  <Accordion title="How do I completely uninstall Kova?">
     See the dedicated guide: [Uninstall](/install/uninstall).
   </Accordion>
 
@@ -1292,7 +1292,7 @@ for usage/billing and raise limits as needed.
     host locations unless sandboxing is enabled. If you need isolation, use
     [`agents.defaults.sandbox`](/gateway/sandboxing) or per-agent sandbox settings. If you
     want a repo to be the default working directory, point that agent's
-    `workspace` to the repo root. The OpenClaw repo is just source code; keep the
+    `workspace` to the repo root. The Kova repo is just source code; keep the
     workspace separate unless you intentionally want the agent to work inside it.
 
     Example (repo as default cwd):
@@ -1318,13 +1318,13 @@ for usage/billing and raise limits as needed.
 
 <AccordionGroup>
   <Accordion title="What format is the config? Where is it?">
-    OpenClaw reads an optional **JSON5** config from `$OPENCLAW_CONFIG_PATH` (default: `~/.openclaw/openclaw.json`):
+    Kova reads an optional **JSON5** config from `$OPENCLAW_CONFIG_PATH` (default: `~/.kova/openclaw.json`):
 
     ```
     $OPENCLAW_CONFIG_PATH
     ```
 
-    If the file is missing, it uses safe-ish defaults (including a default workspace of `~/.openclaw/workspace`).
+    If the file is missing, it uses safe-ish defaults (including a default workspace of `~/.kova/workspace`).
 
   </Accordion>
 
@@ -1353,7 +1353,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="Why do I need a token on localhost now?">
-    OpenClaw enforces token auth by default, including loopback. If no token is configured, gateway startup auto-generates one and saves it to `gateway.auth.token`, so **local WS clients must authenticate**. This blocks other local processes from calling the Gateway.
+    Kova enforces token auth by default, including loopback. If no token is configured, gateway startup auto-generates one and saves it to `gateway.auth.token`, so **local WS clients must authenticate**. This blocks other local processes from calling the Gateway.
 
     If you **really** want open loopback, set `gateway.auth.mode: "none"` explicitly in your config. Doctor can generate a token for you any time: `openclaw doctor --generate-gateway-token`.
 
@@ -1381,7 +1381,7 @@ for usage/billing and raise limits as needed.
     ```
 
     - `off`: hides tagline text but keeps the banner title/version line.
-    - `default`: uses `All your chats, one OpenClaw.` every time.
+    - `default`: uses `All your chats, one Kova.` every time.
     - `random`: rotating funny/seasonal taglines (default behavior).
     - If you want no banner at all, set env `OPENCLAW_HIDE_BANNER=1`.
 
@@ -1434,7 +1434,7 @@ for usage/billing and raise limits as needed.
 
     - If you use allowlists, add `web_search`/`web_fetch` or `group:web`.
     - `web_fetch` is enabled by default (unless explicitly disabled).
-    - Daemons read env vars from `~/.openclaw/.env` (or the service environment).
+    - Daemons read env vars from `~/.kova/.env` (or the service environment).
 
     Docs: [Web tools](/tools/web).
 
@@ -1446,7 +1446,7 @@ for usage/billing and raise limits as needed.
 
     Recover:
 
-    - Restore from backup (git or a copied `~/.openclaw/openclaw.json`).
+    - Restore from backup (git or a copied `~/.kova/openclaw.json`).
     - If you have no backup, re-run `openclaw doctor` and reconfigure channels/models.
     - If this was unexpected, file a bug and include your last known config or any backup.
     - A local coding agent can often reconstruct a working config from logs or history.
@@ -1473,7 +1473,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Can the OpenClaw browser run headless?">
+  <Accordion title="Can the Kova browser run headless?">
     Yes. It's a config option:
 
     ```json5
@@ -1560,7 +1560,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Can two OpenClaw instances talk to each other (local + VPS)?">
+  <Accordion title="Can two Kova instances talk to each other (local + VPS)?">
     Yes. There is no built-in "bot-to-bot" bridge, but you can wire it up in a few
     reliable ways:
 
@@ -1630,7 +1630,7 @@ for usage/billing and raise limits as needed.
   <Accordion title="Minimal sane config for a first install">
     ```json5
     {
-      agents: { defaults: { workspace: "~/.openclaw/workspace" } },
+      agents: { defaults: { workspace: "~/.kova/workspace" } },
       channels: { whatsapp: { allowFrom: ["+15555550123"] } },
     }
     ```
@@ -1701,11 +1701,11 @@ for usage/billing and raise limits as needed.
 ## Env vars and .env loading
 
 <AccordionGroup>
-  <Accordion title="How does OpenClaw load environment variables?">
-    OpenClaw reads env vars from the parent process (shell, launchd/systemd, CI, etc.) and additionally loads:
+  <Accordion title="How does Kova load environment variables?">
+    Kova reads env vars from the parent process (shell, launchd/systemd, CI, etc.) and additionally loads:
 
     - `.env` from the current working directory
-    - a global fallback `.env` from `~/.openclaw/.env` (aka `$OPENCLAW_STATE_DIR/.env`)
+    - a global fallback `.env` from `~/.kova/.env` (aka `$OPENCLAW_STATE_DIR/.env`)
 
     Neither `.env` file overrides existing env vars.
 
@@ -1727,7 +1727,7 @@ for usage/billing and raise limits as needed.
   <Accordion title="I started the Gateway via the service and my env vars disappeared. What now?">
     Two common fixes:
 
-    1. Put the missing keys in `~/.openclaw/.env` so they're picked up even when the service doesn't inherit your shell env.
+    1. Put the missing keys in `~/.kova/.env` so they're picked up even when the service doesn't inherit your shell env.
     2. Enable shell import (opt-in convenience):
 
     ```json5
@@ -1748,13 +1748,13 @@ for usage/billing and raise limits as needed.
 
   <Accordion title='I set COPILOT_GITHUB_TOKEN, but models status shows "Shell env: off." Why?'>
     `openclaw models status` reports whether **shell env import** is enabled. "Shell env: off"
-    does **not** mean your env vars are missing - it just means OpenClaw won't load
+    does **not** mean your env vars are missing - it just means Kova won't load
     your login shell automatically.
 
     If the Gateway runs as a service (launchd/systemd), it won't inherit your shell
     environment. Fix by doing one of these:
 
-    1. Put the token in `~/.openclaw/.env`:
+    1. Put the token in `~/.kova/.env`:
 
        ```
        COPILOT_GITHUB_TOKEN=...
@@ -1798,7 +1798,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Is there a way to make a team of OpenClaw instances (one CEO and many agents)?">
+  <Accordion title="Is there a way to make a team of Kova instances (one CEO and many agents)?">
     Yes, via **multi-agent routing** and **sub-agents**. You can create one coordinator
     agent and several worker agents with their own workspaces and models.
 
@@ -1825,7 +1825,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="How do I completely reset OpenClaw but keep it installed?">
+  <Accordion title="How do I completely reset Kova but keep it installed?">
     Use the reset command:
 
     ```bash
@@ -1904,7 +1904,7 @@ for usage/billing and raise limits as needed.
     ```
 
     If `HEARTBEAT.md` exists but is effectively empty (only blank lines and markdown
-    headers like `# Heading`), OpenClaw skips the heartbeat run to save API calls.
+    headers like `# Heading`), Kova skips the heartbeat run to save API calls.
     If the file is missing, the heartbeat still runs and the model decides what to do.
 
     Per-agent overrides use `agents.list[].heartbeat`. Docs: [Heartbeat](/gateway/heartbeat).
@@ -1912,7 +1912,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title='Do I need to add a "bot account" to a WhatsApp group?'>
-    No. OpenClaw runs on **your own account**, so if you're in the group, OpenClaw can see it.
+    No. Kova runs on **your own account**, so if you're in the group, Kova can see it.
     By default, group replies are blocked until you allow senders (`groupPolicy: "allowlist"`).
 
     If you want only **you** to be able to trigger group replies:
@@ -1950,7 +1950,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="Why does OpenClaw not reply in a group?">
+  <Accordion title="Why does Kova not reply in a group?">
     Two common causes:
 
     - Mention gating is on (default). You must @mention the bot (or match `mentionPatterns`).
@@ -1967,7 +1967,7 @@ for usage/billing and raise limits as needed.
   <Accordion title="How many workspaces and agents can I create?">
     No hard limits. Dozens (even hundreds) are fine, but watch for:
 
-    - **Disk growth:** sessions + transcripts live under `~/.openclaw/agents/<agentId>/sessions/`.
+    - **Disk growth:** sessions + transcripts live under `~/.kova/agents/<agentId>/sessions/`.
     - **Token cost:** more agents means more concurrent model usage.
     - **Ops overhead:** per-agent auth profiles, workspaces, and channel routing.
 
@@ -2004,13 +2004,13 @@ for usage/billing and raise limits as needed.
 
 <AccordionGroup>
   <Accordion title='What is the "default model"?'>
-    OpenClaw's default model is whatever you set as:
+    Kova's default model is whatever you set as:
 
     ```
     agents.defaults.model.primary
     ```
 
-    Models are referenced as `provider/model` (example: `anthropic/claude-opus-4-6`). If you omit the provider, OpenClaw currently assumes `anthropic` as a temporary deprecation fallback - but you should still **explicitly** set `provider/model`.
+    Models are referenced as `provider/model` (example: `anthropic/claude-opus-4-6`). If you omit the provider, Kova currently assumes `anthropic` as a temporary deprecation fallback - but you should still **explicitly** set `provider/model`.
 
   </Accordion>
 
@@ -2042,7 +2042,7 @@ for usage/billing and raise limits as needed.
     - `/model` in chat (quick, per-session)
     - `openclaw models set ...` (updates just model config)
     - `openclaw configure --section model` (interactive)
-    - edit `agents.defaults.model` in `~/.openclaw/openclaw.json`
+    - edit `agents.defaults.model` in `~/.kova/openclaw.json`
 
     Avoid `config.apply` with a partial object unless you intend to replace the whole config.
     If you did overwrite config, restore from backup or re-run `openclaw doctor` to repair.
@@ -2078,7 +2078,7 @@ for usage/billing and raise limits as needed.
 
   </Accordion>
 
-  <Accordion title="What do OpenClaw, Flawd, and Krill use for models?">
+  <Accordion title="What do Kova, Flawd, and Krill use for models?">
     - These deployments can differ and may change over time; there is no fixed provider recommendation.
     - Check the current runtime setting on each gateway with `openclaw models status`.
     - For security-sensitive/tool-enabled agents, use the strongest latest-generation model available.
@@ -2160,7 +2160,7 @@ for usage/billing and raise limits as needed.
 
     Fix checklist:
 
-    1. Upgrade to a current OpenClaw release (or run from source `main`), then restart the gateway.
+    1. Upgrade to a current Kova release (or run from source `main`), then restart the gateway.
     2. Make sure MiniMax is configured (wizard or JSON), or that a MiniMax API key
        exists in env/auth profiles so the provider can be injected.
     3. Use the exact model id (case-sensitive): `minimax/MiniMax-M2.7` or
@@ -2215,7 +2215,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="Are opus / sonnet / gpt built-in shortcuts?">
-    Yes. OpenClaw ships a few default shorthands (only applied when the model exists in `agents.defaults.models`):
+    Yes. Kova ships a few default shorthands (only applied when the model exists in `agents.defaults.models`):
 
     - `opus` → `anthropic/claude-opus-4-6`
     - `sonnet` → `anthropic/claude-sonnet-4-6`
@@ -2288,7 +2288,7 @@ for usage/billing and raise limits as needed.
     stored in:
 
     ```
-    ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
+    ~/.kova/agents/<agentId>/agent/auth-profiles.json
     ```
 
     Fix options:
@@ -2310,7 +2310,7 @@ for usage/billing and raise limits as needed.
     1. **Auth profile rotation** within the same provider.
     2. **Model fallback** to the next model in `agents.defaults.model.fallbacks`.
 
-    Cooldowns apply to failing profiles (exponential backoff), so OpenClaw can keep responding even when a provider is rate-limited or temporarily failing.
+    Cooldowns apply to failing profiles (exponential backoff), so Kova can keep responding even when a provider is rate-limited or temporarily failing.
 
   </Accordion>
 
@@ -2320,10 +2320,10 @@ for usage/billing and raise limits as needed.
     **Fix checklist:**
 
     - **Confirm where auth profiles live** (new vs legacy paths)
-      - Current: `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
-      - Legacy: `~/.openclaw/agent/*` (migrated by `openclaw doctor`)
+      - Current: `~/.kova/agents/<agentId>/agent/auth-profiles.json`
+      - Legacy: `~/.kova/agent/*` (migrated by `openclaw doctor`)
     - **Confirm your env var is loaded by the Gateway**
-      - If you set `ANTHROPIC_API_KEY` in your shell but run the Gateway via systemd/launchd, it may not inherit it. Put it in `~/.openclaw/.env` or enable `env.shellEnv`.
+      - If you set `ANTHROPIC_API_KEY` in your shell but run the Gateway via systemd/launchd, it may not inherit it. Put it in `~/.kova/.env` or enable `env.shellEnv`.
     - **Make sure you're editing the correct agent**
       - Multi-agent setups mean there can be multiple `auth-profiles.json` files.
     - **Sanity-check model/auth status**
@@ -2338,7 +2338,7 @@ for usage/billing and raise limits as needed.
       - Run `claude setup-token`, then paste it with `openclaw models auth setup-token --provider anthropic`.
       - If the token was created on another machine, use `openclaw models auth paste-token --provider anthropic`.
     - **If you want to use an API key instead**
-      - Put `ANTHROPIC_API_KEY` in `~/.openclaw/.env` on the **gateway host**.
+      - Put `ANTHROPIC_API_KEY` in `~/.kova/.env` on the **gateway host**.
       - Clear any pinned order that forces a missing profile:
 
         ```bash
@@ -2351,7 +2351,7 @@ for usage/billing and raise limits as needed.
   </Accordion>
 
   <Accordion title="Why did it also try Google Gemini and fail?">
-    If your model config includes Google Gemini as a fallback (or you switched to a Gemini shorthand), OpenClaw will try it during model fallback. If you haven't configured Google credentials, you'll see `No API key found for provider "google"`.
+    If your model config includes Google Gemini as a fallback (or you switched to a Gemini shorthand), Kova will try it during model fallback. If you haven't configured Google credentials, you'll see `No API key found for provider "google"`.
 
     Fix: either provide Google auth, or remove/avoid Google models in `agents.defaults.model.fallbacks` / aliases so fallback doesn't route there.
 
@@ -2360,7 +2360,7 @@ for usage/billing and raise limits as needed.
     Cause: the session history contains **thinking blocks without signatures** (often from
     an aborted/partial stream). Google Antigravity requires signatures for thinking blocks.
 
-    Fix: OpenClaw now strips unsigned thinking blocks for Google Antigravity Claude. If it still appears, start a **new session** or set `/thinking off` for that agent.
+    Fix: Kova now strips unsigned thinking blocks for Google Antigravity Claude. If it still appears, start a **new session** or set `/thinking off` for that agent.
 
   </Accordion>
 </AccordionGroup>
@@ -2374,13 +2374,13 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
     An auth profile is a named credential record (OAuth or API key) tied to a provider. Profiles live in:
 
     ```
-    ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
+    ~/.kova/agents/<agentId>/agent/auth-profiles.json
     ```
 
   </Accordion>
 
   <Accordion title="What are typical profile IDs?">
-    OpenClaw uses provider-prefixed IDs like:
+    Kova uses provider-prefixed IDs like:
 
     - `anthropic:default` (common when no email identity exists)
     - `anthropic:<email>` for OAuth identities
@@ -2391,7 +2391,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
   <Accordion title="Can I control which auth profile is tried first?">
     Yes. Config supports optional metadata for profiles and an ordering per provider (`auth.order.<provider>`). This does **not** store secrets; it maps IDs to provider/mode and sets rotation order.
 
-    OpenClaw may temporarily skip a profile if it's in a short **cooldown** (rate limits/timeouts/auth failures) or a longer **disabled** state (billing/insufficient credits). To inspect this, run `openclaw models status --json` and check `auth.unusableProfiles`. Tuning: `auth.cooldowns.billingBackoffHours*`.
+    Kova may temporarily skip a profile if it's in a short **cooldown** (rate limits/timeouts/auth failures) or a longer **disabled** state (billing/insufficient credits). To inspect this, run `openclaw models status --json` and check `auth.unusableProfiles`. Tuning: `auth.cooldowns.billingBackoffHours*`.
 
     You can also set a **per-agent** order override (stored in that agent's `auth-profiles.json`) via the CLI:
 
@@ -2418,7 +2418,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
   </Accordion>
 
   <Accordion title="OAuth vs API key - what is the difference?">
-    OpenClaw supports both:
+    Kova supports both:
 
     - **OAuth** often leverages subscription access (where applicable).
     - **API keys** use pay-per-token billing.
@@ -2467,13 +2467,13 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
   </Accordion>
 
   <Accordion title='What does "another gateway instance is already listening" mean?'>
-    OpenClaw enforces a runtime lock by binding the WebSocket listener immediately on startup (default `ws://127.0.0.1:18789`). If the bind fails with `EADDRINUSE`, it throws `GatewayLockError` indicating another instance is already listening.
+    Kova enforces a runtime lock by binding the WebSocket listener immediately on startup (default `ws://127.0.0.1:18789`). If the bind fails with `EADDRINUSE`, it throws `GatewayLockError` indicating another instance is already listening.
 
     Fix: stop the other instance, free the port, or run with `openclaw gateway --port <port>`.
 
   </Accordion>
 
-  <Accordion title="How do I run OpenClaw in remote mode (client connects to a Gateway elsewhere)?">
+  <Accordion title="How do I run Kova in remote mode (client connects to a Gateway elsewhere)?">
     Set `gateway.mode: "remote"` and point to a remote WebSocket URL, optionally with a token/password:
 
     ```json5
@@ -2546,7 +2546,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
     - Set a unique `gateway.port` in each profile config (or pass `--port` for manual runs).
     - Install a per-profile service: `openclaw --profile <name> gateway install`.
 
-    Profiles also suffix service names (`ai.openclaw.<profile>`; legacy `com.openclaw.*`, `openclaw-gateway-<profile>.service`, `OpenClaw Gateway (<profile>)`).
+    Profiles also suffix service names (`ai.openclaw.<profile>`; legacy `com.openclaw.*`, `openclaw-gateway-<profile>.service`, `Kova Gateway (<profile>)`).
     Full guide: [Multiple gateways](/gateway/multiple-gateways).
 
   </Accordion>
@@ -2599,9 +2599,9 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
 
     Service/supervisor logs (when the gateway runs via launchd/systemd):
 
-    - macOS: `$OPENCLAW_STATE_DIR/logs/gateway.log` and `gateway.err.log` (default: `~/.openclaw/logs/...`; profiles use `~/.openclaw-<profile>/logs/...`)
+    - macOS: `$OPENCLAW_STATE_DIR/logs/gateway.log` and `gateway.err.log` (default: `~/.kova/logs/...`; profiles use `~/.openclaw-<profile>/logs/...`)
     - Linux: `journalctl --user -u openclaw-gateway[-<profile>].service -n 200 --no-pager`
-    - Windows: `schtasks /Query /TN "OpenClaw Gateway (<profile>)" /V /FO LIST`
+    - Windows: `schtasks /Query /TN "Kova Gateway (<profile>)" /V /FO LIST`
 
     See [Troubleshooting](/gateway/troubleshooting) for more.
 
@@ -2619,7 +2619,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
 
   </Accordion>
 
-  <Accordion title="I closed my terminal on Windows - how do I restart OpenClaw?">
+  <Accordion title="I closed my terminal on Windows - how do I restart Kova?">
     There are **two Windows install modes**:
 
     **1) WSL2 (recommended):** the Gateway runs inside Linux.
@@ -2708,7 +2708,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
 
     Then match the error:
 
-    - `BOT_COMMANDS_TOO_MUCH`: the Telegram menu has too many entries. OpenClaw already trims to the Telegram limit and retries with fewer commands, but some menu entries still need to be dropped. Reduce plugin/skill/custom commands, or disable `channels.telegram.commands.native` if you do not need the menu.
+    - `BOT_COMMANDS_TOO_MUCH`: the Telegram menu has too many entries. Kova already trims to the Telegram limit and retries with fewer commands, but some menu entries still need to be dropped. Reduce plugin/skill/custom commands, or disable `channels.telegram.commands.native` if you do not need the menu.
     - `TypeError: fetch failed`, `Network request for 'setMyCommands' failed!`, or similar network errors: if you are on a VPS or behind a proxy, confirm outbound HTTPS is allowed and DNS works for `api.telegram.org`.
 
     If the Gateway is remote, make sure you are looking at logs on the Gateway host.
@@ -2772,7 +2772,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
 
 <AccordionGroup>
   <Accordion title="My skill generated an image/PDF, but nothing was sent">
-    Outbound attachments from the agent must include a `MEDIA:<path-or-url>` line (on its own line). See [OpenClaw assistant setup](/start/openclaw) and [Agent send](/tools/agent-send).
+    Outbound attachments from the agent must include a `MEDIA:<path-or-url>` line (on its own line). See [Kova assistant setup](/start/openclaw) and [Agent send](/tools/agent-send).
 
     CLI sending:
 
@@ -2795,7 +2795,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
 ## Security and access control
 
 <AccordionGroup>
-  <Accordion title="Is it safe to expose OpenClaw to inbound DMs?">
+  <Accordion title="Is it safe to expose Kova to inbound DMs?">
     Treat inbound DMs as untrusted input. Defaults are designed to reduce risk:
 
     - Default behavior on DM-capable channels is **pairing**:
@@ -2872,7 +2872,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
   </Accordion>
 
   <Accordion title="WhatsApp: will it message my contacts? How does pairing work?">
-    No. Default WhatsApp DM policy is **pairing**. Unknown senders only get a pairing code and their message is **not processed**. OpenClaw only replies to chats it receives or to explicit sends you trigger.
+    No. Default WhatsApp DM policy is **pairing**. Unknown senders only get a pairing code and their message is **not processed**. Kova only replies to chats it receives or to explicit sends you trigger.
 
     Approve pairing with:
 
@@ -2953,7 +2953,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
   </Accordion>
 
   <Accordion title='How do I send a Discord message from Telegram? ("Cross-context messaging denied")'>
-    OpenClaw blocks **cross-provider** messaging by default. If a tool call is bound
+    Kova blocks **cross-provider** messaging by default. If a tool call is bound
     to Telegram, it won't send to Discord unless you explicitly allow it.
 
     Enable cross-provider messaging for the agent:
@@ -2993,7 +2993,7 @@ Related: [/concepts/oauth](/concepts/oauth) (OAuth flows, token storage, multi-a
 
 <AccordionGroup>
   <Accordion title='What is the default model for Anthropic with an API key?'>
-    In OpenClaw, credentials and model selection are separate. Setting `ANTHROPIC_API_KEY` (or storing an Anthropic API key in auth profiles) enables authentication, but the actual default model is whatever you configure in `agents.defaults.model.primary` (for example, `anthropic/claude-sonnet-4-6` or `anthropic/claude-opus-4-6`). If you see `No credentials found for profile "anthropic:default"`, it means the Gateway couldn't find Anthropic credentials in the expected `auth-profiles.json` for the agent that's running.
+    In Kova, credentials and model selection are separate. Setting `ANTHROPIC_API_KEY` (or storing an Anthropic API key in auth profiles) enables authentication, but the actual default model is whatever you configure in `agents.defaults.model.primary` (for example, `anthropic/claude-sonnet-4-6` or `anthropic/claude-opus-4-6`). If you see `No credentials found for profile "anthropic:default"`, it means the Gateway couldn't find Anthropic credentials in the expected `auth-profiles.json` for the agent that's running.
   </Accordion>
 </AccordionGroup>
 

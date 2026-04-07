@@ -1,6 +1,6 @@
 ---
 read_when:
-  - 你想在 OpenClaw 中使用 Qwen
+  - 你想在 Kova 中使用 Qwen
   - 你之前使用过 Qwen OAuth
 summary: 通过阿里云 Model Studio 使用 Qwen 模型
 title: Qwen

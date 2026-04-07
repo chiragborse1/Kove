@@ -3,7 +3,7 @@ read_when:
   - 选择一种新手引导路径
   - 设置新环境
 sidebarTitle: Onboarding Overview
-summary: OpenClaw 新手引导选项与流程概览
+summary: Kova 新手引导选项与流程概览
 title: 新手引导概览
 x-i18n:
   generated_at: "2026-03-16T06:27:56Z"
@@ -16,7 +16,7 @@ x-i18n:
 
 # 新手引导概览
 
-OpenClaw 支持多种新手引导路径，具体取决于 Gateway 网关运行的位置
+Kova 支持多种新手引导路径，具体取决于 Gateway 网关运行的位置
 以及你偏好的提供商配置方式。
 
 ## 选择你的新手引导路径
@@ -40,7 +40,7 @@ openclaw onboard
 
 ## macOS 应用新手引导
 
-如果你希望在 macOS 上使用完全引导式设置，请使用 OpenClaw 应用。文档：
+如果你希望在 macOS 上使用完全引导式设置，请使用 Kova 应用。文档：
 
 - [新手引导（macOS 应用）](/start/onboarding)
 

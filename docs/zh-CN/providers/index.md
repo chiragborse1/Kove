@@ -2,7 +2,7 @@
 read_when:
   - 你想选择一个模型提供商
   - 你需要支持的 LLM 后端的快速概览
-summary: OpenClaw 支持的模型提供商（LLM）
+summary: Kova 支持的模型提供商（LLM）
 title: 模型提供商
 x-i18n:
   generated_at: "2026-03-16T06:25:28Z"
@@ -15,7 +15,7 @@ x-i18n:
 
 # 模型提供商
 
-OpenClaw 可以使用许多 LLM 提供商。选择一个提供商，完成身份验证，然后将
+Kova 可以使用许多 LLM 提供商。选择一个提供商，完成身份验证，然后将
 默认模型设置为 `provider/model`。
 
 在找聊天渠道文档（WhatsApp/Telegram/Discord/Slack/Mattermost（插件）/等）？请参见 [Channels](/channels)。

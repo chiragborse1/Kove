@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 你想在 OpenClaw 中使用 MiniMax 模型
+  - 你想在 Kova 中使用 MiniMax 模型
   - 你需要 MiniMax 设置指南
-summary: 在 OpenClaw 中使用 MiniMax M2.5
+summary: 在 Kova 中使用 MiniMax M2.5
 title: MiniMax
 x-i18n:
   generated_at: "2026-03-16T06:26:04Z"

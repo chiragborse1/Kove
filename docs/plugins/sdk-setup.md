@@ -95,7 +95,7 @@ Channel plugins can opt into deferred loading with:
 }
 ```
 
-When enabled, OpenClaw loads only `setupEntry` during the pre-listen startup
+When enabled, Kova loads only `setupEntry` during the pre-listen startup
 phase, even for already-configured channels. The full entry loads after the
 gateway starts listening.
 
@@ -109,13 +109,13 @@ gateway starts listening.
 ## Plugin manifest
 
 Every native plugin must ship an `openclaw.plugin.json` in the package root.
-OpenClaw uses this to validate config without executing plugin code.
+Kova uses this to validate config without executing plugin code.
 
 ```json
 {
   "id": "my-plugin",
   "name": "My Plugin",
-  "description": "Adds My Plugin capabilities to OpenClaw",
+  "description": "Adds My Plugin capabilities to Kova",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
@@ -173,12 +173,12 @@ always use `clawhub package publish`.
 ## Setup entry
 
 The `setup-entry.ts` file is a lightweight alternative to `index.ts` that
-OpenClaw loads when it only needs setup surfaces (onboarding, config repair,
+Kova loads when it only needs setup surfaces (onboarding, config repair,
 disabled channel inspection).
 
 ```typescript
 // setup-entry.ts
-import { defineSetupPluginEntry } from "openclaw/plugin-sdk/core";
+import { defineSetupPluginEntry } from "getkova/plugin-sdk/core";
 import { myChannelPlugin } from "./src/channel.js";
 
 export default defineSetupPluginEntry(myChannelPlugin);
@@ -187,7 +187,7 @@ export default defineSetupPluginEntry(myChannelPlugin);
 This avoids loading heavy runtime code (crypto libraries, CLI registrations,
 background services) during setup flows.
 
-**When OpenClaw uses `setupEntry` instead of the full entry:**
+**When Kova uses `setupEntry` instead of the full entry:**
 
 - The channel is disabled but needs setup/onboarding surfaces
 - The channel is enabled but unconfigured
@@ -242,12 +242,12 @@ For channel-specific config, use the channel config section instead:
 
 ### Building channel config schemas
 
-Use `buildChannelConfigSchema` from `openclaw/plugin-sdk/core` to convert a
-Zod schema into the `ChannelConfigSchema` wrapper that OpenClaw validates:
+Use `buildChannelConfigSchema` from `getkova/plugin-sdk/core` to convert a
+Zod schema into the `ChannelConfigSchema` wrapper that Kova validates:
 
 ```typescript
 import { z } from "zod";
-import { buildChannelConfigSchema } from "openclaw/plugin-sdk/core";
+import { buildChannelConfigSchema } from "getkova/plugin-sdk/core";
 
 const accountSchema = z.object({
   token: z.string().optional(),
@@ -265,7 +265,7 @@ Channel plugins can provide interactive setup wizards for `openclaw onboard`.
 The wizard is a `ChannelSetupWizard` object on the `ChannelPlugin`:
 
 ```typescript
-import type { ChannelSetupWizard } from "openclaw/plugin-sdk/channel-setup";
+import type { ChannelSetupWizard } from "getkova/plugin-sdk/channel-setup";
 
 const setupWizard: ChannelSetupWizard = {
   channel: "my-channel",
@@ -302,20 +302,20 @@ full examples.
 
 For DM allowlist prompts that only need the standard
 `note -> prompt -> parse -> merge -> patch` flow, prefer the shared setup
-helpers from `openclaw/plugin-sdk/setup`: `createPromptParsedAllowFromForAccount(...)`,
+helpers from `getkova/plugin-sdk/setup`: `createPromptParsedAllowFromForAccount(...)`,
 `createTopLevelChannelParsedAllowFromPrompt(...)`, and
 `createNestedChannelParsedAllowFromPrompt(...)`.
 
 For channel setup status blocks that only vary by labels, scores, and optional
 extra lines, prefer `createStandardChannelSetupStatus(...)` from
-`openclaw/plugin-sdk/setup` instead of hand-rolling the same `status` object in
+`getkova/plugin-sdk/setup` instead of hand-rolling the same `status` object in
 each plugin.
 
 For optional setup surfaces that should only appear in certain contexts, use
-`createOptionalChannelSetupSurface` from `openclaw/plugin-sdk/channel-setup`:
+`createOptionalChannelSetupSurface` from `getkova/plugin-sdk/channel-setup`:
 
 ```typescript
-import { createOptionalChannelSetupSurface } from "openclaw/plugin-sdk/channel-setup";
+import { createOptionalChannelSetupSurface } from "getkova/plugin-sdk/channel-setup";
 
 const setupSurface = createOptionalChannelSetupSurface({
   channel: "my-channel",
@@ -334,7 +334,7 @@ const setupSurface = createOptionalChannelSetupSurface({
 openclaw plugins install @myorg/openclaw-my-plugin
 ```
 
-OpenClaw tries ClawHub first and falls back to npm automatically. You can also
+Kova tries ClawHub first and falls back to npm automatically. You can also
 force a specific source:
 
 ```bash

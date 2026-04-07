@@ -8,16 +8,16 @@ title: "Hooks"
 
 # Hooks
 
-Hooks provide an extensible event-driven system for automating actions in response to agent commands and events. Hooks are automatically discovered from directories and can be inspected with `openclaw hooks`, while hook-pack installation and updates now go through `openclaw plugins`.
+Hooks provide an extensible event-driven system for automating actions in response to agent commands and events. Hooks are automatically discovered from directories and can be inspected with `kova hooks`, while hook-pack installation and updates now go through `openclaw plugins`.
 
 ## Getting Oriented
 
 Hooks are small scripts that run when something happens. There are two kinds:
 
 - **Hooks** (this page): run inside the Gateway when agent events fire, like `/new`, `/reset`, `/stop`, or lifecycle events.
-- **Webhooks**: external HTTP webhooks that let other systems trigger work in OpenClaw. See [Webhook Hooks](/automation/webhook) or use `openclaw webhooks` for Gmail helper commands.
+- **Webhooks**: external HTTP webhooks that let other systems trigger work in Kova. See [Webhook Hooks](/automation/webhook) or use `openclaw webhooks` for Gmail helper commands.
 
-Hooks can also be bundled inside plugins; see [Plugin hooks](/plugins/architecture#provider-runtime-hooks). `openclaw hooks list` shows both standalone hooks and plugin-managed hooks.
+Hooks can also be bundled inside plugins; see [Plugin hooks](/plugins/architecture#provider-runtime-hooks). `kova hooks list` shows both standalone hooks and plugin-managed hooks.
 
 Common uses:
 
@@ -26,7 +26,7 @@ Common uses:
 - Trigger follow-up automation when a session starts or ends
 - Write files into the agent workspace or call external APIs when events fire
 
-If you can write a small TypeScript function, you can write a hook. Managed and bundled hooks are trusted local code. Workspace hooks are discovered automatically, but OpenClaw keeps them disabled until you explicitly enable them via the CLI or config.
+If you can write a small TypeScript function, you can write a hook. Managed and bundled hooks are trusted local code. Workspace hooks are discovered automatically, but Kova keeps them disabled until you explicitly enable them via the CLI or config.
 
 ## Overview
 
@@ -35,41 +35,41 @@ The hooks system allows you to:
 - Save session context to memory when `/new` is issued
 - Log all commands for auditing
 - Trigger custom automations on agent lifecycle events
-- Extend OpenClaw's behavior without modifying core code
+- Extend Kova's behavior without modifying core code
 
 ## Getting Started
 
 ### Bundled Hooks
 
-OpenClaw ships with four bundled hooks that are automatically discovered:
+Kova ships with four bundled hooks that are automatically discovered:
 
-- **💾 session-memory**: Saves session context to your agent workspace (default `~/.openclaw/workspace/memory/`) when you issue `/new` or `/reset`
+- **💾 session-memory**: Saves session context to your agent workspace (default `~/.kova/workspace/memory/`) when you issue `/new` or `/reset`
 - **📎 bootstrap-extra-files**: Injects additional workspace bootstrap files from configured glob/path patterns during `agent:bootstrap`
-- **📝 command-logger**: Logs all command events to `~/.openclaw/logs/commands.log`
+- **📝 command-logger**: Logs all command events to `~/.kova/logs/commands.log`
 - **🚀 boot-md**: Runs `BOOT.md` when the gateway starts (requires internal hooks enabled)
 
 List available hooks:
 
 ```bash
-openclaw hooks list
+kova hooks list
 ```
 
 Enable a hook:
 
 ```bash
-openclaw hooks enable session-memory
+kova hooks enable session-memory
 ```
 
 Check hook status:
 
 ```bash
-openclaw hooks check
+kova hooks check
 ```
 
 Get detailed information:
 
 ```bash
-openclaw hooks info session-memory
+kova hooks info session-memory
 ```
 
 ### Onboarding
@@ -78,15 +78,15 @@ During onboarding (`openclaw onboard`), you'll be prompted to enable recommended
 
 ### Trust Boundary
 
-Hooks run inside the Gateway process. Treat bundled hooks, managed hooks, and `hooks.internal.load.extraDirs` as trusted local code. Workspace hooks under `<workspace>/hooks/` are repo-local code, so OpenClaw requires an explicit enable step before loading them.
+Hooks run inside the Gateway process. Treat bundled hooks, managed hooks, and `hooks.internal.load.extraDirs` as trusted local code. Workspace hooks under `<workspace>/hooks/` are repo-local code, so Kova requires an explicit enable step before loading them.
 
 ## Hook Discovery
 
 Hooks are automatically discovered from these directories, in order of increasing override precedence:
 
-1. **Bundled hooks**: shipped with OpenClaw; located at `<openclaw>/dist/hooks/bundled/` for npm installs (or a sibling `hooks/bundled/` for compiled binaries)
+1. **Bundled hooks**: shipped with Kova; located at `<openclaw>/dist/hooks/bundled/` for npm installs (or a sibling `hooks/bundled/` for compiled binaries)
 2. **Plugin hooks**: hooks bundled inside installed plugins (see [Plugin hooks](/plugins/architecture#provider-runtime-hooks))
-3. **Managed hooks**: `~/.openclaw/hooks/` (user-installed, shared across workspaces; can override bundled and plugin hooks). **Extra hook directories** configured via `hooks.internal.load.extraDirs` are also treated as managed hooks and share the same override precedence.
+3. **Managed hooks**: `~/.kova/hooks/` (user-installed, shared across workspaces; can override bundled and plugin hooks). **Extra hook directories** configured via `hooks.internal.load.extraDirs` are also treated as managed hooks and share the same override precedence.
 4. **Workspace hooks**: `<workspace>/hooks/` (per-agent, disabled by default until explicitly enabled; cannot override hooks from other sources)
 
 Workspace hooks can add new hook names for a repo, but they cannot override bundled, managed, or plugin-provided hooks with the same name.
@@ -114,7 +114,7 @@ Npm specs are registry-only (package name + optional exact version or dist-tag).
 Git/URL/file specs and semver ranges are rejected.
 
 Bare specs and `@latest` stay on the stable track. If npm resolves either of
-those to a prerelease, OpenClaw stops and asks you to opt in explicitly with a
+those to a prerelease, Kova stops and asks you to opt in explicitly with a
 prerelease tag such as `@beta`/`@rc` or an exact prerelease version.
 
 Example `package.json`:
@@ -130,7 +130,7 @@ Example `package.json`:
 ```
 
 Each entry points to a hook directory containing `HOOK.md` and a handler file. The loader tries `handler.ts`, `handler.js`, `index.ts`, `index.js` in order.
-Hook packs can ship dependencies; they will be installed under `~/.openclaw/hooks/<id>`.
+Hook packs can ship dependencies; they will be installed under `~/.kova/hooks/<id>`.
 Each `openclaw.hooks` entry must stay inside the package directory after symlink
 resolution; entries that escape are rejected.
 
@@ -148,7 +148,7 @@ The `HOOK.md` file contains metadata in YAML frontmatter plus Markdown documenta
 ---
 name: my-hook
 description: "Short description of what this hook does"
-homepage: https://docs.openclaw.ai/automation/hooks#my-hook
+homepage: https://docs.kova.ai/automation/hooks#my-hook
 metadata:
   { "openclaw": { "emoji": "🔗", "events": ["command:new"], "requires": { "bins": ["node"] } } }
 ---
@@ -231,7 +231,7 @@ Each event includes:
     commandSource?: string,            // e.g., 'whatsapp', 'telegram'
     senderId?: string,
     workspaceDir?: string,
-    cfg?: OpenClawConfig,
+    cfg?: KovaConfig,
     // Command events (command:stop only):
     sessionId?: string,
     // Agent bootstrap events (agent:bootstrap):
@@ -340,7 +340,7 @@ Session events include rich context about the session and changes:
     sendPolicy?: "allow" | "deny" | null,          // Message send policy
     groupActivation?: "mention" | "always" | null, // Group chat activation
   },
-  cfg: OpenClawConfig            // Current gateway config
+  cfg: KovaConfig            // Current gateway config
 }
 ```
 
@@ -479,7 +479,7 @@ export default handler;
 
 ### Tool Result Hooks (Plugin API)
 
-These hooks are not event-stream listeners; they let plugins synchronously adjust tool results before OpenClaw persists them.
+These hooks are not event-stream listeners; they let plugins synchronously adjust tool results before Kova persists them.
 
 - **`tool_result_persist`**: transform tool results before they are written to the session transcript. Must be synchronous; return the updated tool result payload or `undefined` to keep it as-is. See [Agent Loop](/concepts/agent-loop).
 
@@ -523,7 +523,7 @@ If the gateway is unavailable or does not support plugin approvals, the tool cal
 
 #### before_install
 
-Runs after the built-in install security scan and before installation continues. OpenClaw fires this hook for interactive skill installs as well as plugin bundle, package, and single-file installs.
+Runs after the built-in install security scan and before installation continues. Kova fires this hook for interactive skill installs as well as plugin bundle, package, and single-file installs.
 
 Default behavior differs by target type:
 
@@ -698,13 +698,13 @@ but are not yet available as internal hook event keys in `HOOK.md` metadata:
 ### 1. Choose Location
 
 - **Workspace hooks** (`<workspace>/hooks/`): Per-agent; can add new hook names but cannot override bundled, managed, or plugin hooks with the same name
-- **Managed hooks** (`~/.openclaw/hooks/`): Shared across workspaces; can override bundled and plugin hooks
+- **Managed hooks** (`~/.kova/hooks/`): Shared across workspaces; can override bundled and plugin hooks
 
 ### 2. Create Directory Structure
 
 ```bash
-mkdir -p ~/.openclaw/hooks/my-hook
-cd ~/.openclaw/hooks/my-hook
+mkdir -p ~/.kova/hooks/my-hook
+cd ~/.kova/hooks/my-hook
 ```
 
 ### 3. Create HOOK.md
@@ -740,10 +740,10 @@ export default handler;
 
 ```bash
 # Verify hook is discovered
-openclaw hooks list
+kova hooks list
 
 # Enable it
-openclaw hooks enable my-hook
+kova hooks enable my-hook
 
 # Restart your gateway process (menu bar app restart on macOS, or restart your dev process)
 
@@ -839,46 +839,46 @@ Note: `module` must be a workspace-relative path. Absolute paths and traversal o
 
 ```bash
 # List all hooks
-openclaw hooks list
+kova hooks list
 
 # Show only eligible hooks
-openclaw hooks list --eligible
+kova hooks list --eligible
 
 # Verbose output (show missing requirements)
-openclaw hooks list --verbose
+kova hooks list --verbose
 
 # JSON output
-openclaw hooks list --json
+kova hooks list --json
 ```
 
 ### Hook Information
 
 ```bash
 # Show detailed info about a hook
-openclaw hooks info session-memory
+kova hooks info session-memory
 
 # JSON output
-openclaw hooks info session-memory --json
+kova hooks info session-memory --json
 ```
 
 ### Check Eligibility
 
 ```bash
 # Show eligibility summary
-openclaw hooks check
+kova hooks check
 
 # JSON output
-openclaw hooks check --json
+kova hooks check --json
 ```
 
 ### Enable/Disable
 
 ```bash
 # Enable a hook
-openclaw hooks enable session-memory
+kova hooks enable session-memory
 
 # Disable a hook
-openclaw hooks disable command-logger
+kova hooks disable command-logger
 ```
 
 ## Bundled hook reference
@@ -891,7 +891,7 @@ Saves session context to memory when you issue `/new` or `/reset`.
 
 **Requirements**: `workspace.dir` must be configured
 
-**Output**: `<workspace>/memory/YYYY-MM-DD-slug.md` (defaults to `~/.openclaw/workspace`)
+**Output**: `<workspace>/memory/YYYY-MM-DD-slug.md` (defaults to `~/.kova/workspace`)
 
 **What it does**:
 
@@ -924,7 +924,7 @@ assistant: Sure! Let's start with the endpoints...
 **Enable**:
 
 ```bash
-openclaw hooks enable session-memory
+kova hooks enable session-memory
 ```
 
 ### bootstrap-extra-files
@@ -971,7 +971,7 @@ Injects additional bootstrap files (for example monorepo-local `AGENTS.md` / `TO
 **Enable**:
 
 ```bash
-openclaw hooks enable bootstrap-extra-files
+kova hooks enable bootstrap-extra-files
 ```
 
 ### command-logger
@@ -982,7 +982,7 @@ Logs all command events to a centralized audit file.
 
 **Requirements**: None
 
-**Output**: `~/.openclaw/logs/commands.log`
+**Output**: `~/.kova/logs/commands.log`
 
 **What it does**:
 
@@ -1001,19 +1001,19 @@ Logs all command events to a centralized audit file.
 
 ```bash
 # View recent commands
-tail -n 20 ~/.openclaw/logs/commands.log
+tail -n 20 ~/.kova/logs/commands.log
 
 # Pretty-print with jq
-cat ~/.openclaw/logs/commands.log | jq .
+cat ~/.kova/logs/commands.log | jq .
 
 # Filter by action
-grep '"action":"new"' ~/.openclaw/logs/commands.log | jq .
+grep '"action":"new"' ~/.kova/logs/commands.log | jq .
 ```
 
 **Enable**:
 
 ```bash
-openclaw hooks enable command-logger
+kova hooks enable command-logger
 ```
 
 ### boot-md
@@ -1034,7 +1034,7 @@ Internal hooks must be enabled for this to run.
 **Enable**:
 
 ```bash
-openclaw hooks enable boot-md
+kova hooks enable boot-md
 ```
 
 ## Best Practices
@@ -1118,7 +1118,7 @@ Registered hook: boot-md -> gateway:startup
 List all discovered hooks:
 
 ```bash
-openclaw hooks list --verbose
+kova hooks list --verbose
 ```
 
 ### Check Registration
@@ -1137,7 +1137,7 @@ const handler: HookHandler = async (event) => {
 Check why a hook isn't eligible:
 
 ```bash
-openclaw hooks info my-hook
+kova hooks info my-hook
 ```
 
 Look for missing requirements in the output.
@@ -1153,7 +1153,7 @@ Monitor gateway logs to see hook execution:
 ./scripts/clawlog.sh -f
 
 # Other platforms
-tail -f ~/.openclaw/gateway.log
+tail -f ~/.kova/gateway.log
 ```
 
 ### Test Hooks Directly
@@ -1235,21 +1235,21 @@ Session reset
 1. Check directory structure:
 
    ```bash
-   ls -la ~/.openclaw/hooks/my-hook/
+   ls -la ~/.kova/hooks/my-hook/
    # Should show: HOOK.md, handler.ts
    ```
 
 2. Verify HOOK.md format:
 
    ```bash
-   cat ~/.openclaw/hooks/my-hook/HOOK.md
+   cat ~/.kova/hooks/my-hook/HOOK.md
    # Should have YAML frontmatter with name and metadata
    ```
 
 3. List all discovered hooks:
 
    ```bash
-   openclaw hooks list
+   kova hooks list
    ```
 
 ### Hook Not Eligible
@@ -1257,7 +1257,7 @@ Session reset
 Check requirements:
 
 ```bash
-openclaw hooks info my-hook
+kova hooks info my-hook
 ```
 
 Look for missing:
@@ -1272,7 +1272,7 @@ Look for missing:
 1. Verify hook is enabled:
 
    ```bash
-   openclaw hooks list
+   kova hooks list
    # Should show ✓ next to enabled hooks
    ```
 
@@ -1320,8 +1320,8 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 1. Create hook directory:
 
    ```bash
-   mkdir -p ~/.openclaw/hooks/my-hook
-   mv ./hooks/handlers/my-handler.ts ~/.openclaw/hooks/my-hook/handler.ts
+   mkdir -p ~/.kova/hooks/my-hook
+   mv ./hooks/handlers/my-handler.ts ~/.kova/hooks/my-hook/handler.ts
    ```
 
 2. Create HOOK.md:
@@ -1356,7 +1356,7 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 4. Verify and restart your gateway process:
 
    ```bash
-   openclaw hooks list
+   kova hooks list
    # Should show: 🎯 my-hook ✓
    ```
 

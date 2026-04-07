@@ -9,7 +9,7 @@ sidebarTitle: "Onboarding: CLI"
 
 # Onboarding (CLI)
 
-CLI onboarding is the **recommended** way to set up OpenClaw on macOS,
+CLI onboarding is the **recommended** way to set up Kova on macOS,
 Linux, or Windows (via WSL2; strongly recommended).
 It configures a local Gateway or a remote Gateway connection, plus channels, skills,
 and workspace defaults in one guided flow.
@@ -71,7 +71,7 @@ Onboarding starts with **QuickStart** (defaults) vs **Advanced** (full control).
    For non-interactive runs, `--secret-input-mode ref` stores env-backed refs in auth profiles instead of plaintext API key values.
    In non-interactive `ref` mode, the provider env var must be set; passing inline key flags without that env var fails fast.
    In interactive runs, choosing secret reference mode lets you point at either an environment variable or a configured provider ref (`file` or `exec`), with a fast preflight validation before saving.
-2. **Workspace** — Location for agent files (default `~/.openclaw/workspace`). Seeds bootstrap files.
+2. **Workspace** — Location for agent files (default `~/.kova/workspace`). Seeds bootstrap files.
 3. **Gateway** — Port, bind address, auth mode, Tailscale exposure.
    In interactive token mode, choose default plaintext token storage or opt into SecretRef.
    Non-interactive token SecretRef path: `--gateway-token-ref-env <ENV_VAR>`.
@@ -105,7 +105,7 @@ What it sets:
 
 Notes:
 
-- Default workspaces follow `~/.openclaw/workspace-<agentId>`.
+- Default workspaces follow `~/.kova/workspace-<agentId>`.
 - Add `bindings` to route inbound messages (onboarding can do this).
 - Non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
 

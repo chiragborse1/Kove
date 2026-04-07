@@ -1,5 +1,5 @@
 ---
-summary: "Install, configure, and manage OpenClaw plugins"
+summary: "Install, configure, and manage Kova plugins"
 read_when:
   - Installing or configuring plugins
   - Understanding plugin discovery and load rules
@@ -10,9 +10,9 @@ sidebarTitle: "Install and Configure"
 
 # Plugins
 
-Plugins extend OpenClaw with new capabilities: channels, model providers, tools,
+Plugins extend Kova with new capabilities: channels, model providers, tools,
 skills, speech, image generation, and more. Some plugins are **core** (shipped
-with OpenClaw), others are **external** (published on npm by the community).
+with Kova), others are **external** (published on npm by the community).
 
 ## Quick start
 
@@ -58,12 +58,12 @@ The install path uses the same resolver as the CLI: local path/archive, explicit
 
 ## Plugin types
 
-OpenClaw recognizes two plugin formats:
+Kova recognizes two plugin formats:
 
 | Format     | How it works                                                       | Examples                                               |
 | ---------- | ------------------------------------------------------------------ | ------------------------------------------------------ |
 | **Native** | `openclaw.plugin.json` + runtime module; executes in-process       | Official plugins, community npm packages               |
-| **Bundle** | Codex/Claude/Cursor-compatible layout; mapped to OpenClaw features | `.codex-plugin/`, `.claude-plugin/`, `.cursor-plugin/` |
+| **Bundle** | Codex/Claude/Cursor-compatible layout; mapped to Kova features | `.codex-plugin/`, `.claude-plugin/`, `.cursor-plugin/` |
 
 Both show up under `openclaw plugins list`. See [Plugin Bundles](/plugins/bundles) for bundle details.
 
@@ -83,7 +83,7 @@ and the [Plugin SDK Overview](/plugins/sdk-overview).
 | Zalo            | `@openclaw/zalo`       | [Zalo](/channels/zalo)               |
 | Zalo Personal   | `@openclaw/zalouser`   | [Zalo Personal](/plugins/zalouser)   |
 
-### Core (shipped with OpenClaw)
+### Core (shipped with Kova)
 
 <AccordionGroup>
   <Accordion title="Model providers (enabled by default)">
@@ -148,7 +148,7 @@ restart is usually performed automatically a moment after the config write lands
 
 ## Discovery and precedence
 
-OpenClaw scans for plugins in this order (first match wins):
+Kova scans for plugins in this order (first match wins):
 
 <Steps>
   <Step title="Config paths">
@@ -160,11 +160,11 @@ OpenClaw scans for plugins in this order (first match wins):
   </Step>
 
   <Step title="Global extensions">
-    `~/.openclaw/<plugin-root>/*.ts` and `~/.openclaw/<plugin-root>/*/index.ts`.
+    `~/.kova/<plugin-root>/*.ts` and `~/.kova/<plugin-root>/*/index.ts`.
   </Step>
 
   <Step title="Bundled plugins">
-    Shipped with OpenClaw. Many are enabled by default (model providers, speech).
+    Shipped with Kova. Many are enabled by default (model providers, speech).
     Others require explicit enablement.
   </Step>
 </Steps>

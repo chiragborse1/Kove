@@ -1,6 +1,6 @@
 # @openclaw/diffs
 
-Read-only diff viewer plugin for **OpenClaw** agents.
+Read-only diff viewer plugin for **Kova** agents.
 
 It gives agents one tool, `diffs`, that can:
 
@@ -73,7 +73,7 @@ Input safety limits:
 
 ## Plugin Defaults
 
-Set plugin-wide defaults in `~/.openclaw/openclaw.json`:
+Set plugin-wide defaults in `~/.kova/openclaw.json`:
 
 ```json5
 {
@@ -157,10 +157,10 @@ Use the `diffs` tool in `file` mode for this before and after input. After it re
 Path: README.md
 
 Before:
-OpenClaw supports plugins.
+Kova supports plugins.
 
 After:
-OpenClaw supports plugins and hosted diff views.
+Kova supports plugins and hosted diff views.
 ```
 
 Do both:

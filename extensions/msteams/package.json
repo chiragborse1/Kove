@@ -8,9 +8,6 @@
     "@microsoft/teams.apps": "2.0.6",
     "express": "^5.2.1"
   },
-  "devDependencies": {
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },

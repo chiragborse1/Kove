@@ -15,7 +15,7 @@ Quick provider overview + examples: [/concepts/model-providers](/concepts/model-
 
 ## How model selection works
 
-OpenClaw selects models in this order:
+Kova selects models in this order:
 
 1. **Primary** model (`agents.defaults.model.primary` or `agents.defaults.model`).
 2. **Fallbacks** in `agents.defaults.model.fallbacks` (in order).
@@ -24,7 +24,7 @@ OpenClaw selects models in this order:
 
 Related:
 
-- `agents.defaults.models` is the allowlist/catalog of models OpenClaw can use (plus aliases).
+- `agents.defaults.models` is the allowlist/catalog of models Kova can use (plus aliases).
 - `agents.defaults.imageModel` is used **only when** the primary model can’t accept images.
 - `agents.defaults.imageGenerationModel` is used by the shared image-generation capability. If omitted, `image_generate` can still infer a provider default from compatible auth-backed image-generation plugins. If you set a specific provider/model, also configure that provider's auth/API key.
 - Per-agent defaults can override `agents.defaults.model` via `agents.list[].model` plus bindings (see [/concepts/multi-agent](/concepts/multi-agent)).
@@ -64,7 +64,7 @@ Provider configuration examples (including OpenCode) live in
 
 If `agents.defaults.models` is set, it becomes the **allowlist** for `/model` and for
 session overrides. When a user selects a model that isn’t in that allowlist,
-OpenClaw returns:
+Kova returns:
 
 ```
 Model "provider/model" is not allowed. Use /model to list available models.
@@ -112,7 +112,7 @@ Notes:
 - `/model status` is the detailed view (auth candidates and, when configured, provider endpoint `baseUrl` + `api` mode).
 - Model refs are parsed by splitting on the **first** `/`. Use `provider/model` when typing `/model <ref>`.
 - If the model ID itself contains `/` (OpenRouter-style), you must include the provider prefix (example: `/model openrouter/moonshotai/kimi-k2`).
-- If you omit the provider, OpenClaw treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
+- If you omit the provider, Kova treats the input as an alias or a model for the **default provider** (only works when there is no `/` in the model ID).
 
 Full command behavior/config: [Slash commands](/tools/slash-commands).
 
@@ -210,7 +210,7 @@ mode, pass `--yes` to accept defaults.
 ## Models registry (`models.json`)
 
 Custom providers in `models.providers` are written into `models.json` under the
-agent directory (default `~/.openclaw/agents/<agentId>/agent/models.json`). This file
+agent directory (default `~/.kova/agents/<agentId>/agent/models.json`). This file
 is merged by default unless `models.mode` is set to `replace`.
 
 Merge mode precedence for matching provider IDs:
@@ -222,8 +222,8 @@ Merge mode precedence for matching provider IDs:
 - Empty or missing agent `apiKey`/`baseUrl` fall back to config `models.providers`.
 - Other provider fields are refreshed from config and normalized catalog data.
 
-Marker persistence is source-authoritative: OpenClaw writes markers from the active source config snapshot (pre-resolution), not from resolved runtime secret values.
-This applies whenever OpenClaw regenerates `models.json`, including command-driven paths like `openclaw agent`.
+Marker persistence is source-authoritative: Kova writes markers from the active source config snapshot (pre-resolution), not from resolved runtime secret values.
+This applies whenever Kova regenerates `models.json`, including command-driven paths like `openclaw agent`.
 
 ## Related
 

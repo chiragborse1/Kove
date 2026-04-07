@@ -1,6 +1,6 @@
 ---
 read_when:
-  - 在 Windows 上安装 OpenClaw
+  - 在 Windows 上安装 Kova
   - 查找 Windows 配套应用状态
 summary: Windows（WSL2）支持 + 配套应用状态
 title: Windows（WSL2）
@@ -15,7 +15,7 @@ x-i18n:
 
 # Windows（WSL2）
 
-推荐在 Windows 上**通过 WSL2** 运行 OpenClaw（推荐 Ubuntu）。CLI + Gateway 网关在 Linux 内运行，这能保持运行时一致，并使
+推荐在 Windows 上**通过 WSL2** 运行 Kova（推荐 Ubuntu）。CLI + Gateway 网关在 Linux 内运行，这能保持运行时一致，并使
 工具链兼容性高得多（Node/Bun/pnpm、Linux 二进制文件、Skills）。原生
 Windows 可能会更棘手。WSL2 可提供完整的 Linux 体验 —— 只需一条命令
 即可安装：`wsl --install`。
@@ -46,8 +46,8 @@ openclaw agent --local --agent main --thinking low -m "Reply with exactly WINDOW
 
 - 除非你传递 `--skip-health`，否则 `openclaw onboard --non-interactive` 仍然要求本地 Gateway 网关可访问
 - `openclaw onboard --non-interactive --install-daemon` 和 `openclaw gateway install` 会优先尝试 Windows Scheduled Tasks
-- 如果拒绝创建 Scheduled Task，OpenClaw 会回退到每用户 Startup 文件夹登录项，并立即启动 Gateway 网关
-- 如果 `schtasks` 本身卡住或停止响应，OpenClaw 现在会快速中止该路径并回退，而不是无限挂起
+- 如果拒绝创建 Scheduled Task，Kova 会回退到每用户 Startup 文件夹登录项，并立即启动 Gateway 网关
+- 如果 `schtasks` 本身卡住或停止响应，Kova 现在会快速中止该路径并回退，而不是无限挂起
 - 在可用时仍优先使用 Scheduled Tasks，因为它们能提供更好的 supervisor 状态
 
 如果你只想使用原生 CLI，而不安装 Gateway 网关服务，可使用以下任一方式：
@@ -112,7 +112,7 @@ Windows 时也能运行。
 sudo loginctl enable-linger "$(whoami)"
 ```
 
-### 2）安装 OpenClaw Gateway 网关用户服务
+### 2）安装 Kova Gateway 网关用户服务
 
 在 WSL 内：
 
@@ -226,7 +226,7 @@ wsl --shutdown
 systemctl --user status
 ```
 
-### 3）安装 OpenClaw（在 WSL 内）
+### 3）安装 Kova（在 WSL 内）
 
 在 WSL 内按照 Linux 入门指南流程操作：
 

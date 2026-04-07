@@ -6,9 +6,6 @@
   "dependencies": {
     "undici": "7.24.6"
   },
-  "devDependencies": {
-    "getkova": "workspace:*"
-  },
   "peerDependencies": {
     "openclaw": ">=2026.4.1-beta.1"
   },

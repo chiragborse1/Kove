@@ -8,7 +8,7 @@ title: "Doctor"
 
 # Doctor
 
-`openclaw doctor` is the repair + migration tool for OpenClaw. It fixes stale
+`openclaw doctor` is the repair + migration tool for Kova. It fixes stale
 config/state, checks health, and provides actionable repair steps.
 
 ## Quick start
@@ -53,7 +53,7 @@ Scan system services for extra gateway installs (launchd/systemd/schtasks).
 If you want to review changes before writing, open the config file first:
 
 ```bash
-cat ~/.openclaw/openclaw.json
+cat ~/.kova/openclaw.json
 ```
 
 ## What it does (summary)
@@ -113,7 +113,7 @@ Doctor will:
 
 - Explain which legacy keys were found.
 - Show the migration it applied.
-- Rewrite `~/.openclaw/openclaw.json` with the updated schema.
+- Rewrite `~/.kova/openclaw.json` with the updated schema.
 
 The Gateway also auto-runs doctor migrations on startup when it detects a
 legacy config format, so stale configs are repaired without manual intervention.
@@ -200,12 +200,12 @@ even if the gateway is healthy.
 Doctor can migrate older on-disk layouts into the current structure:
 
 - Sessions store + transcripts:
-  - from `~/.openclaw/sessions/` to `~/.openclaw/agents/<agentId>/sessions/`
+  - from `~/.kova/sessions/` to `~/.kova/agents/<agentId>/sessions/`
 - Agent dir:
-  - from `~/.openclaw/agent/` to `~/.openclaw/agents/<agentId>/agent/`
+  - from `~/.kova/agent/` to `~/.kova/agents/<agentId>/agent/`
 - WhatsApp auth state (Baileys):
-  - from legacy `~/.openclaw/credentials/*.json` (except `oauth.json`)
-  - to `~/.openclaw/credentials/whatsapp/<accountId>/...` (default account id: `default`)
+  - from legacy `~/.kova/credentials/*.json` (except `oauth.json`)
+  - to `~/.kova/credentials/whatsapp/<accountId>/...` (default account id: `default`)
 
 These migrations are best-effort and idempotent; doctor will emit warnings when
 it leaves any legacy folders behind as backups. The Gateway/CLI also auto-migrates
@@ -223,7 +223,7 @@ same values, the legacy key is removed without duplicating the data.
 
 ### 3b) Legacy cron store migrations
 
-Doctor also checks the cron job store (`~/.openclaw/cron/jobs.json` by default,
+Doctor also checks the cron job store (`~/.kova/cron/jobs.json` by default,
 or `cron.store` when overridden) for old job shapes that the scheduler still
 accepts for compatibility.
 
@@ -278,7 +278,7 @@ Doctor checks:
   split between installs).
 - **Remote mode reminder**: if `gateway.mode=remote`, doctor reminds you to run
   it on the remote host (the state lives there).
-- **Config file permissions**: warns if `~/.openclaw/openclaw.json` is
+- **Config file permissions**: warns if `~/.kova/openclaw.json` is
   group/world readable and offers to tighten to `600`.
 
 ### 5) Model auth health (OAuth expiry)
@@ -307,16 +307,16 @@ switch to legacy names if the current image is missing.
 ### 7b) Bundled plugin runtime deps
 
 Doctor verifies that bundled plugin runtime dependencies (for example the
-Discord plugin runtime packages) are present in the OpenClaw install root.
+Discord plugin runtime packages) are present in the Kova install root.
 If any are missing, doctor reports the packages and installs them in
 `openclaw doctor --fix` / `openclaw doctor --repair` mode.
 
 ### 8) Gateway service migrations and cleanup hints
 
 Doctor detects legacy gateway services (launchd/systemd/schtasks) and
-offers to remove them and install the OpenClaw service using the current gateway
+offers to remove them and install the Kova service using the current gateway
 port. It can also scan for extra gateway-like services and print cleanup hints.
-Profile-named OpenClaw gateway services are considered first-class and are not
+Profile-named Kova gateway services are considered first-class and are not
 flagged as "extra."
 
 ### 8b) Startup Matrix migration

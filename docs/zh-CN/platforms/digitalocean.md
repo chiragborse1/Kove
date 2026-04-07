@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 在 DigitalOcean 上设置 OpenClaw
-  - 寻找适合 OpenClaw 的低价 VPS 托管
-summary: 在 DigitalOcean 上运行 OpenClaw（简单的付费 VPS 选项）
+  - 在 DigitalOcean 上设置 Kova
+  - 寻找适合 Kova 的低价 VPS 托管
+summary: 在 DigitalOcean 上运行 Kova（简单的付费 VPS 选项）
 title: DigitalOcean
 x-i18n:
   generated_at: "2026-03-16T06:24:23Z"
@@ -13,11 +13,11 @@ x-i18n:
   workflow: 15
 ---
 
-# 在 DigitalOcean 上运行 OpenClaw
+# 在 DigitalOcean 上运行 Kova
 
 ## 目标
 
-在 DigitalOcean 上以 **每月 6 美元**（或预留定价时每月 4 美元）运行一个持久化的 OpenClaw Gateway 网关。
+在 DigitalOcean 上以 **每月 6 美元**（或预留定价时每月 4 美元）运行一个持久化的 Kova Gateway 网关。
 
 如果你想要每月 0 美元的方案，并且不介意 ARM + 提供商特定设置，请参阅 [Oracle Cloud 指南](/platforms/oracle)。
 
@@ -67,7 +67,7 @@ x-i18n:
 ssh root@YOUR_DROPLET_IP
 ```
 
-## 3）安装 OpenClaw
+## 3）安装 Kova
 
 ```bash
 # 更新系统
@@ -77,8 +77,8 @@ apt update && apt upgrade -y
 curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
 apt install -y nodejs
 
-# 安装 OpenClaw
-curl -fsSL https://openclaw.ai/install.sh | bash
+# 安装 Kova
+curl -fsSL https://kova.ai/install.sh | bash
 
 # 验证
 openclaw --version
@@ -205,13 +205,13 @@ htop
 
 所有状态都存储在：
 
-- `~/.openclaw/` — 配置、凭证、会话数据
-- `~/.openclaw/workspace/` — 工作区（`SOUL.md`、memory 等）
+- `~/.kova/` — 配置、凭证、会话数据
+- `~/.kova/workspace/` — 工作区（`SOUL.md`、memory 等）
 
 这些内容在重启后仍会保留。请定期备份：
 
 ```bash
-tar -czvf openclaw-backup.tar.gz ~/.openclaw ~/.openclaw/workspace
+tar -czvf openclaw-backup.tar.gz ~/.openclaw ~/.kova/workspace
 ```
 
 ---

@@ -8,7 +8,7 @@ title: "OpenResponses API"
 
 # OpenResponses API (HTTP)
 
-OpenClaw’s Gateway can serve an OpenResponses-compatible `POST /v1/responses` endpoint.
+Kova’s Gateway can serve an OpenResponses-compatible `POST /v1/responses` endpoint.
 
 This endpoint is **disabled by default**. Enable it in config first.
 
@@ -82,7 +82,7 @@ Accepted but **currently ignored**:
 
 Supported:
 
-- `previous_response_id`: OpenClaw reuses the earlier response session when the request stays within the same agent/user/requested-session scope.
+- `previous_response_id`: Kova reuses the earlier response session when the request stays within the same agent/user/requested-session scope.
 
 ## Items (input)
 

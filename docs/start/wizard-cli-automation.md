@@ -1,5 +1,5 @@
 ---
-summary: "Scripted onboarding and agent setup for the OpenClaw CLI"
+summary: "Scripted onboarding and agent setup for the Kova CLI"
 read_when:
   - You are automating onboarding in scripts or CI
   - You need non-interactive examples for specific providers
@@ -189,7 +189,7 @@ sessions, and auth profiles. Running without `--workspace` launches the wizard.
 
 ```bash
 openclaw agents add work \
-  --workspace ~/.openclaw/workspace-work \
+  --workspace ~/.kova/workspace-work \
   --model openai/gpt-5.2 \
   --bind whatsapp:biz \
   --non-interactive \
@@ -204,7 +204,7 @@ What it sets:
 
 Notes:
 
-- Default workspaces follow `~/.openclaw/workspace-<agentId>`.
+- Default workspaces follow `~/.kova/workspace-<agentId>`.
 - Add `bindings` to route inbound messages (the wizard can do this).
 - Non-interactive flags: `--model`, `--agent-dir`, `--bind`, `--non-interactive`.
 
